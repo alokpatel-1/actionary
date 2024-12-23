@@ -1,4 +1,8 @@
+import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { BrowserModule } from "@angular/platform-browser";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { AccordionModule } from "primeng/accordion";
 import { AutoComplete } from "primeng/autocomplete";
 import { AutoFocusModule } from "primeng/autofocus";
@@ -42,6 +46,7 @@ import { PanelModule } from "primeng/panel";
 import { PanelMenuModule } from "primeng/panelmenu";
 import { PasswordModule } from "primeng/password";
 import { PickList } from "primeng/picklist";
+import { Popover } from "primeng/popover";
 import { ProgressBar } from "primeng/progressbar";
 import { ProgressSpinner } from "primeng/progressspinner";
 import { RadioButton } from "primeng/radiobutton";
@@ -144,6 +149,12 @@ const modules = [
   IconField,
   InputIcon,
   AutoFocusModule,
+  CommonModule,
+  FormsModule,
+  ReactiveFormsModule,
+  Popover,
+  // BrowserModule,
+  // BrowserAnimationsModule,
 ]
 
 @NgModule({

@@ -1,6 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
-$primaryColor: #3B82F6 !default;
-$primaryDarkColor: #2563eb !default;
-$primaryDarkerColor: #1D4ED8 !default;
-$primaryTextColor: #ffffff !default;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+// $primaryColor: #3B82F6 !default;
+// $primaryDarkColor: #2563eb !default;
+// $primaryDarkerColor: #1D4ED8 !default;
+// $primaryTextColor: #ffffff !default;
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.roboto-thin {
+  font-family: "Roboto", serif;
+  font-style: normal;
+}
