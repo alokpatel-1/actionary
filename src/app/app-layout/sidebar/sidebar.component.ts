@@ -13,7 +13,4 @@ export class SidebarComponent {
     readonly utilService = inject(ActionaryUtilService);
 
 
-    toggleSideBar() {
-        this.utilService.isSideBarCloser.set(!this.utilService.isSideBarCloser());
-    }
 }

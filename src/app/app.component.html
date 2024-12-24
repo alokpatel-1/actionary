@@ -1,34 +1,9 @@
-<!-- <div class="main-content">
-    <div class="topBar w-100">
-        <app-top-bar></app-top-bar>
-    </div>
-    <div class="flex homeWrapper">
-        <div class="leftPanel">
-            <app-sidebar></app-sidebar>
-        </div>
-        <div class="rightPanel p-5">
-            <div class="bg-whit w-100 h-full bg-white p-2 rounded w-100">
-                <router-outlet></router-outlet>
-            </div>
-        </div>
-    </div>
-</div> -->
-
 <div class="container-app">
-    <!-- Top Navigation -->
-    <div class="top-nav">
-        <app-top-bar></app-top-bar>
-    </div>
 
-    <!-- Sidebar -->
-    <div class="fixed-sidebar" [class.collapsed]="utilService.isSideBarCloser()">
-        <app-sidebar></app-sidebar>
-    </div>
+    <app-sidebar></app-sidebar>
+    <app-top-bar></app-top-bar>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="bg-white p-2 rounded">
-            <router-outlet></router-outlet>
-        </div>
+    <div class="content m-5" [class.collapsed]="utilService.isSideBarCloser()">
+        <router-outlet></router-outlet>
     </div>
 </div>

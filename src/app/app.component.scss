@@ -1,46 +1,15 @@
 .container-app {
-  background-color: rgba(221, 221, 223, 0);
 
-}
+    .content {
+        margin-left: 250px;
+        flex: 1;
+        padding: 60px 20px 20px;
+        transition: margin-left 0.3s ease;
+        position: relative;
+    }
 
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60px;
-  background-color: rgba(221, 221, 223, 0);
-  color: #000;
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  padding: 0 20px;
-  z-index: 1000;
-}
+    .content.collapsed {
+        margin-left: 0;
+    }
 
-/* Sidebar */
-.fixed-sidebar {
-  position: fixed;
-  top: 20px;
-  left: 10px;
-  height: calc(100vh - 60px);
-  width: 245px;
-  background-color: #fff;
-  transition: width 0.3s ease;
-  z-index: 9999999;
-
-  &.collapsed {
-    width: 95px;
-  }
-}
-
-.main-content {
-  margin-top: 60px;
-  margin-left: 245px;
-  padding: 20px;
-  transition: margin-left 0.3s ease;
-
-  .fixed-sidebar.collapsed+& {
-    margin-left: 120px;
-  }
 }
