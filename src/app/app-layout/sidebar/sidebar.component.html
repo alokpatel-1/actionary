@@ -11,28 +11,12 @@
     <hr>
 
     <div class="sidebar-items">
-      <div class="sidebar-item cursor-pointer flex items-center my-5 mx-4">
-        <i class="pi pi-plus-circle"></i>
-        <div class="text-base px-2">Upcoming</div>
-      </div>
-      <div class="sidebar-item cursor-pointer flex items-center my-5 mx-4">
-        <i class="pi pi-plus-circle"></i>
-        <div class="text-base px-2">Today</div>
-      </div>
-
-      <div class="sidebar-item cursor-pointer flex items-center my-5 mx-4">
-        <i class="pi pi-plus-circle"></i>
-        <div class="text-base px-2">Add Task</div>
-      </div>
-      <div class="sidebar-item cursor-pointer flex items-center my-5 mx-4">
-        <i class="pi pi-plus-circle"></i>
-        <div class="text-base px-2">Pending Task</div>
-      </div>
-
-      <div class="sidebar-item cursor-pointer flex items-center my-5 mx-4">
-        <i class="pi pi-plus-circle"></i>
-        <div class="text-base px-2">Add Task</div>
-      </div>
+      <a routerLink="{{ item?.url }}" *ngFor="let item of sidebarItems"
+        class="sidebar-item cursor-pointer flex items-center my-5 mx-4" [ngClass]="{ 'active': item.active }"
+        (click)="setActive(item)">
+        <i [class]="item.icon"></i>
+        <div class="text-base px-2">{{ item.label }}</div>
+      </a>
     </div>
   </div>
 </div>

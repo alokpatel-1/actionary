@@ -1,5 +1,29 @@
 <div class="top-bar" [class.collapsed]="utilService.isSideBarCloser()">
   <!-- <button class="toggle-btn" [class.collapsed]="utilService.isSideBarCloser()" (click)="toggleSidebar()">☰</button> -->
   <span>&nbsp;</span>
-  <span>Welcome, User!</span>
+  <div class="flex items-center justify-end header_h100">
+    <i class="nav-icon pi pi-lightbulb"></i>
+    <i class="nav-icon pi pi-bell"></i>
+    <i #userIconRef class="nav-icon pi pi-user" (click)="toggle($event)"></i>
+  </div>
 </div>
+
+
+
+<p-popover #userPanelRef>
+  <div class="flex flex-col gap-4">
+    <div>
+      <span class="font-medium block mb-2">Team Members</span>
+      <ul class="list-none p-0 m-0 flex flex-col">
+        <li *ngFor="let member of members"
+          class="flex items-center gap-2 px-2 py-3 hover:bg-emphasis cursor-pointer rounded-border">
+          <img [src]="'https://primefaces.org/cdn/primeng/images/demo/avatar/' + member.image" style="width: 32px" />
+          <div>
+            <span class="font-medium">{{ member.name }}</span>
+            <div class="text-sm text-surface-500 dark:text-surface-400">{{ member.email }}</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</p-popover>

@@ -27,11 +27,22 @@ import { ActionaryUtilService } from '../../services/actionary-util.service';
   ],
 })
 export class TopBarComponent {
+  @ViewChild('userPanelRef') userPanelRef!: Popover;
   readonly utilService = inject(ActionaryUtilService);
 
   toggleSidebar() {
     console.log('@ jahshd ', this.utilService.isSideBarCloser());
 
     this.utilService.isSideBarCloser.set(!this.utilService.isSideBarCloser());
+  }
+
+  members = [
+    { name: 'Amy Elsner', image: 'amyelsner.png', email: 'amy@email.com', role: 'Owner' },
+    { name: 'Bernardo Dominic', image: 'bernardodominic.png', email: 'bernardo@email.com', role: 'Editor' },
+    { name: 'Ioni Bowcher', image: 'ionibowcher.png', email: 'ioni@email.com', role: 'Viewer' },
+  ];
+
+  toggle(event: MouseEvent) {
+    this.userPanelRef.toggle(event);
   }
 }
