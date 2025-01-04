@@ -1,11 +1,11 @@
 <div class="min-h-screen flex flex-col items-center p-6 bg-white">
   <header class="mb-6 w-full flex items-center h-[60px]">
-    <div class="logo text-3xl">Actionary</div>
+    <a [routerLink]="['/']" class="logo text-3xl">Actionary</a>
   </header>
   <div
-    class="w-[900px] min-h-[600px] bg-white rounded-lg shadow-lg flex transform transition duration-500 hover:shadow-2xl">
+    class="w-[1000px] min-h-[600px] bg-white rounded-lg shadow-lg flex transform transition duration-500 hover:shadow-2xl">
     <div class="w-1/2 bg-gray-50 flex items-center justify-center">
-      <img src="signup.jpg" alt="Login Illustration" class="w-full h-full object-cover rounded-l-lg" />
+      <img src="login.jpg" alt="Login Illustration" class="w-full h-full object-cover rounded-l-lg" />
     </div>
     <div class="flex flex-col justify-center w-1/2 p-10 border-l border-gray-300">
       <header class="mb-8 text-center">
@@ -81,7 +81,8 @@
       <div class="text-center mt-8">
         <p class="text-sm text-neutral-500">
           Don’t have an account?
-          <a href="/" class="text-[#0c2afa] underline transition-all duration-300 hover:text-blue-700">
+          <a [routerLink]="['/signup']"
+            class="text-[#0c2afa] underline transition-all duration-300 hover:text-blue-700">
             Sign up
           </a>
         </p>

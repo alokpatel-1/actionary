@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [],
+  standalone: false,
   templateUrl: './sign-in.component.html',
   styleUrl: './sign-in.component.scss'
 })

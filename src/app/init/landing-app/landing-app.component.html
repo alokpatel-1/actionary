@@ -1,85 +1,343 @@
-<div class="min-h-screen">
-  <header class="border-b">
-    <div class="container mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-[#E44332] rounded-lg"></div>
-        <span class="text-xl font-semibold">todoist</span>
-      </div>
-      <nav class="hidden md:flex items-center gap-8">
-        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Features</a>
-        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Made For</a>
-        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Resources</a>
-        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Pricing</a>
-      </nav>
-      <div class="flex items-center gap-4">
-        <a routerLink="/login" class="hidden md:inline-flex text-sm font-medium">Log in</a>
-        <a routerLink="/signup" class="bg-[#E44332] hover:bg-[#C73A2D] text-white px-4 py-2 rounded">Start for free</a>
-      </div>
-    </div>
+<div class="min-h-screen flex flex-col bg-white text-primary-950">
+  <header class="w-full flex px-12 py-6 items-center justify-between h-[80px] bg-white">
+    <a [routerLink]="['/']" class="logo text-3xl">
+      Actionary
+    </a>
+    <nav class="flex gap-8">
+      <a [routerLink]="['/features']"
+        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Features </a>
+      <a [routerLink]="['/aboutus']"
+        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Contact
+        Us </a>
+      <a [routerLink]="['/pricing']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">
+        Pricing</a>
+      <p-divider layout="vertical" />
+      <a [routerLink]="['/login']" class="text-primary-950 logo font-normal text-lg transition hover:text-[#0c2afa]">
+        Login
+      </a>
+      <a [routerLink]="['/signup']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Sign Up
+      </a>
+    </nav>
   </header>
-  <main>
-    <div class="container mx-auto px-4 py-16 md:py-24">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div class="space-y-8">
-          <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
-            Organize your work and life, finally.
-          </h1>
-          <p class="text-xl text-gray-600">
-            Simplify life for both you and your team with the world's #1 task manager and to-do list app.
-          </p>
-          <div class="space-y-6">
-            <button class="bg-[#E44332] hover:bg-[#C73A2D] text-white px-6 py-3 rounded text-lg">
-              Start for free
-            </button>
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <span>374K+</span>
-              <div class="flex">
-                <ng-container *ngFor="let star of [1, 2, 3, 4, 5]">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="yellow" viewBox="0 0 24 24" class="w-4 h-4">
-                    <path
-                      d="M12 .587l3.668 7.449 8.167 1.191-5.917 5.763 1.396 8.131L12 18.896l-7.314 3.855 1.396-8.131-5.917-5.763 8.167-1.191z" />
-                  </svg>
-                </ng-container>
-              </div>
-              <span>reviews from</span>
-              <img src="/assets/apple-store.svg" alt="Apple Store" width="20" height="20" class="opacity-60" />
-              <img src="/assets/google-play.svg" alt="Google Play" width="20" height="20" class="opacity-60" />
-            </div>
+  <main class="flex flex-col items-center flex-1 p-20 gap-16">
+    <div
+      class="w-[1500px] bg-white text-neutral-950 rounded-lg flex overflow-hidden transform transition-all duration-300 hover:scale-[1.03] h-[700px]">
+      <div class="flex-1 p-12 flex flex-col justify-center">
+        <h1 class="text-5xl font-title font-bold mb-6 leading-snug">
+          Take command of your
+          <span class="text-[#6f2aff] underline decoration-[#0c2afa]/50 decoration-4">
+            productivity
+          </span>
+          with ease.
+        </h1>
+        <p class="text-lg text-neutral-600 mb-8 leading-relaxed">
+          Empower yourself and your team to achieve more with the ultimate
+          task manager that simplifies your workflow and enhances
+          collaboration.
+        </p>
+        <div class="flex items-center gap-3 text-neutral-600 mb-6">
+          <span class="text-2xl text-neutral-950 font-bold">374k+</span>
+          <span>★★★★★ ratings across platforms</span>
+          <div class="flex">
+            <i class="pi pi-apple p-1"></i>
+            <i class="pi pi-android p-1"></i>
           </div>
         </div>
-        <div class="relative">
-          <div class="absolute -top-8 -left-8 w-16 h-16 text-yellow-400 opacity-20">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-full h-full" fill="yellow">
-              <path
-                d="M12 .587l3.668 7.449 8.167 1.191-5.917 5.763 1.396 8.131L12 18.896l-7.314 3.855 1.396-8.131-5.917-5.763 8.167-1.191z" />
-            </svg>
-          </div>
-          <img src="/assets/todoist-app.svg" alt="Todoist App Interface" width="800" height="600"
-            class="rounded-lg shadow-2xl" />
+        <div>
+          <a
+            class="bg-gradient-to-r text-white from-[#6f2aff] to-[#0c2afa] text-primary-50 py-4 px-12 rounded-full font-bold text-lg transition-all hover:scale-110">
+            Get Started Free
+          </a>
+        </div>
+      </div>
+      <div class="flex-1 relative bg-gradient-to-br from-[#0c2afa]/20 via-[#6f2aff]/10 to-[#0c2afa]/20">
+        <img src="https://tools-api.webcrumbs.org/image-placeholder/650/700/office/9" alt="Productivity Illustration"
+          class="object-cover w-full h-full" />
+      </div>
+    </div>
+    <div class="w-[1500px] flex flex-col gap-12">
+      <h2 class="text-3xl font-title font-bold text-neutral-950">
+        Track Your Workflow
+      </h2>
+      <div class="grid grid-cols-3 gap-8">
+        <div class="rounded-md bg-[#0c2afa]/10 p-6 flex flex-col items-center text-center">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">check_circle</span>
+          <h3 class="text-lg font-bold text-neutral-950 mb-2">
+            Completed Tasks
+          </h3>
+          <p class="text-sm text-neutral-600 mb-4">
+            Track and showcase all the tasks you’ve successfully completed.
+          </p>
+          <a href="/tags/completed"
+            class="py-2 px-4 bg-primary-500 text-white text-sm rounded-full transition hover:bg-primary-400">
+            View Tagged
+          </a>
+        </div>
+        <div class="rounded-md bg-[#6f2aff]/10 p-6 flex flex-col items-center text-center">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">pending_actions</span>
+          <h3 class="text-lg font-bold text-neutral-950 mb-2">
+            Pending Work
+          </h3>
+          <p class="text-sm text-neutral-600 mb-4">
+            Stay on top of your pending tasks and finish them on time.
+          </p>
+          <a href="/tags/pending"
+            class="py-2 px-4 bg-primary-500 text-white text-sm rounded-full transition hover:bg-primary-400">
+            View Tagged
+          </a>
+        </div>
+        <div class="rounded-md bg-[#0c2afa]/10 p-6 flex flex-col items-center text-center">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">schedule</span>
+          <h3 class="text-lg font-bold text-neutral-950 mb-2">
+            Upcoming Work
+          </h3>
+          <p class="text-sm text-neutral-600 mb-4">
+            Plan your tasks ahead and keep yourself organized for the
+            future.
+          </p>
+          <a href="/tags/upcoming"
+            class="py-2 px-4 bg-primary-500 text-white text-sm rounded-full transition hover:bg-primary-400">
+            View Tagged
+          </a>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-8">
+        <div class="rounded-lg bg-white p-8">
+          <h3 class="text-xl font-title text-neutral-950 font-bold mb-4">
+            Set Priorities with Ease
+          </h3>
+          <p class="text-neutral-600 leading-relaxed">
+            Break down your tasks into high, medium, and low priority
+            levels. Focus on what matters most and achieve your goals
+            efficiently.
+          </p>
+        </div>
+        <div class="rounded-lg bg-white p-8">
+          <h3 class="text-xl font-title text-neutral-950 font-bold mb-4">
+            Collaborate Seamlessly
+          </h3>
+          <p class="text-neutral-600 leading-relaxed">
+            Collaborate with your team, sync tasks in real-time, and
+            delegate responsibilities to ensure nothing is overlooked.
+          </p>
         </div>
       </div>
     </div>
-    <div class="container mx-auto px-4 py-16">
-      <div class="grid md:grid-cols-3 gap-8 text-center">
-        <div class="space-y-4">
-          <p class="text-lg font-serif italic">
-            "Simple, straightforward, and super powerful"
+    <div class="w-[1500px] flex flex-col gap-12">
+      <h2 class="text-3xl font-title font-bold text-neutral-950">
+        Where You Can Use Actionary
+      </h2>
+      <div class="grid grid-cols-5 gap-8 text-center">
+        <div class="flex flex-col work-card items-center gap-4 rounded-md bg-primary-50 p-6">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">school</span>
+          <h3 class="text-lg font-title font-bold text-neutral-950">
+            Education
+          </h3>
+          <p class="text-sm text-neutral-600">
+            Organize assignments, manage coursework, and improve study
+            habits.
           </p>
-          <img src="/assets/the-verge.svg" alt="The Verge" width="100" height="30" class="mx-auto opacity-60" />
         </div>
-        <div class="space-y-4">
-          <p class="text-lg font-serif italic">
-            "The best to-do list app on the market"
+        <div class="flex flex-col work-card items-center gap-4 rounded-md bg-primary-50 p-6">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">work</span>
+          <h3 class="text-lg font-title font-bold text-neutral-950">
+            Work
+          </h3>
+          <p class="text-sm text-neutral-600">
+            Boost productivity and streamline professional projects
+            effortlessly.
           </p>
-          <img src="/assets/pc-mag.svg" alt="PC Mag" width="100" height="30" class="mx-auto opacity-60" />
         </div>
-        <div class="space-y-4">
-          <p class="text-lg font-serif italic">
-            "Nothing short of stellar"
+        <div class="flex flex-col work-card items-center gap-4 rounded-md bg-primary-50 p-6">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">person</span>
+          <h3 class="text-lg font-title font-bold text-neutral-950">
+            Personal
+          </h3>
+          <p class="text-sm text-neutral-600">
+            Schedule personal tasks, goals, and daily routines with ease.
           </p>
-          <img src="/assets/techradar.svg" alt="TechRadar" width="100" height="30" class="mx-auto opacity-60" />
+        </div>
+        <div class="flex flex-col work-card items-center gap-4 rounded-md bg-primary-50 p-6">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">campaign</span>
+          <h3 class="text-lg font-title font-bold text-neutral-950">
+            Marketing
+          </h3>
+          <p class="text-sm text-neutral-600">
+            Plan, schedule, and execute your campaigns successfully.
+          </p>
+        </div>
+        <div class="flex flex-col work-card items-center gap-4 rounded-md bg-primary-50 p-6">
+          <span class="material-symbols-outlined text-primary-500 text-5xl mb-4">insert_chart</span>
+          <h3 class="text-lg font-title font-bold text-neutral-950">
+            Management
+          </h3>
+          <p class="text-sm text-neutral-600">
+            Oversee and coordinate team efforts efficiently for better
+            results.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="w-[1500px] flex flex-col gap-12">
+      <h2 class="text-3xl font-title font-bold text-neutral-950">
+        Your Priorities at a Glance
+      </h2>
+      <div class="bg-white p-8">
+        <div class="flex justify-center">
+          <div data-chart="chart_0"></div>
+        </div>
+        <div class="mt-8 grid grid-cols-2 gap-8">
+          <div class="bg-primary-50 work-card rounded-md p-6">
+            <h3 class="font-title text-xl font-bold text-neutral-950 mb-4">
+              High Priority
+            </h3>
+            <p class="text-sm text-neutral-600">
+              Focus on these tasks to achieve your most critical goals.
+              These are the activities that require your immediate
+              attention.
+            </p>
+          </div>
+          <div class="bg-primary-50 rounded-md p-6">
+            <h3 class="font-title text-xl font-bold text-neutral-950 mb-4">
+              Medium Priority
+            </h3>
+            <p class="text-sm text-neutral-600">
+              Tasks that are important but not urgent. These can be handled
+              once you’ve completed your highest-priority items.
+            </p>
+          </div>
+          <div class="bg-primary-50 rounded-md p-6">
+            <h3 class="font-title text-xl font-bold text-neutral-950 mb-4">
+              Low Priority
+            </h3>
+            <p class="text-sm text-neutral-600">
+              Tasks with minimal time sensitivity. These can be done at your
+              convenience without significant impact.
+            </p>
+          </div>
+          <div class="bg-primary-50 work-card rounded-md p-6">
+            <h3 class="font-title text-xl font-bold text-neutral-950 mb-4">
+              Optional Tasks
+            </h3>
+            <p class="text-sm text-neutral-600">
+              Miscellaneous tasks or ideas that you may choose to pursue
+              when you have extra time or resources available.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   </main>
+  <footer class="w-full bg-gradient-to-r from-[#0c2afa]/10 via-[#6f2aff]/20 to-[#0c2afa]/10 text-neutral-950 py-12">
+    <div class="max-w-[1500px] mx-auto px-6">
+      <div class="flex justify-between border-b pb-8 mb-8">
+        <div class="flex flex-col gap-4">
+          <img src="https://tools-api.webcrumbs.org/image-placeholder/60/30/logos/1" alt="Logo"
+            class="w-[60px] object-contain" />
+          <p class="text-sm text-neutral-600 max-w-[300px]">
+            Discover how millions are transforming their workflow and
+            unlocking new opportunities with Actionary.
+          </p>
+        </div>
+        <div class="grid grid-cols-3 gap-10">
+          <div>
+            <h4 class="font-title text-lg font-bold mb-4 text-neutral-950">
+              Features
+            </h4>
+            <ul class="text-sm text-neutral-600 flex flex-col gap-3">
+              <li>
+                <a href="/how-it-works" class="hover:underline hover:text-[#6f2aff]">
+                  How It Works
+                </a>
+              </li>
+              <li>
+                <a href="/for-teams" class="hover:underline hover:text-[#6f2aff]">
+                  For Teams
+                </a>
+              </li>
+              <li>
+                <a href="/pricing" class="hover:underline hover:text-[#6f2aff]">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="/templates" class="hover:underline hover:text-[#6f2aff]">
+                  Templates
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-title text-lg font-bold mb-4 text-neutral-950">
+              Resources
+            </h4>
+            <ul class="text-sm text-neutral-600 flex flex-col gap-3">
+              <li>
+                <a href="/download-apps" class="hover:underline hover:text-[#6f2aff]">
+                  Download Apps
+                </a>
+              </li>
+              <li>
+                <a href="/help-center" class="hover:underline hover:text-[#6f2aff]">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="/integrations" class="hover:underline hover:text-[#6f2aff]">
+                  Integrations
+                </a>
+              </li>
+              <li>
+                <a href="/developer-api" class="hover:underline hover:text-[#6f2aff]">
+                  Developer API
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-title text-lg font-bold mb-4 text-neutral-950">
+              Company
+            </h4>
+            <ul class="text-sm text-neutral-600 flex flex-col gap-3">
+              <li>
+                <a href="/about-us" class="hover:underline hover:text-[#6f2aff]">
+                  About Us
+                </a>
+              </li>
+              <li class="flex items-center">
+                <a href="/careers" class="hover:underline hover:text-[#6f2aff]">
+                  Careers
+                </a>
+                <span class="ml-2 px-3 py-1.5 bg-green-200 text-green-800 text-xs rounded-full">We&#x27;re
+                  Hiring!</span>
+              </li>
+              <li>
+                <a href="/press" class="hover:underline hover:text-[#6f2aff]">
+                  Press
+                </a>
+              </li>
+              <li>
+                <a href="/status" class="hover:underline hover:text-[#6f2aff]">
+                  Status
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-between items-center">
+        <p class="text-sm text-neutral-600">
+          © 2025 Actionary. Simplifying productivity, one task at a time.
+        </p>
+        <div class="flex gap-6 text-neutral-600">
+          <a href="#" class="text-lg hover:text-[#6f2aff]">
+            <i class="fa-brands fa-twitter"></i> </a><a href="#" class="text-lg hover:text-[#6f2aff]">
+            <i class="fa-brands fa-youtube"></i> </a><a href="#" class="text-lg hover:text-[#6f2aff]">
+            <i class="fa-brands fa-facebook"></i> </a><a href="#" class="text-lg hover:text-[#6f2aff]">
+            <i class="fa-brands fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
 </div>
