@@ -17,5 +17,4 @@ const imports = [
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  readonly utilService = inject(ActionaryUtilService);
 }

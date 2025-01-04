@@ -13,20 +13,30 @@
           Welcome Back!
         </h1>
       </header>
-      <form class="flex flex-col gap-6">
+      <form class="flex flex-col gap-6" [formGroup]="loginForm">
         <div>
           <label for="email" class="block text-sm text-neutral-500 mb-2">
             Email
           </label>
-          <input type="email" id="email" placeholder="Enter your email..."
+          <input formControlName="email" type="email" id="email" placeholder="Enter your email..."
             class="w-full bg-white p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0c2afa] transition-all duration-300" />
+          <!-- email error handling    -->
+          @if(loginForm.get('email')?.touched){
+          @if (loginForm.get('email')?.hasError('required')) {
+          <small class="error-message">Email is required</small>
+          }
+          @if (loginForm.get('email')?.hasError('email')) {
+          <small class="error-message">Please enter a valid email address</small>
+          }
+          }
         </div>
         <div>
           <label for="password" class="block text-sm text-neutral-500 mb-2">
             Password
           </label>
           <div class="relative">
-            <input [type]="showpassword() ? 'text': 'password'" id="password" placeholder="Enter your password..."
+            <input formControlName="password" [type]="showpassword() ? 'text': 'password'" id="password"
+              placeholder="Enter your password..."
               class="w-full bg-white p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0c2afa] transition-all duration-300" />
             <span (click)="changePasswordVisibilityType()"
               class="absolute inset-y-0 right-3 flex items-center material-symbols-outlined text-neutral-400 cursor-pointer transform transition duration-300 hover:text-neutral-600">
@@ -38,8 +48,17 @@
               }
             </span>
           </div>
+          <!-- password error handling  -->
+          @if(loginForm.get('password')?.touched){
+          @if (loginForm.get('password')?.hasError('required')) {
+          <small class="error-message">Password is required</small>
+          }
+          @if (loginForm.get('password')?.hasError('minlength')) {
+          <small class="error-message">Password must be at least 8 characters long</small>
+          }
+          }
         </div>
-        <button
+        <button type="button" (click)="onSubmit()"
           class="bg-gradient-to-r from-[#0c2afa] to-blue-600 text-primary-50 rounded-md p-2 font-bold text-lg text-center text-white">
           Log in
         </button>
