@@ -1,0 +1,8 @@
+<div class="container-app">
+  <app-sidebar></app-sidebar>
+  <app-top-bar></app-top-bar>
+
+  <div class="content m-5" [class.collapsed]="utilService.isSideBarCloser()">
+    <router-outlet></router-outlet>
+  </div>
+</div>

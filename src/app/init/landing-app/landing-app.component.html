@@ -1,0 +1,85 @@
+<div class="min-h-screen">
+  <header class="border-b">
+    <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-[#E44332] rounded-lg"></div>
+        <span class="text-xl font-semibold">todoist</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Features</a>
+        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Made For</a>
+        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Resources</a>
+        <a class="text-sm font-medium hover:text-[#E44332]" routerLink="#">Pricing</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <a routerLink="/login" class="hidden md:inline-flex text-sm font-medium">Log in</a>
+        <a routerLink="/signup" class="bg-[#E44332] hover:bg-[#C73A2D] text-white px-4 py-2 rounded">Start for free</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="container mx-auto px-4 py-16 md:py-24">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8">
+          <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+            Organize your work and life, finally.
+          </h1>
+          <p class="text-xl text-gray-600">
+            Simplify life for both you and your team with the world's #1 task manager and to-do list app.
+          </p>
+          <div class="space-y-6">
+            <button class="bg-[#E44332] hover:bg-[#C73A2D] text-white px-6 py-3 rounded text-lg">
+              Start for free
+            </button>
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <span>374K+</span>
+              <div class="flex">
+                <ng-container *ngFor="let star of [1, 2, 3, 4, 5]">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="yellow" viewBox="0 0 24 24" class="w-4 h-4">
+                    <path
+                      d="M12 .587l3.668 7.449 8.167 1.191-5.917 5.763 1.396 8.131L12 18.896l-7.314 3.855 1.396-8.131-5.917-5.763 8.167-1.191z" />
+                  </svg>
+                </ng-container>
+              </div>
+              <span>reviews from</span>
+              <img src="/assets/apple-store.svg" alt="Apple Store" width="20" height="20" class="opacity-60" />
+              <img src="/assets/google-play.svg" alt="Google Play" width="20" height="20" class="opacity-60" />
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="absolute -top-8 -left-8 w-16 h-16 text-yellow-400 opacity-20">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-full h-full" fill="yellow">
+              <path
+                d="M12 .587l3.668 7.449 8.167 1.191-5.917 5.763 1.396 8.131L12 18.896l-7.314 3.855 1.396-8.131-5.917-5.763 8.167-1.191z" />
+            </svg>
+          </div>
+          <img src="/assets/todoist-app.svg" alt="Todoist App Interface" width="800" height="600"
+            class="rounded-lg shadow-2xl" />
+        </div>
+      </div>
+    </div>
+    <div class="container mx-auto px-4 py-16">
+      <div class="grid md:grid-cols-3 gap-8 text-center">
+        <div class="space-y-4">
+          <p class="text-lg font-serif italic">
+            "Simple, straightforward, and super powerful"
+          </p>
+          <img src="/assets/the-verge.svg" alt="The Verge" width="100" height="30" class="mx-auto opacity-60" />
+        </div>
+        <div class="space-y-4">
+          <p class="text-lg font-serif italic">
+            "The best to-do list app on the market"
+          </p>
+          <img src="/assets/pc-mag.svg" alt="PC Mag" width="100" height="30" class="mx-auto opacity-60" />
+        </div>
+        <div class="space-y-4">
+          <p class="text-lg font-serif italic">
+            "Nothing short of stellar"
+          </p>
+          <img src="/assets/techradar.svg" alt="TechRadar" width="100" height="30" class="mx-auto opacity-60" />
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,15 @@
+.container-app {
+
+  .content {
+    margin-left: 250px;
+    flex: 1;
+    padding: 60px 20px 20px;
+    transition: margin-left 0.3s ease;
+    position: relative;
+  }
+
+  .content.collapsed {
+    margin-left: 0;
+  }
+
+}
