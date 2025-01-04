@@ -7,6 +7,7 @@ import { LandingAppComponent } from './landing-app/landing-app.component';
 import { SignInComponent } from './auth/sign-in/sign-in.component';
 import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { ImportsModule } from '../imports';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -19,7 +20,8 @@ import { ImportsModule } from '../imports';
   imports: [
     CommonModule,
     InitRoutingModule,
-    ImportsModule
+    ImportsModule,
+    ReactiveFormsModule
   ]
 })
 export class InitModule { }

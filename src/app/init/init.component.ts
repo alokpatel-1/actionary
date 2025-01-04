@@ -8,7 +8,5 @@ import { ActionaryUtilService } from '../services/actionary-util.service';
   styleUrl: './init.component.scss'
 })
 export class InitComponent {
-  readonly utilService = inject(ActionaryUtilService);
-
 
 }
