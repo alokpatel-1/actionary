@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
-import { ImportsModule } from '../../imports';
 
 @Component({
   selector: 'app-calender-view',
-  imports: [ImportsModule],
-  standalone: true,
+  standalone: false,
   templateUrl: './calender-view.component.html',
   styleUrl: './calender-view.component.scss'
 })
