@@ -51,8 +51,8 @@ export class SignUpComponent implements OnInit {
       next: (response) => {
         this.utilService.showSuccess('User registered successfully:');
       },
-      error: (error) => {
-        this.utilService.showError(error.message);
+      error: ({ error }) => {
+        this.utilService.showError(error.error);
       },
     });
 
