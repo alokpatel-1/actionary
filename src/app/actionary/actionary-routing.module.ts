@@ -11,11 +11,12 @@ const routes: Routes = [
   {
     path: '', component: ActionaryComponent,
     children: [
-      { path: 'upcoming', component: UpcomingTaskComponent, pathMatch: 'full' },
-      { path: 'tasks', component: TodaysTaskComponent, pathMatch: 'full' },
-      { path: 'create', component: CreateTaskComponent, pathMatch: 'full' },
-      { path: 'pending', component: PendingTasksComponent, pathMatch: 'full' },
-      { path: 'calender-view', component: CalenderViewComponent, pathMatch: 'full' },
+      { path: 'upcoming', component: UpcomingTaskComponent },
+      { path: 'tasks', component: TodaysTaskComponent },
+      { path: 'create', component: CreateTaskComponent },
+      { path: 'pending', component: PendingTasksComponent },
+      { path: 'calender-view', component: CalenderViewComponent },
+      { path: '', redirectTo: 'upcoming', pathMatch: 'full' }
     ]
   }
 ];

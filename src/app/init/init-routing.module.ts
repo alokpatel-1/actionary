@@ -5,11 +5,10 @@ import { SignUpComponent } from './auth/sign-up/sign-up.component';
 import { SignInComponent } from './auth/sign-in/sign-in.component';
 
 const routes: Routes = [
-  { path: 'home', component: LandingAppComponent },
+  { path: '', component: LandingAppComponent },
   { path: 'login', component: SignInComponent },
   { path: 'signup', component: SignUpComponent },
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: '**', redirectTo: 'home', pathMatch: 'full' },
+  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 
 @NgModule({
