@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'http://44.212.45.205/'; // Replace with your actual API endpoint
+  private readonly apiUrl = 'https://dev.actionsary.com/'; // Replace with your actual API endpoint
   private readonly http = inject(HttpClient);
 
   registerUser(payload: any): Observable<any> {
