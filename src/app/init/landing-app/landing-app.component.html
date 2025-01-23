@@ -12,12 +12,18 @@
       <a [routerLink]="['/']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">
         Pricing</a>
       <p-divider layout="vertical" />
-      <a [routerLink]="['/home/login']"
+      <a *ngIf="!firebaseService.isUserLoggedIn()" [routerLink]="['/home/login']"
         class="text-primary-950 logo font-normal text-lg transition hover:text-[#0c2afa]">
         Login
       </a>
-      <a [routerLink]="['/home/signup']"
+      <a *ngIf="!firebaseService.isUserLoggedIn()" [routerLink]="['/home/signup']"
         class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Sign Up
+      </a>
+      <a *ngIf="firebaseService.isUserLoggedIn()" [routerLink]="['/user']"
+        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Dashboard
+      </a>
+      <a *ngIf="firebaseService.isUserLoggedIn()" (click)="signOut()"
+        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Logout
       </a>
     </nav>
   </header>
