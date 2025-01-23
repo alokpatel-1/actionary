@@ -31,8 +31,6 @@ export class TopBarComponent {
   readonly utilService = inject(ActionaryUtilService);
 
   toggleSidebar() {
-    console.log('@ jahshd ', this.utilService.isSideBarCloser());
-
     this.utilService.isSideBarCloser.set(!this.utilService.isSideBarCloser());
   }
 
