@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ImportsModule } from '../../imports';
 import { ActionaryUtilService } from '../../services/actionary-util.service';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -41,11 +42,21 @@ export class SidebarComponent implements OnInit {
     //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
     //Add 'implements OnInit' to the class.
 
-    let matchedRouter = this.sidebarItems.find(f => this.router.url?.endsWith(f.url));
+    this.updateSelectedMenu();
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.updateSelectedMenu();
+      });
+
+  }
+
+  updateSelectedMenu() {
+    const matchedRouter = this.sidebarItems.find(f => this.router.url?.endsWith(f.url));
+    this.sidebarItems.forEach(item => (item.active = false)); // Reset active states
     if (matchedRouter) {
       matchedRouter.active = true;
     }
-
   }
 
   setActive(item: any): void {

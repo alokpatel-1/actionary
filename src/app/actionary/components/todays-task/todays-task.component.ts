@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FirebaseStoreService } from '../../../firebase/firebase-store.service';
 import { MenuItem } from 'primeng/api';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-todays-task',
@@ -10,6 +11,7 @@ import { MenuItem } from 'primeng/api';
 })
 export class TodaysTaskComponent {
   readonly firebasedb = inject(FirebaseStoreService);
+  readonly router = inject(Router);
 
   cards = [
     {
@@ -94,5 +96,9 @@ export class TodaysTaskComponent {
         }
       }
     ];
+  }
+
+  navigateTo() {
+    this.router.navigate(['user/create'])
   }
 }
