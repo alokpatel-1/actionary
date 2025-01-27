@@ -75,6 +75,7 @@ import { TooltipModule } from "primeng/tooltip";
 import { Tree } from "primeng/tree";
 import { TreeSelect } from "primeng/treeselect";
 import { TreeTableModule } from "primeng/treetable";
+import { FieldsetModule } from 'primeng/fieldset';
 
 
 const modules = [
@@ -153,6 +154,7 @@ const modules = [
   FormsModule,
   ReactiveFormsModule,
   Popover,
+  FieldsetModule
   // BrowserModule,
   // BrowserAnimationsModule,
 ]

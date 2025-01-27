@@ -1,0 +1,12 @@
+.today-task {
+  .action-btn {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+}
+
+::ng-deep .p-panel.p-component.p-panel-toggleable {
+  margin-bottom: 10px !important;
+}

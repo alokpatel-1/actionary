@@ -1,1 +1,53 @@
-<p>create-task works!</p>
+<div id="webcrumbs">
+  <div class="w-[800px] bg-gradient-to-br from-white via-gray-50 rounded-lg p-8">
+    <h1 class="text-2xl font-title text-neutral-950 mb-6 text-center">
+      Create a New Task
+    </h1>
+    <p class="text-sm text-neutral-600 mb-6 text-center">
+      Organize your to-dos effortlessly. Fill in the details below to create
+      a new task tailored to your needs.
+    </p>
+    <form class="space-y-6">
+      <div>
+        <label for="heading" class="block text-sm font-medium text-neutral-950">
+          Task Title
+        </label>
+        <input type="text" id="heading" name="heading" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3" placeholder="E.g., Complete project report" />
+      </div>
+      <div>
+        <label for="priority" class="block text-sm font-medium text-neutral-950">
+          Priority Level
+        </label>
+        <select id="priority" name="priority" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3">
+          <option value="low">Low - Minimal urgency</option>
+          <option value="medium">Medium - Moderate importance</option>
+          <option value="high">High - Needs immediate attention</option>
+        </select>
+      </div>
+      <div>
+        <label for="tags" class="block text-sm font-medium text-neutral-950">
+          Tags (Optional)
+        </label>
+        <select id="tags" name="tags" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3">
+          <option value="work">Work</option>
+          <option value="personal">Personal</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+      <div>
+        <label for="description" class="block text-sm font-medium text-neutral-950">
+          Detailed Description
+        </label>
+        <textarea id="description" name="description" rows="4" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3" placeholder="Provide a detailed explanation of the task."></textarea>
+      </div>
+      <div class="flex justify-end gap-4 mt-6">
+        <button type="button" class="bg-neutral-300 text-neutral-950 text-sm font-medium rounded-full py-2 px-6 shadow-md hover:bg-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-300">
+          Back
+        </button>
+        <button type="submit" class="bg-primary-500 text-primary-50 text-sm font-medium rounded-full py-2 px-6 shadow-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

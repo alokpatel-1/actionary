@@ -1,1 +1,36 @@
-<p>todays-task works!</p>
+<div id="webcrumbs" class="today-task">
+  <div class="action-btn">
+    <p-button label="Add Task" severity="secondary" (onClick)="navigateTo()" icon="pi pi-plus" />
+    <div class="card flex justify-center">
+    </div>
+  </div>
+
+  <p-panel class="mb-8" [collapsed]="true" [toggleable]="true" *ngFor="let item of cards; let i = index">
+    <ng-template #header>
+      <div class="flex items-center gap-2">
+        <p-avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" />
+        <span class="font-bold">Amy Elsner</span>
+      </div>
+    </ng-template>
+    <ng-template #footer>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <p-button icon="pi pi-user" rounded text></p-button>
+          <p-button icon="pi pi-bookmark" severity="secondary" rounded text></p-button>
+        </div>
+        <span class="text-surface-500 dark:text-surface-400">Updated 2 hours ago</span>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="icons">
+      <i class="pi pi-cog" (click)="menu.toggle($event)"></i>
+    </ng-template>
+    <p class="m-0" *ngFor="let acc of item?.accordion; let j = index">
+      {{ acc?.content }}
+      <p-divider align="right" type="dashed">
+        <small>{{ acc?.createAt | date:'dd MMM yyyy ss:hh a'}}</small>
+      </p-divider>
+    </p>
+  </p-panel>
+</div>
+
+<p-menu [appendTo]="'body'" #menu id="config_menu" [model]="menudata" [popup]="true" />
