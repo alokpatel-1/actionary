@@ -10,8 +10,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { provideFirebaseApp, initializeApp } from "@angular/fire/app";
 import { getAuth, provideAuth } from "@angular/fire/auth";
+import { FIREBASE_OPTIONS } from '@angular/fire/compat';
 
-const firebaseConfig = {
+
+export const firebaseConfig = {
   apiKey: "AIzaSyBwZN-eNpoJ3_CIysKaEqVF25hBALjfyK4",
   authDomain: "actionary-be94a.firebaseapp.com",
   projectId: "actionary-be94a",
@@ -29,6 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth()),
+    { provide: FIREBASE_OPTIONS, useValue: firebaseConfig },
     MessageService,
     providePrimeNG({
       theme: {
