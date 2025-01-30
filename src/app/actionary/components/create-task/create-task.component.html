@@ -1,113 +1,38 @@
 <div class="create-task-wrapper border border-gray-300">
-    <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12 p-3 md:col-span-6 lg:col-span-8 border-r border-gray-300 items-stretch">
-            <div class="">
-                <input pInputText type="text" pSize="large" placeholder="Task title" class="w-full color-secondary text-2xl no-border" />
-            </div>
+  <div class="grid grid-cols-12 gap-4">
+    <div class="col-span-12 p-3 md:col-span-6 lg:col-span-8 border-r border-gray-300 items-stretch">
+      <div class="">
+        <input pInputText type="text" pSize="large" placeholder="Task title" class="w-full color-secondary text-2xl no-border" />
+      </div>
 
-            <div class="rich-task-detail p-2">
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatibus, odio magni! Inventore provident esse aut reiciendis neque odio, eum in architecto repellat, tempora quas officiis, cupiditate et vel magnam ad!
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minima eos totam distinctio nobis commodi expedita minus assumenda sequi recusandae vel asperiores corporis, adipisci veniam consectetur aliquid, possimus esse magnam similique.
+      <div class="rich-task-detail p-2">
+        <app-cdk-editor></app-cdk-editor>
+      </div>
 
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi quis nesciunt sed, ratione, at perferendis possimus exercitationem porro, similique veniam culpa. Cum quod voluptatum delectus magnam eum est reprehenderit earum.
-
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta minima assumenda dolore repellendus eaque, velit ab mollitia itaque nulla commodi? Minima consectetur qui quos tempora hic velit. Libero, minima possimus?
-
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod labore commodi corporis. Cumque quis rem quibusdam, aspernatur natus beatae modi repudiandae laudantium minus quas impedit recusandae officiis corrupti blanditiis unde!
-
-                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptate quod, debitis dicta quaerat ducimus. Sequi fugit laborum perspiciatis dolore nam reiciendis animi temporibus doloribus iure numquam, minima architecto dolorum?
-
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis labore iure ut ab mollitia. Dolore, veritatis enim corrupti ducimus officiis quae voluptas non similique! Nisi minima esse vitae nesciunt nobis.
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minima eos totam distinctio nobis commodi expedita minus assumenda sequi recusandae vel asperiores corporis, adipisci veniam consectetur aliquid, possimus esse magnam similique.
-
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi quis nesciunt sed, ratione, at perferendis possimus exercitationem porro, similique veniam culpa. Cum quod voluptatum delectus magnam eum est reprehenderit earum.
-
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta minima assumenda dolore repellendus eaque, velit ab mollitia itaque nulla commodi? Minima consectetur qui quos tempora hic velit. Libero, minima possimus?
-
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod labore commodi corporis. Cumque quis rem quibusdam, aspernatur natus beatae modi repudiandae laudantium minus quas impedit recusandae officiis corrupti blanditiis unde!
-
-            </div>
-
-            <div class="flex gap-4 my-4 justify-end items-center self-end">
-                <p-button severity="secondary" variant="outlined" label="Back" />
-                <p-button class="w-50px" label="Create" />
-            </div>
-        </div>
-        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
-
-            <div>
-                <p-select [options]="status" size="large" optionLabel="name" placeholder="Status" class="w-full color-secondary  no-border" />
-            </div>
-
-            <div class="mt-4">
-                <p-select [options]="tags" size="large" optionLabel="name" placeholder="Choose category / tag" class="w-full color-secondary  no-border" />
-            </div>
-
-            <div class="mt-4">
-                <p-select [options]="priority" size="large" optionLabel="name" placeholder="Priority" class="w-full color-secondary no-border" />
-            </div>
-
-
-            <div class="mt-4 flex py-4 justify-between items-center">
-                <div class="label">Created at :</div>
-                <div class="date-time">{{ createdat | date:'dd MMM, YYYY hh:mm a' }}</div>
-            </div>
-        </div>
+      <div class="flex gap-4 my-4 justify-end items-center self-end">
+        <p-button severity="secondary" variant="outlined" label="Back" />
+        <p-button class="w-50px" label="Create" />
+      </div>
     </div>
-</div>
+    <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+
+      <div>
+        <p-select [options]="status" size="large" optionLabel="name" placeholder="Status" class="w-full color-secondary  no-border" />
+      </div>
+
+      <div class="mt-4">
+        <p-select [options]="tags" size="large" optionLabel="name" placeholder="Choose category / tag" class="w-full color-secondary  no-border" />
+      </div>
+
+      <div class="mt-4">
+        <p-select [options]="priority" size="large" optionLabel="name" placeholder="Priority" class="w-full color-secondary no-border" />
+      </div>
 
 
-
-<!-- <div id="webcrumbs">
-  <div class="w-[800px] bg-gradient-to-br from-white via-gray-50 rounded-lg p-8">
-    <h1 class="text-2xl font-title text-neutral-950 mb-6 text-center">
-      Create a New Task
-    </h1>
-    <p class="text-sm text-neutral-600 mb-6 text-center">
-      Organize your to-dos effortlessly. Fill in the details below to create
-      a new task tailored to your needs.
-    </p>
-    <form class="space-y-6">
-      <div>
-        <label for="heading" class="block text-sm font-medium text-neutral-950">
-          Task Title
-        </label>
-        <input type="text" id="heading" name="heading" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3" placeholder="E.g., Complete project report" />
+      <div class="mt-4 flex py-4 justify-between items-center">
+        <div class="label">Created at :</div>
+        <div class="date-time">{{ createdat | date:'dd MMM, YYYY hh:mm a' }}</div>
       </div>
-      <div>
-        <label for="priority" class="block text-sm font-medium text-neutral-950">
-          Priority Level
-        </label>
-        <select id="priority" name="priority" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3">
-          <option value="low">Low - Minimal urgency</option>
-          <option value="medium">Medium - Moderate importance</option>
-          <option value="high">High - Needs immediate attention</option>
-        </select>
-      </div>
-      <div>
-        <label for="tags" class="block text-sm font-medium text-neutral-950">
-          Tags (Optional)
-        </label>
-        <select id="tags" name="tags" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3">
-          <option value="work">Work</option>
-          <option value="personal">Personal</option>
-          <option value="urgent">Urgent</option>
-        </select>
-      </div>
-      <div>
-        <label for="description" class="block text-sm font-medium text-neutral-950">
-          Detailed Description
-        </label>
-        <textarea id="description" name="description" rows="4" class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm p-3" placeholder="Provide a detailed explanation of the task."></textarea>
-      </div>
-      <div class="flex justify-end gap-4 mt-6">
-        <button type="button" class="bg-neutral-300 text-neutral-950 text-sm font-medium rounded-full py-2 px-6 shadow-md hover:bg-neutral-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-300">
-          Back
-        </button>
-        <button type="submit" class="bg-primary-500 text-primary-50 text-sm font-medium rounded-full py-2 px-6 shadow-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-          Save
-        </button>
-      </div>
-    </form>
+    </div>
   </div>
-</div> -->
+</div>

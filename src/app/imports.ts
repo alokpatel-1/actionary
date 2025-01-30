@@ -77,6 +77,7 @@ import { TreeSelect } from "primeng/treeselect";
 import { TreeTableModule } from "primeng/treetable";
 import { FieldsetModule } from 'primeng/fieldset';
 import { FloatLabel } from "primeng/floatlabel"
+import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
 
 
 const modules = [
@@ -156,7 +157,8 @@ const modules = [
   ReactiveFormsModule,
   Popover,
   FieldsetModule,
-  FloatLabel
+  FloatLabel,
+  CKEditorModule
 
   // BrowserModule,
   // BrowserAnimationsModule,
