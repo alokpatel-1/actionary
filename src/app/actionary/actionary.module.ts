@@ -11,6 +11,7 @@ import { CalenderViewComponent } from './components/calender-view/calender-view.
 import { CreateTaskComponent } from './components/create-task/create-task.component';
 import { PendingTasksComponent } from './components/pending-tasks/pending-tasks.component';
 import { TodaysTaskComponent } from './components/todays-task/todays-task.component';
+import { CdkEditorComponent } from './common/cdk-editor/cdk-editor.component';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { TodaysTaskComponent } from './components/todays-task/todays-task.compon
     TodaysTaskComponent,
     CalenderViewComponent,
     CreateTaskComponent,
-    PendingTasksComponent
+    PendingTasksComponent,
+    CdkEditorComponent
   ],
   imports: [
     CommonModule,
