@@ -1,4 +1,64 @@
-<div id="webcrumbs">
+<div class="create-task-wrapper border border-gray-300">
+    <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 p-3 md:col-span-6 lg:col-span-8 border-r border-gray-300 items-stretch">
+            <div class="">
+                <input pInputText type="text" pSize="large" placeholder="Task title" class="w-full color-secondary text-2xl no-border" />
+            </div>
+
+            <div class="rich-task-detail p-2">
+                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Voluptatibus, odio magni! Inventore provident esse aut reiciendis neque odio, eum in architecto repellat, tempora quas officiis, cupiditate et vel magnam ad!
+                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minima eos totam distinctio nobis commodi expedita minus assumenda sequi recusandae vel asperiores corporis, adipisci veniam consectetur aliquid, possimus esse magnam similique.
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi quis nesciunt sed, ratione, at perferendis possimus exercitationem porro, similique veniam culpa. Cum quod voluptatum delectus magnam eum est reprehenderit earum.
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta minima assumenda dolore repellendus eaque, velit ab mollitia itaque nulla commodi? Minima consectetur qui quos tempora hic velit. Libero, minima possimus?
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod labore commodi corporis. Cumque quis rem quibusdam, aspernatur natus beatae modi repudiandae laudantium minus quas impedit recusandae officiis corrupti blanditiis unde!
+
+                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptate quod, debitis dicta quaerat ducimus. Sequi fugit laborum perspiciatis dolore nam reiciendis animi temporibus doloribus iure numquam, minima architecto dolorum?
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis labore iure ut ab mollitia. Dolore, veritatis enim corrupti ducimus officiis quae voluptas non similique! Nisi minima esse vitae nesciunt nobis.
+                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minima eos totam distinctio nobis commodi expedita minus assumenda sequi recusandae vel asperiores corporis, adipisci veniam consectetur aliquid, possimus esse magnam similique.
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi quis nesciunt sed, ratione, at perferendis possimus exercitationem porro, similique veniam culpa. Cum quod voluptatum delectus magnam eum est reprehenderit earum.
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta minima assumenda dolore repellendus eaque, velit ab mollitia itaque nulla commodi? Minima consectetur qui quos tempora hic velit. Libero, minima possimus?
+
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod labore commodi corporis. Cumque quis rem quibusdam, aspernatur natus beatae modi repudiandae laudantium minus quas impedit recusandae officiis corrupti blanditiis unde!
+
+            </div>
+
+            <div class="flex gap-4 my-4 justify-end items-center self-end">
+                <p-button severity="secondary" variant="outlined" label="Back" />
+                <p-button class="w-50px" label="Create" />
+            </div>
+        </div>
+        <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
+
+            <div>
+                <p-select [options]="status" size="large" optionLabel="name" placeholder="Status" class="w-full color-secondary  no-border" />
+            </div>
+
+            <div class="mt-4">
+                <p-select [options]="tags" size="large" optionLabel="name" placeholder="Choose category / tag" class="w-full color-secondary  no-border" />
+            </div>
+
+            <div class="mt-4">
+                <p-select [options]="priority" size="large" optionLabel="name" placeholder="Priority" class="w-full color-secondary no-border" />
+            </div>
+
+
+            <div class="mt-4 flex py-4 justify-between items-center">
+                <div class="label">Created at :</div>
+                <div class="date-time">{{ createdat | date:'dd MMM, YYYY hh:mm a' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- <div id="webcrumbs">
   <div class="w-[800px] bg-gradient-to-br from-white via-gray-50 rounded-lg p-8">
     <h1 class="text-2xl font-title text-neutral-950 mb-6 text-center">
       Create a New Task
@@ -50,4 +110,4 @@
       </div>
     </form>
   </div>
-</div>
+</div> -->

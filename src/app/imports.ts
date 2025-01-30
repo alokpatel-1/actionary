@@ -76,6 +76,7 @@ import { Tree } from "primeng/tree";
 import { TreeSelect } from "primeng/treeselect";
 import { TreeTableModule } from "primeng/treetable";
 import { FieldsetModule } from 'primeng/fieldset';
+import { FloatLabel } from "primeng/floatlabel"
 
 
 const modules = [
@@ -154,7 +155,9 @@ const modules = [
   FormsModule,
   ReactiveFormsModule,
   Popover,
-  FieldsetModule
+  FieldsetModule,
+  FloatLabel
+
   // BrowserModule,
   // BrowserAnimationsModule,
 ]

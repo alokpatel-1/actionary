@@ -21,10 +21,24 @@ body {
 }
 
 .logo {
-  color: #0c2afa;
+  color: #334154;
   cursor: pointer;
 }
 
 .error-message {
   color: red;
+}
+
+.no-border {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.p-select,
+.p-inputtext {
+  color: #334154 !important;
+}
+
+.color-secondary {
+  background-color: #eef4f8 !important;
 }
