@@ -1,7 +1,7 @@
     .sidebar {
         width: 250px;
         height: 100vh;
-        background-color: #fcfaf8;
+        background-color: #f7fafc;
         position: fixed;
         top: 0;
         left: 0;
@@ -12,6 +12,11 @@
 
         .sidebar-items {
             margin-top: 20px;
+
+            .sidebar-item {
+                padding: 7px 8px;
+                border-radius: 6px;
+            }
         }
     }
 
@@ -20,5 +25,11 @@
     }
 
     .sidebar-item.active {
-        color: #0c2afa;
+        background: #000;
+        color: #fff;
+    }
+
+    .sidebar-item:not(.active):hover {
+        background: #e9f1f9;
+        color: #1e293b;
     }
