@@ -16,10 +16,10 @@ export class SidebarComponent implements OnInit {
   readonly router = inject(Router);
 
   sidebarItems = [
-    {
-      label: 'Upcoming', icon: 'pi pi-arrow-circle-right',
-      active: false, url: "upcoming"
-    },
+    // {
+    //   label: 'Upcoming', icon: 'pi pi-arrow-circle-right',
+    //   active: false, url: "upcoming"
+    // },
     {
       label: 'Today', icon: 'pi pi-file-excel',
       active: false, url: "tasks"
@@ -28,20 +28,17 @@ export class SidebarComponent implements OnInit {
       label: 'Add Task', icon: 'pi pi-plus-circle',
       active: false, url: "create"
     },
-    {
-      label: 'Pending Task', icon: 'pi pi-folder-open',
-      active: false, url: "pending"
-    },
-    {
-      label: 'Calendar View', icon: 'pi pi-calendar',
-      active: false, url: "calender-view"
-    }
+    // {
+    //   label: 'Pending Task', icon: 'pi pi-folder-open',
+    //   active: false, url: "pending"
+    // },
+    // {
+    //   label: 'Calendar View', icon: 'pi pi-calendar',
+    //   active: false, url: "calender-view"
+    // }
   ];
 
   ngOnInit(): void {
-    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-    //Add 'implements OnInit' to the class.
-
     this.updateSelectedMenu();
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))

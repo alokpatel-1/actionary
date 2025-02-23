@@ -1,38 +1,70 @@
-<div class="create-task-wrapper border border-gray-300">
-  <div class="grid grid-cols-12 gap-4">
-    <div class="col-span-12 p-3 md:col-span-6 lg:col-span-8 border-r border-gray-300 items-stretch">
-      <div class="">
-        <input pInputText type="text" pSize="large" placeholder="Task title" class="w-full color-secondary text-2xl no-border" />
-      </div>
+<div class="create-task-wrapper border border-gray-300 rounded">
+  <p-accordion>
+    <p-accordion-panel value="0">
+      <p-accordion-header>
+        <ng-template #toggleicon let-active="active">
+          @if (active) {
+          <p-button styleClass="toggle-btn" icon="pi pi-minus" severity="secondary" />
+          } @else {
+          <p-button styleClass="toggle-btn" icon="pi pi-plus" severity="secondary" />
+          }
+        </ng-template>
+        <div class="flex w-full action-wraper">
+          <p-badge badgeSize="xlarge" size="xlarge" severity="secondary" value="{{ newTask.subtasks?.length }}" class="ml-auto mr-2" />
+          <div class="w-full">
+            <div *ngIf="!newTask.isEditable" class="task-header-text font-bold">{{ newTask.value }}
+              <i (click)="$event.stopPropagation(); newTask.isEditable = true" class="pi pi-pencil header-edit cursor-pointer"></i>
+            </div>
+            <div class="edit-action w-full mx-1" *ngIf="newTask.isEditable" (click)="$event.stopPropagation()">
+              <textarea (keydown)="$event.stopPropagation()" pTextarea pSize="large" [placeholder]="newTask.placeholder" class="w-full color-secondary text-2xl no-border" [(ngModel)]="newTask.value"></textarea>
+            </div>
+            <div class="header-action-btn flex item-center justify-between my-2">
+              <div>
+                <p-button styleClass="custom-btn" severity="secondary" label="Sub Task" (onClick)="addSubTask($event, newTask)" icon="pi pi-plus" />
+                <p-button severity="secondary" styleClass="mx-1" (onClick)="$event.stopPropagation(); menu?.toggle($event)" icon="pi pi-cog" />
+              </div>
+              <div class="btn-container">
+                <p-button *ngIf="newTask.isEditable" (onClick)="$event.stopPropagation(); newTask.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
+                <p-button *ngIf="newTask.isEditable" (onClick)="$event.stopPropagation(); newTask.isEditable = false" icon="pi pi-check" severity="secondary" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-accordion-header>
+      <p-accordion-content>
+        @for (task of newTask.subtasks; track $index) {
+        <div class="mb-2 flex">
+          <p-checkbox inputId="ingredient1" name="pizza" value="Cheese" [(ngModel)]="task.isCompleted" />
+          <div class="w-full">
+            <div class="px-2 w-full">
+              <div *ngIf="!task.isEditable" class="act-label task-header-text"> {{ task.value }}
+                <i (click)="$event.stopPropagation(); task.isEditable = true" class="pi pi-pencil header-edit cursor-pointer"></i>
+              </div>
+              <textarea pTextarea pSize="large" [placeholder]="task.placeholder" class="w-full color-secondary text-2xl no-border" [(ngModel)]="task.value" *ngIf="task.isEditable"></textarea>
+            </div>
+            <div class="header-action-btn flex item-center justify-between my-2" *ngIf="task.isEditable">
+              <div></div>
+              <div class="btn-container">
+                <p-button (onClick)="$event.stopPropagation(); task.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
+                <p-button (onClick)="$event.stopPropagation(); task.isEditable = false" icon="pi pi-check" severity="secondary" />
+              </div>
+            </div>
+          </div>
 
-      <div class="rich-task-detail py-4">
-        <app-cdk-editor></app-cdk-editor>
-      </div>
+          <div class="row-action">
+            <p-button icon="pi pi-times" [rounded]="true" severity="danger" [text]="true" />
+          </div>
+        </div>
+        }
+      </p-accordion-content>
+    </p-accordion-panel>
+  </p-accordion>
 
-      <div class="flex gap-4 my-4 justify-end items-center self-end">
-        <p-button severity="secondary" variant="outlined" label="Back" />
-        <p-button class="w-50px" label="Create" />
-      </div>
-    </div>
-    <div class="col-span-12 md:col-span-6 lg:col-span-4 p-3">
-
-      <div>
-        <p-select [options]="status" size="large" optionLabel="name" placeholder="Status" class="w-full color-secondary  no-border" />
-      </div>
-
-      <div class="mt-4">
-        <p-select [options]="tags" size="large" optionLabel="name" placeholder="Choose category / tag" class="w-full color-secondary  no-border" />
-      </div>
-
-      <div class="mt-4">
-        <p-select [options]="priority" size="large" optionLabel="name" placeholder="Priority" class="w-full color-secondary no-border" />
-      </div>
-
-
-      <div class="mt-4 flex py-4 justify-between items-center">
-        <div class="label">Created at :</div>
-        <div class="date-time">{{ createdat | date:'dd MMM, YYYY hh:mm a' }}</div>
-      </div>
-    </div>
-  </div>
 </div>
+<div class="save-action mt-2 flex justify-end" *ngIf="showActionBtn">
+  <p-button label="Cancel" severity="secondary" icon="pi pi-times" class="mr-2" />
+  <p-button label="Save Task" (onClick)="onSaveTask()" icon="pi pi-check" />
+</div>
+
+
+<p-menu [appendTo]="'body'" #menu id="config_menu" [model]="menudata" [popup]="true" />
