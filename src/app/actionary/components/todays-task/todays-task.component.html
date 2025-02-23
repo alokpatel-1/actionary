@@ -1,16 +1,11 @@
 <div id="webcrumbs" class="today-task">
   <div class="action-btn">
     <p-button *ngIf="!isNewTaskPanelOpen" label="Add Task" severity="secondary" (onClick)="addNewTask()" icon="pi pi-plus" />
-    <ng-container *ngIf="isNewTaskPanelOpen">
-      <p-button label="Cancel" severity="secondary" (onClick)="isNewTaskPanelOpen = false" icon="pi pi-times" class="mr-2" />
-      <p-button label="Save Task" (onClick)="onSaveTask()" icon="pi pi-check" />
-    </ng-container>
-
   </div>
 
   <ng-container *ngIf="isNewTaskPanelOpen">
     <div class="mb-3">
-      <app-create-task [showActionBtn]="false"></app-create-task>
+      <app-create-task (onCancel)="isNewTaskPanelOpen = false" (reloadTaskList)="getTasks()"></app-create-task>
     </div>
   </ng-container>
 

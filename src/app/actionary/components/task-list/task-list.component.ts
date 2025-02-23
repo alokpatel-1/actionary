@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { SubTask, Task } from '../create-task/create-task.component';
+import { TaskService } from '../../../services/task.service';
 
 @Component({
   selector: 'app-task-list',
@@ -11,7 +12,10 @@ import { SubTask, Task } from '../create-task/create-task.component';
 export class TaskListComponent {
   @Input() tasks: any = [];
 
+  readonly taskService = inject(TaskService);
+
   menudata: any = [];
+  selectedItem!: any;
 
   ngOnInit(): void {
     this.menudata = [
@@ -38,8 +42,8 @@ export class TaskListComponent {
         label: 'Delete',
         icon: 'pi pi-times',
         command: (event: any) => {
-          console.log('@ hhh', event);
-
+          console.log('@ hhh', event, this.selectedItem);
+          this.deleteItem(this.selectedItem);
         }
       }
     ];
@@ -54,8 +58,25 @@ export class TaskListComponent {
     }
 
     parent.subtasks = [...parent.subtasks, subTask];
+  }
 
-    // menu.tog(event);
-    console.log('@ lajlasdsd ', parent);
+  async updateItem(item: any) {
+    console.log('@ jshdskjhdjkasd kjashdjkasd', structuredClone(item));
+
+    await this.taskService.updateItem(item.id, structuredClone(item));
+    this.getItems();
+  };
+
+  async cancelEdit() {
+    this.getItems();
+  }
+
+  async deleteItem(item: any) {
+    await this.taskService.deleteItem(item.id);
+    this.getItems();
+  }
+
+  async getItems() {
+    this.tasks = await this.taskService.getItems();
   }
 }

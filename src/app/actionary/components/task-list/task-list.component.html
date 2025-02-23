@@ -22,11 +22,11 @@
             <div class="header-action-btn flex item-center justify-between my-2">
               <div>
                 <p-button styleClass="custom-btn" severity="secondary" label="Sub Task" (onClick)="addSubTask($event, task)" icon="pi pi-plus" />
-                <p-button severity="secondary" styleClass="mx-1" (onClick)="$event.stopPropagation(); menu?.toggle($event)" icon="pi pi-cog" />
+                <p-button severity="secondary" styleClass="mx-1" (onClick)="$event.stopPropagation(); menu?.toggle($event); selectedItem = task" icon="pi pi-cog" />
               </div>
               <div class="btn-container">
-                <p-button *ngIf="task.isEditable" (onClick)="$event.stopPropagation(); task.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
-                <p-button *ngIf="task.isEditable" (onClick)="$event.stopPropagation(); task.isEditable = false" icon="pi pi-check" severity="secondary" />
+                <p-button *ngIf="task.isEditable" (onClick)="$event.stopPropagation(); task.isEditable = false; cancelEdit()" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
+                <p-button *ngIf="task.isEditable" (onClick)="$event.stopPropagation(); updateItem(task); task.isEditable = false" icon="pi pi-check" severity="secondary" />
               </div>
             </div>
           </div>
@@ -46,8 +46,8 @@
             <div class="header-action-btn flex item-center justify-between my-2" *ngIf="subtask.isEditable">
               <div></div>
               <div class="btn-container">
-                <p-button (onClick)="$event.stopPropagation(); subtask.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
-                <p-button (onClick)="$event.stopPropagation(); subtask.isEditable = false" icon="pi pi-check" severity="secondary" />
+                <p-button (onClick)="$event.stopPropagation(); cancelEdit(); subtask.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
+                <p-button (onClick)="$event.stopPropagation(); updateItem(task); subtask.isEditable = false" icon="pi pi-check" severity="secondary" />
               </div>
             </div>
           </div>

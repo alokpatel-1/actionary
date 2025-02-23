@@ -13,6 +13,7 @@ import { PendingTasksComponent } from './components/pending-tasks/pending-tasks.
 import { TodaysTaskComponent } from './components/todays-task/todays-task.component';
 import { CdkEditorComponent } from './common/cdk-editor/cdk-editor.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 
 @NgModule({
@@ -31,7 +32,8 @@ import { TaskListComponent } from './components/task-list/task-list.component';
     ActionaryRoutingModule,
     SidebarComponent,
     TopBarComponent,
-    ImportsModule
+    ImportsModule,
+    NgxSpinnerModule
   ]
 })
 export class ActionaryModule { }

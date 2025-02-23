@@ -3,6 +3,7 @@ import { FirebaseStoreService } from '../../../firebase/firebase-store.service';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
 import { Panel } from 'primeng/panel';
+import { TaskService } from '../../../services/task.service';
 
 @Component({
   selector: 'app-todays-task',
@@ -15,15 +16,15 @@ export class TodaysTaskComponent {
 
   @ViewChild('panelRef') panelRef!: HTMLElement;
 
-
   readonly firebasedb = inject(FirebaseStoreService);
   readonly router = inject(Router);
+  readonly crudService = inject(TaskService);
 
-  tasks = []
+  tasks: any = [];
 
   menudata: MenuItem[] = [];
 
-  ngOnInit() {
+  async ngOnInit() {
     this.menudata = [
       {
         label: 'Refresh',
@@ -54,15 +55,19 @@ export class TodaysTaskComponent {
       }
     ];
 
-    console.log('@ panelRef', this.panelRef);
+    this.tasks = await this.crudService.getItems();
+    console.log('@ asdjhasdhjasd sdkjasd ', this.tasks);
 
   };
+
+  async getTasks() {
+    this.tasks = await this.crudService.getItems();
+    console.log(' items ', this.tasks);
+  }
 
   addNewTask() {
     this.isNewTaskPanelOpen = true;
   }
-
-  onSaveTask() { }
 
   navigateTo() {
     this.router.navigate(['user/create'])
