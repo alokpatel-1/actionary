@@ -100,7 +100,6 @@ export class CreateTaskComponent {
 
 
 export class SubTask {
-  uuid!: string;
   placeholder!: string;
   value!: string;
   isDeleted!: boolean;
@@ -108,13 +107,14 @@ export class SubTask {
   isEditable!: boolean;
   remarks!: string;
   createdAt!: string;
+  // id?: string | null;
 
   constructor() {
-    this.uuid = uuidv4();
     this.isEditable = true;
     this.isCompleted = false;
     this.isDeleted = false;
     this.value = '';
+    // this.id = uuidv4()?.split('-')?.join('');
     this.remarks = '';
     this.placeholder = 'Add Sub task...'
     this.createdAt = new Date().toISOString()
@@ -122,7 +122,7 @@ export class SubTask {
 }
 
 export class Task {
-  uuid!: string;
+  // id?: string | null;
   placeholder!: string;
   value!: string;
   isDeleted!: boolean;
@@ -136,12 +136,12 @@ export class Task {
   constructor(
   ) {
     this.subtasks = [];
+    // this.id = uuidv4()?.split('-')?.join('');
     this.placeholder = 'Add Task...';
     this.headerValue = 'Add Task...';
     this.value = '';
     this.isCompleted = false;
     this.isDeleted = false;
-    this.uuid = uuidv4();
     this.remarks = '';
     this.isEditable = true;
     this.createdAt = new Date().toISOString()

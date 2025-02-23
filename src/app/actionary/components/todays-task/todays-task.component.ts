@@ -56,6 +56,8 @@ export class TodaysTaskComponent {
     ];
 
     this.tasks = await this.crudService.getItems();
+    console.log('@ asdjhasdhjasd sdkjasd ', this.tasks);
+
   };
 
   async getTasks() {

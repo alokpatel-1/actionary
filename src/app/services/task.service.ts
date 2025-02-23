@@ -111,7 +111,7 @@ export class TaskService {
     return resp;
   }
 
-  // // Read: Get all items (with realtime updates)
+  // Read: Get all items (with realtime updates)
   getItemsBtId(id: any): Observable<any[]> {
     this.spinner.show();
     const col = collection(this.firestore, this.collectionName);
@@ -122,7 +122,8 @@ export class TaskService {
 
   // Update: Update an existing item by document ID
   async updateItem(itemId: string, data: any): Promise<void> {
-    this.spinner.hide();
+    this.spinner.show();
+    [data].forEach(data => this.utilService.setIsEditableFalse(data));
     const docRef = doc(this.firestore, `${this.collectionName}/${itemId}`);
     const resp = await updateDoc(docRef, data);
     this.spinner.hide();
