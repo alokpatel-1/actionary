@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { FirebaseStoreService } from '../../../firebase/firebase-store.service';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
+import { Panel } from 'primeng/panel';
 
 @Component({
   selector: 'app-todays-task',
@@ -10,59 +11,15 @@ import { Router } from '@angular/router';
   styleUrl: './todays-task.component.scss'
 })
 export class TodaysTaskComponent {
+  isNewTaskPanelOpen: boolean = false;
+
+  @ViewChild('panelRef') panelRef!: HTMLElement;
+
+
   readonly firebasedb = inject(FirebaseStoreService);
   readonly router = inject(Router);
 
-  cards = [
-    {
-      id: 1,
-      createAt: new Date(),
-      accordion: [
-        {
-          header: 'Header I',
-          createAt: new Date(),
-          content:
-            'Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero? Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?',
-        },
-        {
-          header: 'Header II',
-          createAt: new Date(),
-          content:
-            'Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?',
-        },
-        {
-          header: 'Header III',
-          createAt: new Date(),
-          content:
-            'Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?',
-        },
-      ],
-    },
-    {
-      id: 2,
-      createAt: new Date(),
-      accordion: [
-        {
-          header: 'Header I',
-          createAt: new Date(),
-          content:
-            'Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?',
-        },
-        {
-          header: 'Header II',
-          createAt: new Date(),
-          content:
-            'Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?',
-        },
-        {
-          header: 'Header III',
-          createAt: new Date(),
-          content:
-            'Lorem ipsum dolor sit amet consectetur adipisicing elit.Nemo ab, hic, animi enim eum nostrum, illum harum iure facere optio expedita vel rerum eius non natus voluptatem laudantium.Nihil, libero?',
-        },
-      ],
-    }
-  ];
+  tasks = []
 
   menudata: MenuItem[] = [];
 
@@ -96,7 +53,16 @@ export class TodaysTaskComponent {
         }
       }
     ];
+
+    console.log('@ panelRef', this.panelRef);
+
+  };
+
+  addNewTask() {
+    this.isNewTaskPanelOpen = true;
   }
+
+  onSaveTask() { }
 
   navigateTo() {
     this.router.navigate(['user/create'])

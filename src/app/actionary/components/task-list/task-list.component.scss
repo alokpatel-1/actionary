@@ -1,0 +1,13 @@
+.header-edit {
+  display: none;
+}
+
+.task-header-text {
+  color: #000;
+}
+
+.task-header-text:hover {
+  .header-edit {
+    display: inline-block;
+  }
+}

@@ -1,11 +1,50 @@
+// @apply text-4xl #( !important);
+
 ::ng-deep .create-task-wrapper {
 
-  .p-button-secondary,
-  .p-button {
-    width: 140px !important;
+  .custom-btn {
+    width: 110px !important;
+    padding: 5px !important;
   }
 
-  .text-area-input {
-    height: 20px;
+  .task-header-text {
+    color: #000;
   }
+
+  .edit-action {
+    margin-left: -5px !important;
+  }
+
+  .header-edit {
+    display: none;
+  }
+}
+
+
+.task-header-text:hover {
+  .header-edit {
+    display: inline-block;
+  }
+}
+
+.custom-input {
+  font-size: 1.25rem !important;
+  padding-block: 0.625rem;
+  padding-inline: 0.875rem;
+
+  font-family: inherit;
+  font-feature-settings: inherit;
+  font-size: 1rem;
+  color: var(--ac-inputtext-color);
+  background: #fff;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  transition: background .2s, color .2s, border-color .2s, outline-color .2s, box-shadow .2s;
+  appearance: none;
+  border-radius: 6px;
+  outline-color: transparent;
+}
+
+.sub-task-input {
+  font-size: 1rem !important;
 }

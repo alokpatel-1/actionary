@@ -16,7 +16,7 @@ const routes: Routes = [
       { path: 'create', component: CreateTaskComponent },
       { path: 'pending', component: PendingTasksComponent },
       { path: 'calender-view', component: CalenderViewComponent },
-      { path: '', redirectTo: 'upcoming', pathMatch: 'full' }
+      { path: '', redirectTo: 'tasks', pathMatch: 'full' }
     ]
   }
 ];
