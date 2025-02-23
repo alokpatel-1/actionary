@@ -1,7 +1,7 @@
-import { Component, HostListener, Input, ViewChild } from '@angular/core';
-import { Accordion } from 'primeng/accordion';
-import { Menu } from 'primeng/menu';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
+import { TaskService } from '../../../services/task.service';
+import { ActionaryUtilService } from '../../../services/actionary-util.service';
 
 @Component({
   selector: 'app-create-task',
@@ -10,33 +10,17 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrl: './create-task.component.scss'
 })
 export class CreateTaskComponent {
-  @Input() showActionBtn: boolean = true;
+  @Output() onSaveTaskChange: EventEmitter<any> = new EventEmitter();
+  @Output() onCancel: EventEmitter<any> = new EventEmitter();
+  @Output() reloadTaskList: EventEmitter<any> = new EventEmitter();
+
+  readonly crudService = inject(TaskService);
+  readonly utilService = inject(ActionaryUtilService);
 
   newTask = new Task();
   menudata: any = [];
 
-  status = [
-    { "name": "To Do", "code": "TODO", "color": "#3498db" },
-    { "name": "In Progress", "code": "INPROG", "color": "#f39c12" },
-    { "name": "Done", "code": "DONE", "color": "#2ecc71" },
-    { "name": "Hold", "code": "HOLD", "color": "#e74c3c" }
-  ];
 
-  priority = [
-    { "name": "Highest", "code": "HIGHEST", "color": "#c0392b" },
-    { "name": "High", "code": "HIGH", "color": "#e74c3c" },
-    { "name": "Medium", "code": "MEDIUM", "color": "#f1c40f" },
-    { "name": "Low", "code": "LOW", "color": "#27ae60" },
-    { "name": "Lowest", "code": "LOWEST", "color": "#16a085" }
-  ];
-
-  tags = [
-    { "name": "Frontend", "code": "FRONTEND", "color": "#3498db" },
-    { "name": "Backend", "code": "BACKEND", "color": "#2ecc71" },
-    { "name": "Bug", "code": "BUG", "color": "#e74c3c" },
-    { "name": "Feature", "code": "FEATURE", "color": "#9b59b6" },
-    { "name": "Improvement", "code": "IMPROVE", "color": "#f39c12" }
-  ]
 
   ngOnInit(): void {
     this.menudata = [
@@ -81,9 +65,38 @@ export class CreateTaskComponent {
     parent.subtasks = [...parent.subtasks, subTask];
   };
 
-  onSaveTask() { }
+
+  async onSaveTask() {
+    await this.crudService.createItem(structuredClone(this.newTask));
+    this.onCancel.emit();
+    this.reloadTaskList.emit();
+    this.newTask = new Task();
+  }
 }
 
+
+// status = [
+//   { "name": "To Do", "code": "TODO", "color": "#3498db" },
+//   { "name": "In Progress", "code": "INPROG", "color": "#f39c12" },
+//   { "name": "Done", "code": "DONE", "color": "#2ecc71" },
+//   { "name": "Hold", "code": "HOLD", "color": "#e74c3c" }
+// ];
+
+// priority = [
+//   { "name": "Highest", "code": "HIGHEST", "color": "#c0392b" },
+//   { "name": "High", "code": "HIGH", "color": "#e74c3c" },
+//   { "name": "Medium", "code": "MEDIUM", "color": "#f1c40f" },
+//   { "name": "Low", "code": "LOW", "color": "#27ae60" },
+//   { "name": "Lowest", "code": "LOWEST", "color": "#16a085" }
+// ];
+
+// tags = [
+//   { "name": "Frontend", "code": "FRONTEND", "color": "#3498db" },
+//   { "name": "Backend", "code": "BACKEND", "color": "#2ecc71" },
+//   { "name": "Bug", "code": "BUG", "color": "#e74c3c" },
+//   { "name": "Feature", "code": "FEATURE", "color": "#9b59b6" },
+//   { "name": "Improvement", "code": "IMPROVE", "color": "#f39c12" }
+// ]
 
 
 export class SubTask {
@@ -94,13 +107,17 @@ export class SubTask {
   isCompleted!: boolean;
   isEditable!: boolean;
   remarks!: string;
-  createAt!: string;
+  createdAt!: string;
 
   constructor() {
     this.uuid = uuidv4();
     this.isEditable = true;
-    this.placeholder = 'Sub task...'
-    this.createAt = new Date().toISOString()
+    this.isCompleted = false;
+    this.isDeleted = false;
+    this.value = '';
+    this.remarks = '';
+    this.placeholder = 'Add Sub task...'
+    this.createdAt = new Date().toISOString()
   }
 }
 
@@ -112,17 +129,21 @@ export class Task {
   isCompleted!: boolean;
   isEditable!: boolean;
   remarks!: string;
-  createAt!: string;
+  createdAt!: string;
   headerValue?: string;
-  isToggleable?: boolean;
   subtasks?: SubTask[]
 
   constructor(
   ) {
     this.subtasks = [];
-    this.placeholder = 'Task...'
+    this.placeholder = 'Add Task...';
+    this.headerValue = 'Add Task...';
+    this.value = '';
+    this.isCompleted = false;
+    this.isDeleted = false;
     this.uuid = uuidv4();
+    this.remarks = '';
     this.isEditable = true;
-    this.createAt = new Date().toISOString()
+    this.createdAt = new Date().toISOString()
   }
 }

@@ -1,5 +1,7 @@
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { NgxSpinnerService } from 'ngx-spinner';
 import { MessageService } from 'primeng/api';
+import { Task } from '../actionary/components/create-task/create-task.component';
 
 @Injectable({
   providedIn: 'root'
@@ -7,7 +9,7 @@ import { MessageService } from 'primeng/api';
 export class ActionaryUtilService {
   isSideBarCloser: WritableSignal<boolean> = signal(false);
   private readonly messageService = inject(MessageService);
-
+  private readonly spinner = inject(NgxSpinnerService);
   constructor() { }
 
   showSuccess(detail: string) {
@@ -32,5 +34,17 @@ export class ActionaryUtilService {
 
   showSecondary(detail: string) {
     this.messageService.add({ severity: 'secondary', summary: 'Secondary', detail });
+  };
+
+  setIsEditableFalse(task: Task) {
+    // Check if the current object has the 'isEditable' property
+    if (task.hasOwnProperty('isEditable')) {
+      task.isEditable = false;
+    }
+
+    // If the object has subtasks, recursively set 'isEditable' to false for each subtask
+    if (Array.isArray(task.subtasks)) {
+      (task?.subtasks || []).forEach(data => this.setIsEditableFalse(data));
+    }
   }
 }

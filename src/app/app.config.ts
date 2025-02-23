@@ -11,6 +11,8 @@ import { MessageService } from 'primeng/api';
 import { provideFirebaseApp, initializeApp } from "@angular/fire/app";
 import { getAuth, provideAuth } from "@angular/fire/auth";
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+
 
 
 export const firebaseConfig = {
@@ -31,6 +33,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideAuth(() => getAuth()),
+    provideFirestore(() => getFirestore()),
     { provide: FIREBASE_OPTIONS, useValue: firebaseConfig },
     MessageService,
     providePrimeNG({
