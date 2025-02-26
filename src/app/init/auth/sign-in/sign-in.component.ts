@@ -86,6 +86,7 @@ export class SignInComponent implements OnInit {
 
         // Save user data and tokens to sessionStorage
         sessionStorage.setItem('user', JSON.stringify(user));
+        sessionStorage.setItem('email', JSON.stringify(email));
         sessionStorage.setItem('token', accessToken);
         sessionStorage.setItem('displayName', user?.displayName);
         sessionStorage.setItem('refreshToken', refreshToken);
