@@ -79,7 +79,6 @@ export class SignInComponent implements OnInit {
     const { email, password } = this.loginForm.getRawValue();
     this.firebaseAuthService.signInWithFireBase(email, password).then(
       (response) => {
-        console.log('User logged in successfully:', response);
         const user = response._tokenResponse; // Assuming the user object is in the "user" array
         const accessToken = user.idToken;
         const refreshToken = user.refreshToken;
@@ -91,8 +90,6 @@ export class SignInComponent implements OnInit {
         sessionStorage.setItem('displayName', user?.displayName);
         sessionStorage.setItem('refreshToken', refreshToken);
         sessionStorage.setItem('localId', user.localId);
-
-        console.log('User logged in successfully:', user);
 
         // Redirect to dashboard after successful login
         this.router.navigate(['/user']);
