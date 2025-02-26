@@ -20,6 +20,8 @@ export class TodaysTaskComponent {
   readonly router = inject(Router);
   readonly crudService = inject(TaskService);
 
+  readonly email = JSON.parse(sessionStorage.getItem('email')!);
+
   tasks: any = [];
 
   menudata: MenuItem[] = [];
@@ -55,14 +57,14 @@ export class TodaysTaskComponent {
       }
     ];
 
-    this.tasks = await this.crudService.getItems();
-    console.log('@ asdjhasdhjasd sdkjasd ', this.tasks);
-
+    this.getTasks();
   };
 
   async getTasks() {
-    this.tasks = await this.crudService.getItems();
-    console.log(' items ', this.tasks);
+    this.tasks = await this.crudService.getItesmsFilterByEmail(this.email);
+
+    console.log('@ lkjdksads  task', this.tasks);
+
   }
 
   addNewTask() {

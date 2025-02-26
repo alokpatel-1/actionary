@@ -15,3 +15,20 @@
 .edit-action {
   margin-left: -5px !important;
 }
+
+::ng-deep .pi-trash {
+  color: red !important;
+}
+
+::ng-deep .red-item {
+  a {
+    color: red !important;
+  }
+}
+
+::ng-deep .active {
+  .p-button-icon-only {
+    background-color: #000;
+    color: #fff;
+  }
+}

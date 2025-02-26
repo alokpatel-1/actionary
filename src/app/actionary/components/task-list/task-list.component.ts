@@ -1,6 +1,9 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, ViewChild } from '@angular/core';
 import { SubTask, Task } from '../create-task/create-task.component';
 import { TaskService } from '../../../services/task.service';
+import { MenuItem } from 'primeng/api';
+import { ContextMenu } from 'primeng/contextmenu';
+import { ActionaryUtilService } from '../../../services/actionary-util.service';
 
 @Component({
   selector: 'app-task-list',
@@ -12,27 +15,97 @@ import { TaskService } from '../../../services/task.service';
 export class TaskListComponent {
   @Input() tasks: any = [];
 
+  @ViewChild('cm') contextMenu!: ContextMenu;
+
   readonly taskService = inject(TaskService);
+  readonly utilService = inject(ActionaryUtilService);
 
   menudata: any = [];
-  selectedItem!: any;
+  selectedParentItem!: any;
+  subTaskMenu: MenuItem[] = [];
+  selectedSubItem: any;
+  filterMenuData: any[] = [];
+  activeFilter: any = 'all';
+  selectedAcordian: any;
 
   ngOnInit(): void {
-    this.menudata = [
+    this.filterMenuData = [
       {
-        label: 'Refresh',
-        icon: 'pi pi-refresh',
+        label: 'Show all tasks',
+        icon: 'pi pi-list',
         command: (event: any) => {
-          console.log('@ hhh', event);
-
+          this.activeFilter = 'all';
         }
       },
       {
-        label: 'Search',
-        icon: 'pi pi-search',
+        label: 'Show completed only',
+        icon: 'pi pi-check',
         command: (event: any) => {
-          console.log('@ hhh', event);
+          this.activeFilter = true;
+        }
+      },
+      {
+        label: 'Show pending only',
+        icon: 'pi pi-folder-open',
+        command: (event: any) => {
+          this.activeFilter = false;
+        }
+      },
+    ]
+    this.menudata = [
+      {
+        label: 'Edit all',
+        icon: 'pi pi-pencil',
+        command: (event: any) => {
+          this.setDynamicObjKeyStaus(this.selectedParentItem, 'isEditable', true);
+        }
+      }, {
+        label: 'Save all',
+        icon: 'pi pi-save',
+        command: (event: any) => {
+          this.updateItem(this.selectedParentItem);
+        }
+      },
+      {
+        label: 'Complete all',
+        icon: 'pi pi-list-check',
+        command: (event: any) => {
+          this.setDynamicObjKeyStaus(this.selectedParentItem, 'isCompleted', true);
+        }
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Delete all',
+        styleClass: 'red-item',
+        icon: 'pi pi-trash',
+        command: (event: any) => {
+          this.setDynamicObjKeyStaus(this.selectedParentItem, 'isDeleted', true);
+        }
+      }
+    ];
 
+    this.subTaskMenu = [
+      {
+        label: 'Edit',
+        icon: 'pi pi-pencil',
+        command: () => {
+          this.selectedSubItem.isEditable = true;
+        }
+      },
+      {
+        label: 'Update',
+        icon: 'pi pi-save',
+        command: () => {
+          this.updateItem(this.selectedParentItem);
+        }
+      },
+      {
+        label: 'Completed',
+        icon: 'pi pi-check',
+        command: () => {
+          this.selectedSubItem.isCompleted = true;
         }
       },
       {
@@ -40,14 +113,25 @@ export class TaskListComponent {
       },
       {
         label: 'Delete',
-        icon: 'pi pi-times',
-        command: (event: any) => {
-          console.log('@ hhh', event, this.selectedItem);
-          this.deleteItem(this.selectedItem);
+        styleClass: 'red-item',
+        icon: 'pi pi-trash',
+        command: () => {
+          this.selectedSubItem.isDeleted = true;
+          this.updateItem(this.selectedParentItem);
         }
       }
     ];
   };
+
+  onContextMenu(event: MouseEvent, parent: Task, child: Task) {
+    this.selectedParentItem = parent;
+    this.selectedSubItem = child
+  }
+
+  onHide() {
+    this.selectedParentItem = null;
+    this.selectedSubItem = null;
+  }
 
   addSubTask(event: MouseEvent, parent: Task) {
     event?.stopPropagation();
@@ -60,12 +144,34 @@ export class TaskListComponent {
     parent.subtasks = [...parent.subtasks, subTask];
   }
 
-  async updateItem(item: any) {
-    console.log('@ jshdskjhdjkasd kjashdjkasd', structuredClone(item));
+  async updateItem(item: any, event?: MouseEvent) {
+    event?.stopPropagation();
+    if (!this.utilService.validJSON([item])) {
+      this.utilService.showError('Please enter valid value.');
+      return;
+    }
+
 
     await this.taskService.updateItem(item.id, structuredClone(item));
     this.getItems();
   };
+
+  setDynamicObjKeyStaus(data: any[], statusKey: string, value: boolean): void {
+    if (!statusKey || !value?.toString()?.length) {
+      return;
+    }
+
+    [data].forEach((item: any) => {
+      item[statusKey] = true;
+      if (item.subtasks?.length) {
+        item.subtasks.forEach((subtask: any) => subtask[statusKey] = true);
+      }
+    });
+
+    if (!['isEditable'].includes(statusKey)) {
+      this.updateItem(data);
+    }
+  }
 
   async cancelEdit() {
     this.getItems();
@@ -77,6 +183,8 @@ export class TaskListComponent {
   }
 
   async getItems() {
-    this.tasks = await this.taskService.getItems();
+    const email = JSON.parse(sessionStorage.getItem('email')!)
+    this.tasks = await this.taskService.getItesmsFilterByEmail(email);
   }
 }
+

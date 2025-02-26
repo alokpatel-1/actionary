@@ -36,7 +36,7 @@ export class ActionaryUtilService {
     this.messageService.add({ severity: 'secondary', summary: 'Secondary', detail });
   };
 
-  setIsEditableFalse(task: Task) {
+  setIsEditableFalse(task: Partial<Task>) {
     // Check if the current object has the 'isEditable' property
     if (task.hasOwnProperty('isEditable')) {
       task.isEditable = false;
@@ -44,7 +44,14 @@ export class ActionaryUtilService {
 
     // If the object has subtasks, recursively set 'isEditable' to false for each subtask
     if (Array.isArray(task.subtasks)) {
-      (task?.subtasks || []).forEach(data => this.setIsEditableFalse(data));
+      (task?.subtasks || []).forEach((data: any) => this.setIsEditableFalse(data));
     }
+  }
+
+  validJSON(data: any[]): boolean {
+    return !data.some(item =>
+      !item.value?.trim() ||
+      item.subtasks?.some((subtask: any) => !subtask.value?.trim())
+    );
   }
 }

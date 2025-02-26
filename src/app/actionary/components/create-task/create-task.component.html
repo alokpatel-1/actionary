@@ -23,10 +23,7 @@
                 <p-button styleClass="custom-btn" severity="secondary" label="Sub Task" (onClick)="addSubTask($event, newTask)" icon="pi pi-plus" />
                 <p-button severity="secondary" styleClass="mx-1" (onClick)="$event.stopPropagation(); menu?.toggle($event)" icon="pi pi-cog" />
               </div>
-              <div class="btn-container">
-                <p-button *ngIf="newTask.isEditable" (onClick)="$event.stopPropagation(); newTask.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
-                <p-button *ngIf="newTask.isEditable" (onClick)="$event.stopPropagation(); newTask.isEditable = false" icon="pi pi-check" severity="secondary" />
-              </div>
+              <div></div>
             </div>
           </div>
         </div>
@@ -42,17 +39,10 @@
               </div>
               <textarea pTextarea pSize="large" [placeholder]="task.placeholder" class="w-full color-secondary text-2xl no-border" [(ngModel)]="task.value" *ngIf="task.isEditable"></textarea>
             </div>
-            <div class="header-action-btn flex item-center justify-between my-2" *ngIf="task.isEditable">
-              <div></div>
-              <div class="btn-container">
-                <p-button (onClick)="$event.stopPropagation(); task.isEditable = false" styleClass="mx-1" icon="pi pi-times" severity="secondary" />
-                <p-button (onClick)="$event.stopPropagation(); task.isEditable = false" icon="pi pi-check" severity="secondary" />
-              </div>
-            </div>
           </div>
 
           <div class="row-action">
-            <p-button icon="pi pi-times" [rounded]="true" severity="danger" [text]="true" />
+            <p-button icon="pi pi-times" (onClick)="removeRow($index)" [rounded]="true" severity="danger" [text]="true" />
           </div>
         </div>
         }
@@ -63,7 +53,7 @@
 </div>
 <div class="save-action mt-2 flex justify-end">
   <p-button label="Cancel" (onClick)="onCancel.emit()" severity="secondary" icon="pi pi-times" class="mr-2" />
-  <p-button label="Save Task" (onClick)="onSaveTask()" icon="pi pi-check" />
+  <p-button label="Save Task" (onClick)="onSaveTask()" icon="pi pi-save" />
 </div>
 
 

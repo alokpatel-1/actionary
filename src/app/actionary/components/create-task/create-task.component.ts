@@ -67,10 +67,19 @@ export class CreateTaskComponent {
 
 
   async onSaveTask() {
+    if (!this.utilService.validJSON([this.newTask])) {
+      this.utilService.showError('Please enter valid value.');
+      return;
+    }
+
     await this.crudService.createItem(structuredClone(this.newTask));
     this.onCancel.emit();
     this.reloadTaskList.emit();
     this.newTask = new Task();
+  };
+
+  removeRow(index: number) {
+    this.newTask.subtasks?.splice(index, 1);
   }
 }
 
@@ -107,14 +116,12 @@ export class SubTask {
   isEditable!: boolean;
   remarks!: string;
   createdAt!: string;
-  // id?: string | null;
 
   constructor() {
     this.isEditable = true;
     this.isCompleted = false;
     this.isDeleted = false;
     this.value = '';
-    // this.id = uuidv4()?.split('-')?.join('');
     this.remarks = '';
     this.placeholder = 'Add Sub task...'
     this.createdAt = new Date().toISOString()
@@ -122,7 +129,7 @@ export class SubTask {
 }
 
 export class Task {
-  // id?: string | null;
+  user: string;
   placeholder!: string;
   value!: string;
   isDeleted!: boolean;
@@ -136,7 +143,7 @@ export class Task {
   constructor(
   ) {
     this.subtasks = [];
-    // this.id = uuidv4()?.split('-')?.join('');
+    this.user = JSON.parse(sessionStorage.getItem('email')!);
     this.placeholder = 'Add Task...';
     this.headerValue = 'Add Task...';
     this.value = '';
