@@ -147,7 +147,7 @@ export class TaskListComponent {
   async updateItem(item: any, event?: MouseEvent) {
     event?.stopPropagation();
     if (!this.utilService.validJSON([item])) {
-      this.utilService.showError('Please enter valid value.');
+      this.utilService.showError('Please enter value.');
       return;
     }
 

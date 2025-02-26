@@ -3,6 +3,8 @@ import { ImportsModule } from '../../imports';
 import { Popover } from 'primeng/popover';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ActionaryUtilService } from '../../services/actionary-util.service';
+import { FirebaseAuthService } from '../../firebase/firebase-auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-top-bar',
@@ -29,16 +31,27 @@ import { ActionaryUtilService } from '../../services/actionary-util.service';
 export class TopBarComponent {
   @ViewChild('userPanelRef') userPanelRef!: Popover;
   readonly utilService = inject(ActionaryUtilService);
+  readonly firebaseService = inject(FirebaseAuthService);
+  readonly router = inject(Router);
 
   toggleSidebar() {
     this.utilService.isSideBarCloser.set(!this.utilService.isSideBarCloser());
   }
 
   members = [
-    { name: 'Amy Elsner', image: 'amyelsner.png', email: 'amy@email.com', role: 'Owner' },
-    { name: 'Bernardo Dominic', image: 'bernardodominic.png', email: 'bernardo@email.com', role: 'Editor' },
-    { name: 'Ioni Bowcher', image: 'ionibowcher.png', email: 'ioni@email.com', role: 'Viewer' },
+    { name: 'Sign Out', email: JSON.parse(sessionStorage.getItem('email')!), value: 'signout' },
   ];
+
+  signOut() {
+    this.firebaseService.signOut().then(() => {
+      this.firebaseService.isUserLoggedIn.set(false);
+      sessionStorage.clear();
+      localStorage.clear();
+      this.router.navigate(['/']);
+    }).catch(err => {
+      this.firebaseService.isUserLoggedIn.set(false);
+    })
+  }
 
   toggle(event: MouseEvent) {
     this.userPanelRef.toggle(event);

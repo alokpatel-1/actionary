@@ -131,7 +131,7 @@ export class TaskService {
       const querySnapshot = await getDocs(queryJSON);
 
       if (querySnapshot.empty) {
-        this.utilService.showError(`No items found for email: ${email}`);
+        // this.utilService.showError(`No items found for email: ${email}`);
         return [];
       }
 
