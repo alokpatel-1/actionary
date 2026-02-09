@@ -1,10 +1,13 @@
+export type ExpenseType = 'expense' | 'transfer';
+
 /**
  * Expense data model for IndexedDB and sync.
- * All fields are required for storage; export includes all.
+ * type is optional for backward compatibility with existing records.
  */
 export interface Expense {
   id: string;
   amount: number;
+  type?: ExpenseType; // expense or transfer (no income); default 'expense'
   category: string;
   date: string; // YYYY-MM-DD
   note: string;

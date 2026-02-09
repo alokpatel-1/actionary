@@ -3,7 +3,21 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ExpenseService } from '../../services/expense.service';
-import { Expense } from '../../models/expense.model';
+import { ExpenseType } from '../../models/expense.model';
+
+/** Single list: daily, common + Miscellaneous */
+export const ALL_CATEGORIES = [
+  'Food',
+  'Transport',
+  'Shopping',
+  'Entertainment',
+  'Health',
+  'Bills',
+  'Rent',
+  'Subscriptions',
+  'Groceries',
+  'Miscellaneous'
+];
 
 @Component({
   selector: 'app-expense-form',
@@ -16,6 +30,8 @@ export class ExpenseFormComponent implements OnInit {
   private expenseService = inject(ExpenseService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+
+  readonly allCategories = ALL_CATEGORIES;
 
   form!: FormGroup;
   isEdit = signal(false);
@@ -30,7 +46,8 @@ export class ExpenseFormComponent implements OnInit {
     today.setHours(12, 0, 0, 0);
 
     this.form = this.fb.group({
-      amount: [null, [Validators.required, Validators.min(0)]],
+      amount: [null, [Validators.required, Validators.min(0.01)]],
+      type: ['expense' as ExpenseType, Validators.required],
       category: ['', Validators.required],
       date: [today, Validators.required],
       note: ['']
@@ -41,9 +58,10 @@ export class ExpenseFormComponent implements OnInit {
         if (e) {
           this.form.patchValue({
             amount: e.amount,
+            type: e.type ?? 'expense',
             category: e.category,
             date: e.date ? new Date(e.date + 'T12:00:00') : null,
-            note: e.note
+            note: e.note ?? ''
           });
         }
       });
@@ -55,27 +73,30 @@ export class ExpenseFormComponent implements OnInit {
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const date = typeof raw.date === 'string' ? raw.date : (raw.date as Date)?.toISOString?.().slice(0, 10) ?? this.todayStr();
+    const payload = {
+      amount: raw.amount,
+      type: (raw.type ?? 'expense') as ExpenseType,
+      category: raw.category,
+      date,
+      note: raw.note ?? ''
+    };
 
     if (this.isEdit() && this.id()) {
-      this.expenseService
-        .update(this.id()!, { amount: raw.amount, category: raw.category, date, note: raw.note ?? '' })
-        .subscribe({
-          next: () => {
-            this.saving.set(false);
-            this.router.navigate(['/expenses', 'list']);
-          },
-          error: () => this.saving.set(false)
-        });
+      this.expenseService.update(this.id()!, payload).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.router.navigate(['/expenses', 'list']);
+        },
+        error: () => this.saving.set(false)
+      });
     } else {
-      this.expenseService
-        .add({ amount: raw.amount, category: raw.category, date, note: raw.note ?? '' })
-        .subscribe({
-          next: () => {
-            this.saving.set(false);
-            this.router.navigate(['/expenses', 'list']);
-          },
-          error: () => this.saving.set(false)
-        });
+      this.expenseService.add(payload).subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.router.navigate(['/expenses', 'list']);
+        },
+        error: () => this.saving.set(false)
+      });
     }
   }
 

@@ -32,6 +32,7 @@ export class ExpenseService {
     const expense: Expense = {
       id: uuidv4(),
       amount: data.amount,
+      type: data.type ?? 'expense',
       category: data.category,
       date: data.date,
       note: data.note ?? '',
@@ -49,6 +50,7 @@ export class ExpenseService {
           ...existing,
           ...data,
           id: existing.id,
+          type: data.type ?? existing.type ?? 'expense',
           updatedAt: Date.now(),
           synced: false
         };

@@ -1,34 +1,62 @@
 <div class="expense-form">
-  <h2>{{ isEdit() ? 'Edit' : 'Add' }} Expense</h2>
+  <header class="form-header">
+    <h1 class="form-title">{{ isEdit() ? 'Edit expense' : 'Log Expense' }}</h1>
+    <p class="form-subtitle">Enter the amount and details below to track your spending.</p>
+  </header>
+
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="p-field">
-      <label for="amount">Amount</label>
-      <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="w-full" />
+    <section class="amount-hero">
+      <div class="amount-input-wrap">
+        <span class="amount-prefix">₹</span>
+        <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" styleClass="amount-input" inputStyleClass="amount-input-inner" />
+      </div>
       @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
-      <small class="p-error">Amount is required and must be &ge; 0.</small>
+      <p class="amount-error">Amount must be greater than 0</p>
       }
-    </div>
-    <div class="p-field">
-      <label for="category">Category</label>
-      <input pInputText id="category" formControlName="category" class="w-full" placeholder="e.g. Food, Transport" />
-      @if (form.get('category')?.invalid && form.get('category')?.touched) {
-      <small class="p-error">Category is required.</small>
-      }
-    </div>
-    <div class="p-field">
-      <label for="date">Date</label>
-      <p-datePicker id="date" formControlName="date" dateFormat="yy-mm-dd" styleClass="w-full" />
-      @if (form.get('date')?.invalid && form.get('date')?.touched) {
-      <small class="p-error">Date is required.</small>
-      }
-    </div>
-    <div class="p-field">
-      <label for="note">Note</label>
-      <textarea pInputTextarea id="note" formControlName="note" rows="2" class="w-full" placeholder="Optional note"></textarea>
-    </div>
+    </section>
+
+    <section class="type-section">
+      <div class="type-segment" role="group">
+        <button type="button" class="type-btn" [class.active]="form.get('type')?.value === 'expense'" (click)="form.patchValue({ type: 'expense' })">
+          Expense
+        </button>
+        <button type="button" class="type-btn" [class.active]="form.get('type')?.value === 'transfer'" (click)="form.patchValue({ type: 'transfer' })">
+          Transfer
+        </button>
+      </div>
+    </section>
+
+    <section class="details-card">
+      <div class="p-field category-field">
+        <label>Category</label>
+        <div class="category-radios">
+          @for (cat of allCategories; track cat) {
+          <label class="category-radio">
+            <input type="radio" formControlName="category" [value]="cat" />
+            <span class="category-radio-label">{{ cat }}</span>
+          </label>
+          }
+        </div>
+        @if (form.get('category')?.invalid && form.get('category')?.touched) {
+        <p class="field-error">Choose a category</p>
+        }
+      </div>
+
+      <div class="detail-row">
+        <label for="date">Date</label>
+        <p-datePicker id="date" formControlName="date" dateFormat="dd M yy" styleClass="detail-date" inputStyleClass="detail-date-input" />
+      </div>
+
+      <div class="detail-row">
+        <label for="note">Note</label>
+        <input pInputText id="note" formControlName="note" class="detail-note-input" placeholder="Add a note" />
+      </div>
+    </section>
+
+    <div class="form-spacer"></div>
+
     <div class="form-actions">
-      <button pButton type="submit" label="{{ isEdit() ? 'Update' : 'Add' }}" [loading]="saving()" [disabled]="form.invalid"></button>
-      <a pButton [routerLink]="['/expenses', 'list']" label="Cancel" class="p-button-text"></a>
+      <button pButton type="submit" label="Save" [loading]="saving()" [disabled]="form.invalid" class="save-btn"></button>
     </div>
   </form>
 </div>
