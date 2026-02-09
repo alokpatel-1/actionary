@@ -4,32 +4,26 @@
       Actionary
     </a>
     <nav class="flex gap-8">
-      <a [routerLink]="['/features']"
-        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Features </a>
-      <a [routerLink]="['/aboutus']"
-        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Contact
+      <a [routerLink]="['/features']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Features </a>
+      <a [routerLink]="['/expenses']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Expense Tracker</a>
+      <a [routerLink]="['/aboutus']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Contact
         Us </a>
       <a [routerLink]="['/']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">
         Pricing</a>
       <p-divider layout="vertical" />
-      <a *ngIf="!firebaseService.isUserLoggedIn()" [routerLink]="['/home/login']"
-        class="text-primary-950 logo font-normal text-lg transition hover:text-[#0c2afa]">
+      <a *ngIf="!firebaseService.isUserLoggedIn()" [routerLink]="['/home/login']" class="text-primary-950 logo font-normal text-lg transition hover:text-[#0c2afa]">
         Login
       </a>
-      <a *ngIf="!firebaseService.isUserLoggedIn()" [routerLink]="['/home/signup']"
-        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Sign Up
+      <a *ngIf="!firebaseService.isUserLoggedIn()" [routerLink]="['/home/signup']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Sign Up
       </a>
-      <a *ngIf="firebaseService.isUserLoggedIn()" [routerLink]="['/user']"
-        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Dashboard
+      <a *ngIf="firebaseService.isUserLoggedIn()" [routerLink]="['/user']" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Dashboard
       </a>
-      <a *ngIf="firebaseService.isUserLoggedIn()" (click)="signOut()"
-        class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Logout
+      <a *ngIf="firebaseService.isUserLoggedIn()" (click)="signOut()" class="text-primary-950 font-normal text-lg transition hover:text-[#0c2afa]">Logout
       </a>
     </nav>
   </header>
   <main class="flex flex-col items-center flex-1 p-20 gap-16">
-    <div
-      class="w-[1500px] bg-white text-neutral-950 rounded-lg flex overflow-hidden transform transition-all duration-300 hover:scale-[1.03] h-[700px]">
+    <div class="w-[1500px] bg-white text-neutral-950 rounded-lg flex overflow-hidden transform transition-all duration-300 hover:scale-[1.03] h-[700px]">
       <div class="flex-1 p-12 flex flex-col justify-center">
         <h1 class="text-5xl font-title font-bold mb-6 leading-snug">
           Take command of your
@@ -52,8 +46,7 @@
           </div>
         </div>
         <div>
-          <a
-            class="bg-gradient-to-r text-white from-[#6f2aff] to-[#0c2afa] text-primary-50 py-4 px-12 rounded-full font-bold text-lg transition-all hover:scale-110">
+          <a class="bg-gradient-to-r text-white from-[#6f2aff] to-[#0c2afa] text-primary-50 py-4 px-12 rounded-full font-bold text-lg transition-all hover:scale-110">
             Get Started Free
           </a>
         </div>
@@ -245,8 +238,7 @@
     <div class="max-w-[1500px] mx-auto px-6">
       <div class="flex justify-between border-b pb-8 mb-8">
         <div class="flex flex-col gap-4">
-          <img src="https://tools-api.webcrumbs.org/image-placeholder/60/30/logos/1" alt="Logo"
-            class="w-[60px] object-contain" />
+          <img src="https://tools-api.webcrumbs.org/image-placeholder/60/30/logos/1" alt="Logo" class="w-[60px] object-contain" />
           <p class="text-sm text-neutral-600 max-w-[300px]">
             Discover how millions are transforming their workflow and
             unlocking new opportunities with Actionary.

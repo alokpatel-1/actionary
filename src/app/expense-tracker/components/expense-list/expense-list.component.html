@@ -1,0 +1,78 @@
+<div class="expense-list">
+  <div class="toolbar">
+    <div class="view-tabs">
+      <button type="button" [class.active]="viewMode() === 'daily'" (click)="setViewMode('daily')">Daily</button>
+      <button type="button" [class.active]="viewMode() === 'monthly'" (click)="setViewMode('monthly')">Monthly</button>
+      <button type="button" [class.active]="viewMode() === 'yearly'" (click)="setViewMode('yearly')">Yearly</button>
+    </div>
+    <div class="period-picker">
+      @switch (viewMode()) {
+      @case ('daily') {
+      <input type="date" [value]="currentDay()" (change)="currentDay.set($any($event.target).value); onPeriodChange()" />
+      }
+      @case ('monthly') {
+      <input type="month" [value]="currentYearMonth()" (change)="currentYearMonth.set($any($event.target).value); onPeriodChange()" />
+      }
+      @case ('yearly') {
+      <input type="number" [value]="currentYear()" min="2000" max="2100" (change)="currentYear.set($any($event.target).value); onPeriodChange()" />
+      }
+      }
+    </div>
+    <span class="unsynced" *ngIf="unsyncedCount() > 0">{{ unsyncedCount() }} unsynced</span>
+  </div>
+
+  <!-- Mobile: card list -->
+  <div class="expense-cards">
+    @for (expense of expenses(); track expense.id) {
+    <div class="expense-card">
+      <div class="expense-card-main">
+        <span class="expense-card-amount">{{ expense.amount | number:'1.2-2' }}</span>
+        <span class="expense-card-category">{{ expense.category }}</span>
+        <span class="expense-card-date">{{ expense.date }}</span>
+        @if (expense.note) {
+        <span class="expense-card-note">{{ expense.note }}</span>
+        }
+      </div>
+      <div class="expense-card-actions">
+        <a [routerLink]="['/expenses', 'edit', expense.id]" class="action-btn edit">Edit</a>
+        <button type="button" class="action-btn delete" (click)="deleteExpense(expense.id)">Delete</button>
+      </div>
+    </div>
+    }
+    @empty {
+    <p class="expense-list-empty">No expenses for this period.</p>
+    }
+  </div>
+
+  <!-- Desktop: table (hidden on small screens) -->
+  <div class="expense-table-wrap">
+    <p-table [value]="expenses()" styleClass="p-datatable-sm p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Note</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-expense>
+        <tr>
+          <td>{{ expense.date }}</td>
+          <td>{{ expense.category }}</td>
+          <td>{{ expense.amount | number:'1.2-2' }}</td>
+          <td>{{ expense.note }}</td>
+          <td>
+            <a [routerLink]="['/expenses', 'edit', expense.id]" class="p-button p-button-text p-button-sm">Edit</a>
+            <button type="button" class="p-button p-button-text p-button-sm p-button-danger" (click)="deleteExpense(expense.id)">Delete</button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">No expenses for this period.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

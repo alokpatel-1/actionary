@@ -54,9 +54,8 @@ export class SignInComponent implements OnInit {
 
         console.log('User logged in successfully:', user);
 
-        // Redirect to dashboard after successful login
-        this.router.navigate(['/user']);
-        // Handle successful login (e.g., store token, redirect)
+        // Redirect to expense list after successful login
+        this.router.navigate(['/expenses/list']);
       },
       error: ({ error }) => {
         console.error('Login failed:', error.error);
@@ -91,9 +90,8 @@ export class SignInComponent implements OnInit {
         sessionStorage.setItem('refreshToken', refreshToken);
         sessionStorage.setItem('localId', user.localId);
 
-        // Redirect to dashboard after successful login
-        this.router.navigate(['/user']);
-        // Handle successful login (e.g., store token, redirect)
+        // Redirect to expense list after successful login
+        this.router.navigate(['/expenses/list']);
       },
       (err) => {
         console.log('Login failed:', err);

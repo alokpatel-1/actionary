@@ -1,0 +1,173 @@
+// Mobile-first, touch-friendly
+.expense-list {
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  .view-tabs {
+    display: flex;
+    gap: 0.375rem;
+
+    button {
+      flex: 1;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--ac-surface-300, #ddd);
+      font-size: 0.875rem;
+      font-weight: 500;
+      background: var(--ac-surface-0, #fff);
+      color: var(--ac-text-color, #333);
+      -webkit-tap-highlight-color: transparent;
+
+      &.active {
+        background: var(--ac-primary-color, #3b82f6);
+        color: white;
+        border-color: transparent;
+      }
+    }
+  }
+
+  .period-picker input {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--ac-surface-300, #ddd);
+    font-size: 1rem; // avoid zoom on iOS
+  }
+
+  .unsynced {
+    color: #b45309;
+    font-size: 0.875rem;
+  }
+}
+
+// Mobile: cards
+.expense-cards {
+  display: block;
+}
+
+.expense-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--ac-surface-50, #fafafa);
+  border: 1px solid var(--ac-surface-200, #e5e5e5);
+  border-radius: 10px;
+}
+
+.expense-card-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+
+  .expense-card-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ac-text-color, #333);
+  }
+
+  .expense-card-category {
+    font-weight: 600;
+    color: var(--ac-text-color-secondary, #555);
+    font-size: 0.9375rem;
+  }
+
+  .expense-card-date {
+    font-size: 0.8125rem;
+    color: var(--ac-text-color-secondary, #666);
+  }
+
+  .expense-card-note {
+    width: 100%;
+    font-size: 0.875rem;
+    color: var(--ac-text-color-secondary, #666);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.expense-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+
+  &.edit {
+    background: var(--ac-primary-color, #3b82f6);
+    color: white;
+    border: none;
+  }
+
+  &.delete {
+    background: transparent;
+    color: #b91c1c;
+    border: 1px solid #b91c1c;
+  }
+}
+
+.expense-list-empty {
+  text-align: center;
+  color: var(--ac-text-color-secondary, #666);
+  padding: 2rem 1rem;
+  font-size: 0.9375rem;
+}
+
+// Hide table on mobile
+.expense-table-wrap {
+  display: none;
+}
+
+// Desktop: show table, hide cards
+@media (min-width: 768px) {
+  .toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+
+    .view-tabs button {
+      flex: none;
+      min-height: 2.25rem;
+    }
+
+    .period-picker input {
+      width: auto;
+      min-height: 2.25rem;
+    }
+  }
+
+  .expense-cards {
+    display: none;
+  }
+
+  .expense-table-wrap {
+    display: block;
+  }
+}

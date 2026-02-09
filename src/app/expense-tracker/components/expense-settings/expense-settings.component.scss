@@ -1,0 +1,87 @@
+.expense-settings {
+  width: 100%;
+  max-width: 32rem;
+
+  h2 {
+    margin-bottom: 1rem;
+    font-size: 1.375rem;
+  }
+
+  section {
+    margin-bottom: 1.75rem;
+  }
+
+  h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.125rem;
+  }
+
+  .sync-section p {
+    margin-bottom: 0.5rem;
+  }
+
+  .sync-section .status.offline {
+    color: #b45309;
+  }
+
+  .sync-section button {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .sync-msg {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+
+    &.success {
+      color: #166534;
+    }
+
+    &.failed {
+      color: #b91c1c;
+    }
+  }
+
+  .export-options {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-top: 0.75rem;
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+      font-size: 0.9375rem;
+    }
+
+    .scope-labels {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      color: var(--ac-text-color-secondary, #666);
+      margin-top: 0.25rem;
+    }
+
+    .custom-range {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      input[type="date"] {
+        width: 100%;
+        max-width: 16rem;
+        min-height: 2.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--ac-surface-300, #ddd);
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .export-btn {
+    margin-top: 0.5rem;
+    min-height: 2.75rem;
+  }
+}

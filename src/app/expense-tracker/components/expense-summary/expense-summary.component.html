@@ -1,0 +1,45 @@
+<div class="expense-summary">
+  <h2>Summary</h2>
+  <div class="period-picker">
+    <label>Month</label>
+    <input type="month" [value]="yearMonth()" (change)="onMonthChange($any($event.target).value)" />
+  </div>
+
+  <div class="summary-cards">
+    <p-card>
+      <ng-template pTemplate="content">
+        <div class="stat-value">{{ totalAmount() | number:'1.2-2' }}</div>
+        <div class="stat-label">Total</div>
+      </ng-template>
+    </p-card>
+    <p-card>
+      <ng-template pTemplate="content">
+        <div class="stat-value">{{ totalCount() }}</div>
+        <div class="stat-label">Transactions</div>
+      </ng-template>
+    </p-card>
+  </div>
+
+  <h3>By category</h3>
+  <p-table [value]="byCategory()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '20rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Category</th>
+        <th>Count</th>
+        <th>Total</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.category }}</td>
+        <td>{{ row.count }}</td>
+        <td>{{ row.total | number:'1.2-2' }}</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3">No data for this month.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -1,0 +1,24 @@
+<div class="expense-tracker-layout">
+  <header class="expense-status-bar">
+    <span class="status-badge" [class.offline]="!syncService.isOnline()" [class.online]="syncService.isOnline()">
+      {{ syncService.isOnline() ? 'Online' : 'Offline' }}
+    </span>
+    <span class="sync-status" *ngIf="syncService.syncStatus() === 'started'">Syncing…</span>
+    <span class="sync-status success" *ngIf="syncService.syncStatus() === 'completed'">Synced</span>
+    <span class="sync-status failed" *ngIf="syncService.syncStatus() === 'failed'">{{ syncService.syncError() }}</span>
+    <span class="last-sync" *ngIf="syncService.lastSyncTimestamp()">
+      {{ syncService.lastSyncTimestamp()! | date:'short' }}
+    </span>
+  </header>
+  <main class="expense-content">
+    <div class="expense-content-inner">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+  <nav class="expense-nav" aria-label="Main">
+    <a *ngFor="let item of navItems" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
+      <i [class]="item.icon"></i>
+      <span class="nav-label">{{ item.label }}</span>
+    </a>
+  </nav>
+</div>

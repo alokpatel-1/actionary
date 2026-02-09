@@ -1,0 +1,34 @@
+<div class="expense-form">
+  <h2>{{ isEdit() ? 'Edit' : 'Add' }} Expense</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="p-field">
+      <label for="amount">Amount</label>
+      <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="w-full" />
+      @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+      <small class="p-error">Amount is required and must be &ge; 0.</small>
+      }
+    </div>
+    <div class="p-field">
+      <label for="category">Category</label>
+      <input pInputText id="category" formControlName="category" class="w-full" placeholder="e.g. Food, Transport" />
+      @if (form.get('category')?.invalid && form.get('category')?.touched) {
+      <small class="p-error">Category is required.</small>
+      }
+    </div>
+    <div class="p-field">
+      <label for="date">Date</label>
+      <p-datePicker id="date" formControlName="date" dateFormat="yy-mm-dd" styleClass="w-full" />
+      @if (form.get('date')?.invalid && form.get('date')?.touched) {
+      <small class="p-error">Date is required.</small>
+      }
+    </div>
+    <div class="p-field">
+      <label for="note">Note</label>
+      <textarea pInputTextarea id="note" formControlName="note" rows="2" class="w-full" placeholder="Optional note"></textarea>
+    </div>
+    <div class="form-actions">
+      <button pButton type="submit" label="{{ isEdit() ? 'Update' : 'Add' }}" [loading]="saving()" [disabled]="form.invalid"></button>
+      <a pButton [routerLink]="['/expenses', 'list']" label="Cancel" class="p-button-text"></a>
+    </div>
+  </form>
+</div>
