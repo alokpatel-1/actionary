@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ExpenseIdbService } from './expense-idb.service';
+import { ExpenseSyncService } from './expense-sync.service';
 import { Expense, ExpenseCreate } from '../models/expense.model';
 import { v4 as uuidv4 } from 'uuid';
 import { Observable } from 'rxjs';
@@ -27,6 +28,7 @@ function toYYYYMMDD(d: Date): string {
 })
 export class ExpenseService {
   private idb = inject(ExpenseIdbService);
+  private syncService = inject(ExpenseSyncService);
 
   add(data: ExpenseCreate): Observable<Expense> {
     const expense: Expense = {
@@ -60,7 +62,10 @@ export class ExpenseService {
   }
 
   delete(id: string): Observable<void> {
-    return from(this.idb.delete(id));
+    return from(this.idb.delete(id)).pipe(
+      switchMap(() => this.syncService.deleteRemote(id)),
+      map(() => undefined)
+    );
   }
 
   getById(id: string): Observable<Expense | undefined> {

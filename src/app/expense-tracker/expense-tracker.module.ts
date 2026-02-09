@@ -9,6 +9,7 @@ import { ExpenseFormComponent } from './components/expense-form/expense-form.com
 import { ExpenseSummaryComponent } from './components/expense-summary/expense-summary.component';
 import { ExpenseSettingsComponent } from './components/expense-settings/expense-settings.component';
 import { ExpenseProfileComponent } from './components/expense-profile/expense-profile.component';
+import { ExpenseHistoryComponent } from './components/expense-history/expense-history.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { ExpenseProfileComponent } from './components/expense-profile/expense-pr
     ExpenseFormComponent,
     ExpenseSummaryComponent,
     ExpenseSettingsComponent,
-    ExpenseProfileComponent
+    ExpenseProfileComponent,
+    ExpenseHistoryComponent
   ],
   imports: [
     CommonModule,

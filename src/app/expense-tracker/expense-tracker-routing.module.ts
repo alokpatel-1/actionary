@@ -6,6 +6,7 @@ import { ExpenseFormComponent } from './components/expense-form/expense-form.com
 import { ExpenseSummaryComponent } from './components/expense-summary/expense-summary.component';
 import { ExpenseSettingsComponent } from './components/expense-settings/expense-settings.component';
 import { ExpenseProfileComponent } from './components/expense-profile/expense-profile.component';
+import { ExpenseHistoryComponent } from './components/expense-history/expense-history.component';
 
 const routes: Routes = [
   {
@@ -13,6 +14,7 @@ const routes: Routes = [
     component: ExpenseTrackerComponent,
     children: [
       { path: 'list', component: ExpenseListComponent },
+      { path: 'history', component: ExpenseHistoryComponent },
       { path: 'add', component: ExpenseFormComponent },
       { path: 'edit/:id', component: ExpenseFormComponent },
       { path: 'summary', component: ExpenseSummaryComponent },

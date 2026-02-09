@@ -140,8 +140,19 @@ export class ExpenseListComponent implements OnInit {
     this.refresh();
   }
 
-  deleteExpense(id: string): void {
-    this.expenseService.delete(id).subscribe(() => this.refresh());
+  deleteExpense(id: string, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (!window.confirm('Delete this expense? This will sync to all your devices.')) return;
+    this.expenseService.delete(id).subscribe({
+      next: () => {
+        this.refresh();
+        this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+      },
+      error: (err) => console.error('Delete failed', err)
+    });
   }
 
   getCategoryLetter(category: string): string {

@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ExpenseIdbService } from './expense-idb.service';
 import { Expense } from '../models/expense.model';
 import { Auth, user } from '@angular/fire/auth';
-import { Firestore, collection, doc, getDocs, setDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, getDocs, setDoc, deleteDoc } from '@angular/fire/firestore';
 import { map, take } from 'rxjs/operators';
 import { from, Observable, of } from 'rxjs';
 
@@ -57,8 +57,28 @@ export class ExpenseSyncService {
   }
 
   /**
-   * Manual sync: upload unsynced, fetch remote, merge by updatedAt (latest wins), update synced flags.
-   * Never deletes local data.
+   * Delete expense from Firestore so the deletion syncs to other devices.
+   * Call after removing from local IDB. No-op if not authenticated or offline.
+   */
+  deleteRemote(id: string): Observable<{ success: boolean; error?: string }> {
+    const remoteCol = this.userCollectionRef();
+    if (!remoteCol) return of({ success: false, error: 'Not authenticated' });
+    if (!this.isOnline()) return of({ success: false, error: 'Offline' });
+    return from(
+      (async () => {
+        try {
+          await deleteDoc(doc(remoteCol, id));
+          return { success: true };
+        } catch (err: any) {
+          return { success: false, error: err?.message ?? String(err) };
+        }
+      })()
+    );
+  }
+
+  /**
+   * Manual sync: upload unsynced, fetch remote, merge by updatedAt (latest wins).
+   * Removes from local any expense that was synced but no longer exists on remote (deletion sync).
    */
   sync(): Observable<{ success: boolean; error?: string }> {
     const remoteCol = this.userCollectionRef();
@@ -88,7 +108,8 @@ export class ExpenseSyncService {
       const remoteSnap = await getDocs(remoteCol);
       const remoteList: Expense[] = remoteSnap.docs.map((d) => ({ ...d.data(), id: d.id } as Expense));
 
-      // 3. Merge into IndexedDB: latest updatedAt wins
+      // 3. Merge: latest updatedAt wins; drop local items that were synced but no longer on remote (deletion sync)
+      const remoteIds = new Set(remoteList.map((e) => e.id));
       const localList = await this.idb.getAll();
       const byId = new Map<string, Expense>();
       localList.forEach((e) => byId.set(e.id, e));
@@ -100,8 +121,15 @@ export class ExpenseSyncService {
           byId.set(e.id, { ...existing, synced: true });
         }
       });
-
-      const merged = Array.from(byId.values());
+      // Remove local records that were synced but deleted on server
+      const merged = Array.from(byId.values()).filter(
+        (e) => remoteIds.has(e.id) || e.synced === false
+      );
+      // Write merged back: putAll only adds/updates; we must also delete removed ids from IDB
+      const mergedIds = new Set(merged.map((e) => e.id));
+      for (const e of localList) {
+        if (e.synced && !mergedIds.has(e.id)) await this.idb.delete(e.id);
+      }
       await this.idb.putAll(merged);
 
       // 4. Update last sync time
