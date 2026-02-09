@@ -27,11 +27,23 @@
       <router-outlet></router-outlet>
     </div>
   </main>
-  <!-- <a routerLink="/expenses/add" class="expense-fab" aria-label="Add Expense">+</a> -->
   <nav class="expense-nav" aria-label="Main">
-    <a *ngFor="let item of navItems" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
-      <i [class]="item.icon"></i>
-      <span class="nav-label">{{ item.label }}</span>
-    </a>
+    <div class="expense-nav-side">
+      <a *ngFor="let item of navItemsLeft" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
+        <i [class]="item.icon"></i>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </div>
+    <div class="expense-nav-center">
+      <a routerLink="/expenses/add" class="expense-nav-fab" aria-label="Add Expense">
+        <i class="pi pi-plus"></i>
+      </a>
+    </div>
+    <div class="expense-nav-side">
+      <a *ngFor="let item of navItemsRight" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
+        <i [class]="item.icon"></i>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </div>
   </nav>
 </div>

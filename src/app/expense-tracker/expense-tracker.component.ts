@@ -31,9 +31,10 @@ export class ExpenseTrackerComponent implements OnInit {
     return (name?.trim().charAt(0) || 'G').toUpperCase();
   });
 
-  navItems = [
-    { label: 'Expenses', url: 'list', icon: 'pi pi-list' },
-    { label: 'Add', url: 'add', icon: 'pi pi-plus' },
+  navItemsLeft = [
+    { label: 'Expenses', url: 'list', icon: 'pi pi-home' },
+  ];
+  navItemsRight = [
     { label: 'Summary', url: 'summary', icon: 'pi pi-chart-bar' }
   ];
 
