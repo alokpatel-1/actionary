@@ -1,0 +1,52 @@
+<div class="expense-tracker-layout">
+  <header class="expense-status-bar">
+    <div class="status-bar-left">
+      <span class="status-pill" [class.offline]="!syncService.isOnline()" [class.online]="syncService.isOnline()">
+        <i class="pi" [ngClass]="syncService.isOnline() ? 'pi-wifi' : 'pi-wifi-off'"></i>
+        {{ syncService.isOnline() ? 'Online' : 'Offline' }}
+      </span>
+      <div class="status-detail">
+        <span class="sync-state" *ngIf="syncService.syncStatus() === 'started'">
+          <i class="pi pi-spin pi-spinner"></i> Syncing…
+        </span>
+        <span class="sync-state success" *ngIf="syncService.syncStatus() === 'completed' && syncService.lastSyncTimestamp()">
+          Synced · {{ syncService.lastSyncTimestamp()! | date:'short' }}
+        </span>
+        <span class="sync-state failed" *ngIf="syncService.syncStatus() === 'failed'">
+          {{ syncService.syncError() }}
+        </span>
+        <span class="sync-state idle" *ngIf="syncService.syncStatus() === 'idle' && syncService.lastSyncTimestamp()">
+          Last sync {{ syncService.lastSyncTimestamp()! | date:'short' }}
+        </span>
+      </div>
+    </div>
+    <div class="status-bar-right" *ngIf="unsyncedCount() > 0 || syncService.syncStatus() === 'failed'">
+      <button pButton label="Sync" icon="pi pi-refresh" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()" class="sync-btn" aria-label="Sync now"></button>
+    </div>
+  </header>
+
+  <main class="expense-content">
+    <div class="expense-content-inner">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+  <nav class="expense-nav" aria-label="Main">
+    <div class="expense-nav-side">
+      <a *ngFor="let item of navItemsLeft" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
+        <i [class]="item.icon"></i>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </div>
+    <div class="expense-nav-center">
+      <a routerLink="/expenses/add" class="expense-nav-fab" aria-label="Add Expense">
+        <i class="pi pi-plus"></i>
+      </a>
+    </div>
+    <div class="expense-nav-side">
+      <a *ngFor="let item of navItemsRight" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
+        <i [class]="item.icon"></i>
+        <span class="nav-label" [class.nav-label-user]="item.url === 'profile'">{{ item.url === 'profile' ? displayName() : item.label }}</span>
+      </a>
+    </div>
+  </nav>
+</div>

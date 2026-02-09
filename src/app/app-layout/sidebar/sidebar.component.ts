@@ -16,10 +16,6 @@ export class SidebarComponent implements OnInit {
   readonly router = inject(Router);
 
   sidebarItems = [
-    // {
-    //   label: 'Upcoming', icon: 'pi pi-arrow-circle-right',
-    //   active: false, url: "upcoming"
-    // },
     {
       label: 'Today', icon: 'pi pi-file-excel',
       active: false, url: "tasks"
@@ -27,6 +23,10 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Add Task', icon: 'pi pi-plus-circle',
       active: false, url: "create"
+    },
+    {
+      label: 'Expenses', icon: 'pi pi-wallet',
+      active: false, url: "/expenses"
     },
     // {
     //   label: 'Pending Task', icon: 'pi pi-folder-open',
@@ -49,11 +49,10 @@ export class SidebarComponent implements OnInit {
   }
 
   updateSelectedMenu() {
-    const matchedRouter = this.sidebarItems.find(f => this.router.url?.endsWith(f.url));
-    this.sidebarItems.forEach(item => (item.active = false)); // Reset active states
-    if (matchedRouter) {
-      matchedRouter.active = true;
-    }
+    const url = this.router.url ?? '';
+    this.sidebarItems.forEach(item => {
+      item.active = url === item.url || (item.url !== '/expenses' && url.endsWith(item.url)) || (item.url === '/expenses' && url.startsWith('/expenses'));
+    });
   }
 
   setActive(item: any): void {

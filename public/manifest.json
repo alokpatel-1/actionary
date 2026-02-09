@@ -1,0 +1,17 @@
+{
+  "name": "Actionary - Expense Tracker",
+  "short_name": "Expense Tracker",
+  "description": "Offline-first expense tracking PWA with sync and date-range export",
+  "theme_color": "#0c2afa",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/expenses",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

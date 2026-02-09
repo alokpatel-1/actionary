@@ -1,0 +1,43 @@
+.splash {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--color-bg-app, #f0f4f8) 0%, var(--color-primary-soft, #e0f2fe) 100%);
+  padding: 2rem;
+}
+
+.splash-content {
+  text-align: center;
+}
+
+.splash-logo {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary, #0c2afa);
+  letter-spacing: -0.02em;
+}
+
+.splash-tagline {
+  margin: 0.5rem 0 1.5rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted, #64748b);
+}
+
+.splash-spinner {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto;
+  border: 2px solid var(--color-border-subtle, #e2e8f0);
+  border-top-color: var(--color-primary, #0c2afa);
+  border-radius: 50%;
+  animation: splash-spin 0.8s linear infinite;
+}
+
+@keyframes splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

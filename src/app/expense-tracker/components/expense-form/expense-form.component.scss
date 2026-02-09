@@ -1,0 +1,264 @@
+// Gordon-style: cards, spacing, one primary color, minimal borders
+.expense-form {
+  width: 100%;
+  max-width: 28rem;
+  padding-bottom: 5rem; // space for sticky Save
+}
+
+.form-header {
+  margin-bottom: 1.5rem;
+}
+
+.form-title {
+  margin: 0 0 0.375rem;
+  font-size: 1.375rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+// ——— Amount (hero): full width of screen ———
+.amount-hero {
+  margin-bottom: 1.5rem;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.amount-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1rem;
+  margin: 0 1rem;
+  background: var(--color-primary-soft);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  .amount-prefix {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  :host ::ng-deep .amount-input,
+  :host ::ng-deep .p-inputnumber {
+    flex: 1;
+    border: none;
+    background: transparent;
+  }
+
+  :host ::ng-deep .amount-input-inner,
+  :host ::ng-deep .p-inputnumber-input {
+    border: none !important;
+    background: transparent !important;
+    font-size: 1.75rem !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+    min-height: 2.5rem !important;
+    color: var(--color-text-primary) !important;
+  }
+}
+
+p-inputnumber {
+  width: 100% !important;
+}
+
+.amount-error {
+  margin: 0.75rem 1rem 0;
+  font-size: 0.875rem;
+  color: var(--color-error);
+}
+
+// ——— Type segment ———
+.type-section {
+  margin-bottom: 1.5rem;
+}
+
+.type-segment {
+  display: flex;
+  gap: 0;
+  padding: 0.25rem;
+  background: var(--color-bg-card);
+  border-radius: 9999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.type-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+
+  &.active {
+    background: var(--color-bg-surface);
+    color: var(--color-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+}
+
+// ——— Details card (one soft card) ———
+.details-card {
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.p-field {
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .field-error {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-error);
+  }
+}
+
+.category-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-radio {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .category-radio-label {
+    display: inline-block;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-surface);
+    border-radius: 10px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  input:checked+.category-radio-label {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+  }
+}
+
+.category-field {
+  margin-bottom: 1.25rem;
+}
+
+// Tappable rows for Date and Note
+.detail-row {
+  padding: 0.875rem 0;
+  border-top: 1px solid var(--color-border-subtle);
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-bottom: 0.375rem;
+  }
+}
+
+.detail-date-input,
+.detail-note-input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:host ::ng-deep .detail-date .p-inputtext,
+:host ::ng-deep .detail-date-input {
+  border: none !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+}
+
+.detail-note-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+// Spacer so content isn't under sticky button
+.form-spacer {
+  min-height: 1rem;
+}
+
+// ——— Save (sticky primary CTA) ———
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--color-bg-surface) 70%, transparent);
+}
+
+.save-btn {
+  width: 100%;
+  min-height: 3.25rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(77, 163, 255, 0.35);
+}
+
+// Match Save button to theme primary
+:host ::ng-deep .form-actions .save-btn.p-button,
+:host ::ng-deep .form-actions button.save-btn {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+:host ::ng-deep .form-actions .save-btn.p-button:hover:not(:disabled),
+:host ::ng-deep .form-actions button.save-btn:hover:not(:disabled) {
+  background: var(--color-primary-muted) !important;
+  border-color: var(--color-primary-muted) !important;
+  color: var(--color-text-inverse) !important;
+}

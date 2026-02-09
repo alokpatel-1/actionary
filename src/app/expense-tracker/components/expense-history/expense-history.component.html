@@ -1,0 +1,102 @@
+<div class="expense-history">
+  <header class="history-header">
+    <a routerLink="/expenses/list" class="back-link">
+      <i class="pi pi-arrow-left"></i> Back
+    </a>
+    <h1 class="history-title">All History</h1>
+  </header>
+
+  <div class="period-selector">
+    <div class="period-tabs" role="tablist">
+      <button type="button" role="tab" [class.active]="periodType() === 'year'" (click)="setPeriodType('year')">Year</button>
+      <button type="button" role="tab" [class.active]="periodType() === 'month'" (click)="setPeriodType('month')">Month</button>
+      <button type="button" role="tab" [class.active]="periodType() === 'week'" (click)="setPeriodType('week')">Week</button>
+    </div>
+
+    @switch (periodType()) {
+    @case ('year') {
+    <div class="period-fields">
+      <label>Year</label>
+      <select [value]="selectedYear()" (change)="onYearChange(+$any($event.target).value)">
+        @for (y of yearOptions(); track y) {
+        <option [value]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+    }
+    @case ('month') {
+    <div class="period-fields row">
+      <div class="period-fields">
+        <label>Year</label>
+        <select [value]="selectedYear()" (change)="onYearChange(+$any($event.target).value)">
+          @for (y of yearOptions(); track y) {
+          <option [value]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
+      <div class="period-fields">
+        <label>Month</label>
+        <select [value]="selectedMonth()" (change)="onMonthChange(+$any($event.target).value)">
+          @for (m of monthOptions; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    }
+    @case ('week') {
+    <div class="period-fields">
+      <label>Week starting (pick any day)</label>
+      <input type="date" [value]="selectedWeekStart()" (change)="onWeekStartChange($any($event.target).value)" class="week-date-input" />
+    </div>
+    }
+    }
+  </div>
+
+  <section class="summary-card">
+    <div class="summary-primary">
+      <span class="summary-total">{{ formatCurrency(totalAmount()) }}</span>
+      <span class="summary-label">{{ periodLabel() }}</span>
+    </div>
+    <div class="summary-meta">
+      <span>{{ transactionCount() }} transaction{{ transactionCount() !== 1 ? 's' : '' }}</span>
+    </div>
+  </section>
+
+  @if (unsyncedCount() > 0) {
+  <p class="unsynced-entries">{{ unsyncedCount() }} unsynced entries</p>
+  }
+
+  <section class="transactions-section">
+    <h2 class="transactions-title">Transactions</h2>
+
+    @for (group of weekGroups(); track group.start + group.end) {
+    <div class="week-group">
+      <div class="week-group-header">
+        <h3 class="week-group-title">{{ group.label }}</h3>
+        <span class="week-group-total">({{ formatCurrency(group.total) }})</span>
+      </div>
+      <div class="expense-cards">
+        @for (expense of group.expenses; track expense.id) {
+        <a [routerLink]="['/expenses', 'edit', expense.id]" class="expense-card">
+          <div class="expense-card-icon" [attr.aria-label]="expense.category">
+            <span class="expense-card-icon-letter">{{ getCategoryLetter(expense.category) }}</span>
+          </div>
+          <div class="expense-card-body">
+            <span class="expense-card-category">{{ expense.category }}</span>
+            <span class="expense-card-date">{{ getDateLabel(expense.date) }}</span>
+          </div>
+          <span class="expense-card-amount">{{ formatCurrency(expense.amount) }}</span>
+          <button type="button" class="expense-card-delete" (click)="deleteExpense(expense.id, $event)" aria-label="Delete expense">
+            <i class="pi pi-trash"></i>
+          </button>
+        </a>
+        }
+      </div>
+    </div>
+    }
+    @empty {
+    <p class="expense-list-empty">No expenses for this period.</p>
+    }
+  </section>
+</div>

@@ -1,0 +1,62 @@
+<div class="expense-form">
+  <header class="form-header">
+    <h1 class="form-title">{{ isEdit() ? 'Edit expense' : 'Log Expense' }}</h1>
+    <p class="form-subtitle">Enter the amount and details below to track your spending.</p>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <section class="amount-hero">
+      <div class="amount-input-wrap">
+        <span class="amount-prefix">₹</span>
+        <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" styleClass="amount-input" inputStyleClass="amount-input-inner" />
+      </div>
+      @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+      <p class="amount-error">Amount must be greater than 0</p>
+      }
+    </section>
+
+    <section class="type-section">
+      <div class="type-segment" role="group">
+        <button type="button" class="type-btn" [class.active]="form.get('type')?.value === 'expense'" (click)="form.patchValue({ type: 'expense' })">
+          Expense
+        </button>
+        <button type="button" class="type-btn" [class.active]="form.get('type')?.value === 'transfer'" (click)="form.patchValue({ type: 'transfer' })">
+          Transfer
+        </button>
+      </div>
+    </section>
+
+    <section class="details-card">
+      <div class="p-field category-field">
+        <label>Category</label>
+        <div class="category-radios">
+          @for (cat of allCategories; track cat) {
+          <label class="category-radio">
+            <input type="radio" formControlName="category" [value]="cat" />
+            <span class="category-radio-label">{{ cat }}</span>
+          </label>
+          }
+        </div>
+        @if (form.get('category')?.invalid && form.get('category')?.touched) {
+        <p class="field-error">Choose a category</p>
+        }
+      </div>
+
+      <div class="detail-row">
+        <label for="date">Date</label>
+        <p-datePicker id="date" formControlName="date" dateFormat="dd M yy" styleClass="detail-date" inputStyleClass="detail-date-input" />
+      </div>
+
+      <div class="detail-row">
+        <label for="note">Note</label>
+        <input pInputText id="note" formControlName="note" class="detail-note-input" placeholder="Add a note" />
+      </div>
+    </section>
+
+    <div class="form-spacer"></div>
+
+    <div class="form-actions">
+      <button pButton type="submit" label="Save" [loading]="saving()" [disabled]="form.invalid" class="save-btn"></button>
+    </div>
+  </form>
+</div>
