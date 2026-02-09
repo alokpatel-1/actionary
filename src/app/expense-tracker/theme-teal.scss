@@ -1,0 +1,100 @@
+/* =========================================================
+   Expense Tracker Design Tokens
+   Single source of truth for colors
+   ========================================================= */
+
+/* =========================
+   LIGHT THEME (DEFAULT)
+   ========================= */
+
+:root {
+  /* ---------- Backgrounds ---------- */
+  --color-bg-app: #F5FAFF;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-card: #F8FBFF;
+
+  /* ---------- Borders & Dividers ---------- */
+  --color-border-subtle: #E6EDF5;
+  --color-border-soft: #DDE7F2;
+
+  /* ---------- Text ---------- */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
+  --color-text-inverse: #FFFFFF;
+
+  /* ---------- Primary Accent ---------- */
+  --color-primary: #4DA3FF;
+  --color-primary-soft: #E8F2FF;
+  --color-primary-muted: #7FB9FF;
+
+  /* ---------- Status Colors ---------- */
+  --color-success: #22C55E;
+  --color-success-soft: #DCFCE7;
+
+  --color-warning: #F59E0B;
+  --color-warning-soft: #FEF3C7;
+
+  --color-error: #EF4444;
+  --color-error-soft: #FEE2E2;
+
+  /* ---------- Charts ---------- */
+  --color-chart-primary: #4DA3FF;
+  --color-chart-secondary: #94A3B8;
+  --color-chart-muted: #CBD5E1;
+  --color-chart-positive: #22C55E;
+  --color-chart-negative: #EF4444;
+
+  /* ---------- Interaction States ---------- */
+  --color-hover: #EAF3FF;
+  --color-active: #D6E9FF;
+  --color-focus-ring: #93C5FD;
+}
+
+/* =========================
+   DARK THEME
+   ========================= */
+
+[data-theme="dark"] {
+  /* ---------- Backgrounds ---------- */
+  --color-bg-app: #020617;
+  --color-bg-surface: #020617;
+  --color-bg-card: #0F172A;
+
+  /* ---------- Borders & Dividers ---------- */
+  --color-border-subtle: #1E293B;
+  --color-border-soft: #334155;
+
+  /* ---------- Text ---------- */
+  --color-text-primary: #E5E7EB;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #020617;
+
+  /* ---------- Primary Accent ---------- */
+  --color-primary: #60A5FA;
+  --color-primary-soft: #0B1E3A;
+  --color-primary-muted: #93C5FD;
+
+  /* ---------- Status Colors ---------- */
+  --color-success: #22C55E;
+  --color-success-soft: #052E16;
+
+  --color-warning: #FBBF24;
+  --color-warning-soft: #451A03;
+
+  --color-error: #F87171;
+  --color-error-soft: #450A0A;
+
+  /* ---------- Charts ---------- */
+  --color-chart-primary: #60A5FA;
+  --color-chart-secondary: #64748B;
+  --color-chart-muted: #334155;
+  --color-chart-positive: #22C55E;
+  --color-chart-negative: #F87171;
+
+  /* ---------- Interaction States ---------- */
+  --color-hover: #0B1E3A;
+  --color-active: #122A4D;
+  --color-focus-ring: #60A5FA;
+}

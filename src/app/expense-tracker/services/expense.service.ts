@@ -6,7 +6,21 @@ import { Observable } from 'rxjs';
 import { from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
-export type ViewMode = 'daily' | 'monthly' | 'yearly';
+export type ViewMode = 'today' | 'week' | 'month' | 'year';
+
+/** ISO week: Monday = 1, Sunday = 7. Returns YYYY-MM-DD for Monday of the week containing date. */
+function getMondayOfWeek(d: Date): Date {
+  const day = d.getDay();
+  const diff = d.getDate() - (day === 0 ? 6 : day - 1);
+  return new Date(d.getFullYear(), d.getMonth(), diff);
+}
+
+function toYYYYMMDD(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -68,6 +82,11 @@ export class ExpenseService {
     return this.getByDateRange(date, date);
   }
 
+  /** Get expenses for a week (start and end YYYY-MM-DD inclusive). */
+  getForWeek(start: string, end: string): Observable<Expense[]> {
+    return this.getByDateRange(start, end);
+  }
+
   /** Get expenses for a month (YYYY-MM). */
   getForMonth(yearMonth: string): Observable<Expense[]> {
     const [y, m] = yearMonth.split('-').map(Number);
@@ -82,3 +101,5 @@ export class ExpenseService {
     return this.getByDateRange(`${year}-01-01`, `${year}-12-31`);
   }
 }
+
+export { getMondayOfWeek, toYYYYMMDD };

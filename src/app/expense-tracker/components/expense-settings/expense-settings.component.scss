@@ -21,12 +21,14 @@
   }
 
   .sync-section .status.offline {
-    color: #b45309;
+    color: var(--color-warning);
   }
 
   .sync-section button {
     min-height: 2.75rem;
     min-width: 2.75rem;
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
   }
 
   .sync-msg {
@@ -34,11 +36,11 @@
     font-size: 0.875rem;
 
     &.success {
-      color: #166534;
+      color: var(--color-success);
     }
 
     &.failed {
-      color: #b91c1c;
+      color: var(--color-error);
     }
   }
 
@@ -58,7 +60,7 @@
       flex-direction: column;
       gap: 0.25rem;
       font-size: 0.8125rem;
-      color: var(--ac-text-color-secondary, #666);
+      color: var(--color-text-muted);
       margin-top: 0.25rem;
     }
 
@@ -74,7 +76,7 @@
         min-height: 2.75rem;
         padding: 0.5rem 0.75rem;
         border-radius: 8px;
-        border: 1px solid var(--ac-surface-300, #ddd);
+        border: 1px solid var(--color-border-subtle);
         font-size: 1rem;
       }
     }
@@ -83,5 +85,7 @@
   .export-btn {
     margin-top: 0.5rem;
     min-height: 2.75rem;
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
   }
 }

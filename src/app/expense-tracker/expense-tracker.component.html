@@ -1,20 +1,33 @@
 <div class="expense-tracker-layout">
-  <header class="expense-status-bar">
-    <span class="status-badge" [class.offline]="!syncService.isOnline()" [class.online]="syncService.isOnline()">
-      {{ syncService.isOnline() ? 'Online' : 'Offline' }}
-    </span>
-    <span class="sync-status" *ngIf="syncService.syncStatus() === 'started'">Syncing…</span>
-    <span class="sync-status success" *ngIf="syncService.syncStatus() === 'completed'">Synced</span>
-    <span class="sync-status failed" *ngIf="syncService.syncStatus() === 'failed'">{{ syncService.syncError() }}</span>
-    <span class="last-sync" *ngIf="syncService.lastSyncTimestamp()">
-      {{ syncService.lastSyncTimestamp()! | date:'short' }}
-    </span>
+  <header class="expense-app-header">
+    <div class="header-sync">
+      <span class="status-badge" [class.offline]="!syncService.isOnline()" [class.online]="syncService.isOnline()">
+        {{ syncService.isOnline() ? 'Online' : 'Offline' }}
+      </span>
+      <span class="status-sep" *ngIf="syncService.syncStatus() === 'completed' && syncService.lastSyncTimestamp()">·</span>
+      <span class="sync-status" *ngIf="syncService.syncStatus() === 'started'">Syncing…</span>
+      <ng-container *ngIf="syncService.syncStatus() === 'completed' && syncService.lastSyncTimestamp()">
+        <span class="sync-status success">Synced</span>
+        <span class="last-sync"> · {{ syncService.lastSyncTimestamp()! | date:'medium' }}</span>
+      </ng-container>
+      <span class="sync-status failed" *ngIf="syncService.syncStatus() === 'failed'">{{ syncService.syncError() }}</span>
+    </div>
+    <a [routerLink]="['/expenses', 'settings']" class="header-user" aria-label="Open Settings">
+      <div class="header-user-avatar" [class.has-photo]="photoURL()">
+        <img *ngIf="photoURL(); else avatarLetterTpl" [src]="photoURL()!" alt="" />
+        <ng-template #avatarLetterTpl>
+          <span class="avatar-letter">{{ avatarLetter() }}</span>
+        </ng-template>
+      </div>
+    </a>
   </header>
+
   <main class="expense-content">
     <div class="expense-content-inner">
       <router-outlet></router-outlet>
     </div>
   </main>
+  <!-- <a routerLink="/expenses/add" class="expense-fab" aria-label="Add Expense">+</a> -->
   <nav class="expense-nav" aria-label="Main">
     <a *ngFor="let item of navItems" [routerLink]="['/expenses', item.url]" routerLinkActive="active" class="nav-link">
       <i [class]="item.icon"></i>

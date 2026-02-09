@@ -1,48 +1,96 @@
 <div class="expense-list">
-  <div class="toolbar">
-    <div class="view-tabs">
-      <button type="button" [class.active]="viewMode() === 'daily'" (click)="setViewMode('daily')">Daily</button>
-      <button type="button" [class.active]="viewMode() === 'monthly'" (click)="setViewMode('monthly')">Monthly</button>
-      <button type="button" [class.active]="viewMode() === 'yearly'" (click)="setViewMode('yearly')">Yearly</button>
-    </div>
-    <div class="period-picker">
-      @switch (viewMode()) {
-      @case ('daily') {
-      <input type="date" [value]="currentDay()" (change)="currentDay.set($any($event.target).value); onPeriodChange()" />
-      }
-      @case ('monthly') {
-      <input type="month" [value]="currentYearMonth()" (change)="currentYearMonth.set($any($event.target).value); onPeriodChange()" />
-      }
-      @case ('yearly') {
-      <input type="number" [value]="currentYear()" min="2000" max="2100" (change)="currentYear.set($any($event.target).value); onPeriodChange()" />
-      }
-      }
-    </div>
-    <span class="unsynced" *ngIf="unsyncedCount() > 0">{{ unsyncedCount() }} unsynced</span>
+  <!-- 1. Time filter tabs: Today, This Week, This Month, This Year -->
+  <div class="filter-tabs" role="tablist">
+    <button type="button" role="tab" [class.active]="viewMode() === 'today'" (click)="setViewMode('today')">Today</button>
+    <button type="button" role="tab" [class.active]="viewMode() === 'week'" (click)="setViewMode('week')">This Week</button>
+    <button type="button" role="tab" [class.active]="viewMode() === 'month'" (click)="setViewMode('month')">This Month</button>
+    <button type="button" role="tab" [class.active]="viewMode() === 'year'" (click)="setViewMode('year')">This Year</button>
   </div>
 
-  <!-- Mobile: card list -->
-  <div class="expense-cards">
-    @for (expense of expenses(); track expense.id) {
-    <div class="expense-card">
-      <div class="expense-card-main">
-        <span class="expense-card-amount">{{ expense.amount | number:'1.2-2' }}</span>
-        <span class="expense-card-category">{{ expense.category }}</span>
-        <span class="expense-card-date">{{ expense.date }}</span>
-        @if (expense.note) {
-        <span class="expense-card-note">{{ expense.note }}</span>
-        }
+  <!-- 2. Context summary card -->
+  <section class="summary-card">
+    <div class="summary-primary">
+      <span class="summary-total">{{ formatCurrency(totalAmount()) }}</span>
+      <span class="summary-label">Total expense</span>
+    </div>
+    <div class="summary-meta">
+      <span>{{ transactionCount() }} transaction{{ transactionCount() !== 1 ? 's' : '' }}</span>
+      @if (viewMode() === 'week' || viewMode() === 'month' || viewMode() === 'year') {
+      <span>Avg {{ viewMode() === 'year' ? 'per month' : 'per day' }}: {{ formatCurrency(avgPerDay()) }}</span>
+      }
+    </div>
+    @if (trend(); as t) {
+    <div class="summary-trend" [class.up]="t === 'up'" [class.down]="t === 'down'" [class.same]="t === 'same'">
+      @switch (t) {
+      @case ('up') { <span>↑ Higher than last period{{ trendPercent() ? ' (' + trendPercent() + '%)' : '' }}</span> }
+      @case ('down') { <span>↓ Lower than last period{{ trendPercent() ? ' (' + trendPercent() + '%)' : '' }}</span> }
+      @case ('same') { <span>– Same as last period</span> }
+      }
+    </div>
+    }
+    @if (largestExpense(); as le) {
+    <p class="summary-largest">Largest expense: {{ le.category }} – {{ formatCurrency(le.amount) }}</p>
+    }
+  </section>
+
+  <!-- 3. Date selector (context-aware) -->
+  <!-- <div class="date-selector">
+    @switch (viewMode()) {
+    @case ('today') {
+    <span class="date-display">{{ periodDisplay() }}</span>
+    }
+    @case ('week') {
+    <span class="date-display">{{ periodDisplay() }}</span>
+    }
+    @case ('month') {
+    <input type="month" [value]="currentYearMonth()" (change)="onMonthChange($any($event.target).value)" class="date-input" />
+    }
+    @case ('year') {
+    <span class="date-display">{{ periodDisplay() }}</span>
+    }
+    }
+  </div> -->
+
+  <!-- Unsynced indicator -->
+  @if (unsyncedCount() > 0) {
+  <p class="unsynced-entries">{{ unsyncedCount() }} unsynced entries</p>
+  }
+
+  <!-- 4. Transaction History (week-grouped) -->
+  <section class="transactions-section">
+    <header class="transactions-header">
+      <h2 class="transactions-title">Transaction History</h2>
+      <a routerLink="/expenses/list" class="transactions-see-all">See all</a>
+    </header>
+
+    @for (group of weekGroups(); track group.start + group.end) {
+    <div class="week-group">
+      <div class="week-group-header">
+        <h3 class="week-group-title">{{ group.label }}</h3>
+        <span class="week-group-total">
+          ({{ formatCurrency(group.total) }})
+        </span>
       </div>
-      <div class="expense-card-actions">
-        <a [routerLink]="['/expenses', 'edit', expense.id]" class="action-btn edit">Edit</a>
-        <button type="button" class="action-btn delete" (click)="deleteExpense(expense.id)">Delete</button>
+      <div class="expense-cards">
+        @for (expense of group.expenses; track expense.id) {
+        <a [routerLink]="['/expenses', 'edit', expense.id]" class="expense-card">
+          <div class="expense-card-icon" [attr.aria-label]="expense.category">
+            <span class="expense-card-icon-letter">{{ getCategoryLetter(expense.category) }}</span>
+          </div>
+          <div class="expense-card-body">
+            <span class="expense-card-category">{{ expense.category }}</span>
+            <span class="expense-card-date">{{ getDateLabel(expense.date) }}</span>
+          </div>
+          <span class="expense-card-amount">{{ formatCurrency(expense.amount) }}</span>
+        </a>
+        }
       </div>
     </div>
     }
     @empty {
     <p class="expense-list-empty">No expenses for this period.</p>
     }
-  </div>
+  </section>
 
   <!-- Desktop: table (hidden on small screens) -->
   <div class="expense-table-wrap">
