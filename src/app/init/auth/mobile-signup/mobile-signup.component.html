@@ -1,0 +1,72 @@
+<div class="mobile-signup">
+  <header class="mobile-auth-header">
+    <h1 class="app-name">Actionary</h1>
+    <p class="app-tagline">Track expenses. Stay in control.</p>
+  </header>
+  <div class="mobile-signup-card">
+    <h2 class="mobile-signup-title">Create your account</h2>
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="mobile-signup-form">
+      <div class="field">
+        <label for="fullName">Full name</label>
+        <div class="input-with-icon">
+          <i class="pi pi-user input-icon-left"></i>
+          <input id="fullName" type="text" formControlName="fullName" placeholder="Enter your full name" pInputText />
+        </div>
+        @if (signupForm.get('fullName')?.touched && signupForm.get('fullName')?.hasError('required')) {
+        <small class="error">Full name is required</small>
+        }
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <div class="input-with-icon">
+          <i class="pi pi-envelope input-icon-left"></i>
+          <input id="email" type="email" formControlName="email" placeholder="you@company.com" pInputText />
+        </div>
+        @if (signupForm.get('email')?.touched && signupForm.get('email')?.invalid) {
+        <small class="error">Valid email is required</small>
+        }
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-with-icon has-icon-right">
+          <i class="pi pi-lock input-icon-left"></i>
+          <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" placeholder="At least 8 characters" pInputText />
+          <button type="button" class="input-icon-right toggle-pwd" (click)="togglePassword()" aria-label="Toggle password visibility">
+            <i [class]="showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
+        </div>
+        @if (signupForm.get('password')?.touched && signupForm.get('password')?.errors) {
+        @if (signupForm.get('password')?.hasError('required')) {
+        <small class="error">Password is required</small>
+        }
+        @if (signupForm.get('password')?.hasError('minlength')) {
+        <small class="error">Password must be at least 8 characters</small>
+        }
+        }
+      </div>
+      <div class="field">
+        <label for="confirmPassword">Confirm password</label>
+        <div class="input-with-icon">
+          <i class="pi pi-lock input-icon-left"></i>
+          <input id="confirmPassword" [type]="showPassword() ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Confirm your password" pInputText />
+        </div>
+        @if (signupForm.get('confirmPassword')?.touched && signupForm.get('confirmPassword')?.hasError('required')) {
+        <small class="error">Please confirm your password</small>
+        }
+        @if (signupForm.errors?.['passwordsMismatch'] && signupForm.get('confirmPassword')?.touched) {
+        <small class="error">Passwords do not match</small>
+        }
+      </div>
+      <button pButton type="submit" [loading]="loading()" class="submit-btn">
+        <span>Sign up</span>
+        <i class="pi pi-arrow-right"></i>
+      </button>
+    </form>
+
+    <p class="mobile-signup-footer">
+      Already have an account?
+      <a routerLink="/home/auth/login">Log in</a>
+    </p>
+  </div>
+</div>

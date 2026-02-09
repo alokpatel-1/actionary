@@ -1,0 +1,45 @@
+<div class="mobile-login">
+  <header class="mobile-auth-header">
+    <h1 class="app-name">Actionary</h1>
+    <p class="app-tagline">Track expenses. Stay in control.</p>
+  </header>
+  <div class="mobile-login-card">
+    <h2 class="mobile-login-title">Sign in to your account</h2>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mobile-login-form">
+      <div class="field">
+        <label for="email">Email address</label>
+        <div class="input-with-icon">
+          <i class="pi pi-envelope input-icon-left"></i>
+          <input id="email" type="email" formControlName="email" placeholder="you@company.com" pInputText />
+        </div>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
+          <small class="error">Email is required and must be valid</small>
+        }
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-with-icon has-icon-right">
+          <i class="pi pi-lock input-icon-left"></i>
+          <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" placeholder="Enter your password" pInputText />
+          <button type="button" class="input-icon-right toggle-pwd" (click)="togglePassword()" aria-label="Toggle password visibility">
+            <i [class]="showPassword() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')) {
+          <small class="error">Password is required</small>
+        }
+        <button type="button" class="forgot-link">Forgot password?</button>
+      </div>
+      <button pButton type="submit" [loading]="loading()" class="submit-btn">
+        <span>Sign in</span>
+        <i class="pi pi-arrow-right"></i>
+      </button>
+    </form>
+
+    <p class="mobile-login-footer">
+      Don't have an account?
+      <a routerLink="/home/auth/signup">Sign up</a>
+    </p>
+  </div>
+</div>
