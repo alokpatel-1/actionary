@@ -17,24 +17,18 @@ export class ExpenseSettingsComponent {
 
   exportScope: ExportScope = 'current-year';
   exportFormat: 'json' | 'csv' = 'json';
-  customStart = '';
-  customEnd = '';
+  customStart: Date | null = null;
+  customEnd: Date | null = null;
   unsyncedCount = signal(0);
   exporting = signal(false);
   syncInProgress = signal(false);
 
-  scopeOptions = [
-    { label: 'Current Year', value: 'current-year' as ExportScope },
-    { label: 'Last Year', value: 'last-year' as ExportScope },
-    { label: 'Custom', value: 'custom' as ExportScope }
-  ];
-  formatOptions = [
-    { label: 'JSON', value: 'json' as const },
-    { label: 'CSV', value: 'csv' as const }
-  ];
-
   constructor() {
     this.idb.getUnsyncedCount().then((c) => this.unsyncedCount.set(c));
+  }
+
+  private toYYYYMMDD(d: Date): string {
+    return d.toISOString().slice(0, 10);
   }
 
   syncNow(): void {
@@ -59,8 +53,8 @@ export class ExpenseSettingsComponent {
       format: this.exportFormat
     };
     if (scope === 'custom') {
-      options.startDate = this.customStart;
-      options.endDate = this.customEnd;
+      options.startDate = this.customStart ? this.toYYYYMMDD(this.customStart) : undefined;
+      options.endDate = this.customEnd ? this.toYYYYMMDD(this.customEnd) : undefined;
       if (!options.startDate || !options.endDate) {
         return;
       }

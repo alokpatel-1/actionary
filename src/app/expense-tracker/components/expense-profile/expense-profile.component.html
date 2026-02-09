@@ -1,0 +1,15 @@
+<div class="expense-profile">
+  <div class="profile-card">
+    <div class="profile-avatar" [class.has-photo]="photoURL()">
+      <img *ngIf="photoURL(); else avatarLetterTpl" [src]="photoURL()!" alt="" />
+      <ng-template #avatarLetterTpl>
+        <span class="avatar-letter">{{ avatarLetter() }}</span>
+      </ng-template>
+    </div>
+    <h2 class="profile-name">{{ displayName() }}</h2>
+    @if (email()) {
+    <p class="profile-email">{{ email() }}</p>
+    }
+    <button pButton label="Logout" (click)="signOut()" class="profile-logout-btn"></button>
+  </div>
+</div>

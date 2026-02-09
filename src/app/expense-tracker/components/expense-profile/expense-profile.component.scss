@@ -1,0 +1,64 @@
+.expense-profile {
+  width: 100%;
+  max-width: 32rem;
+}
+
+.profile-card {
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.profile-avatar {
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &.has-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-letter {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+}
+
+.profile-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.profile-email {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+
+.profile-logout-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  background: transparent !important;
+  border: 1px solid #dc2626 !important;
+  color: #dc2626 !important;
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-color: #b91c1c !important;
+    color: #b91c1c !important;
+  }
+}

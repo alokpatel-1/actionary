@@ -5,6 +5,7 @@ import { ExpenseListComponent } from './components/expense-list/expense-list.com
 import { ExpenseFormComponent } from './components/expense-form/expense-form.component';
 import { ExpenseSummaryComponent } from './components/expense-summary/expense-summary.component';
 import { ExpenseSettingsComponent } from './components/expense-settings/expense-settings.component';
+import { ExpenseProfileComponent } from './components/expense-profile/expense-profile.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,7 @@ const routes: Routes = [
       { path: 'edit/:id', component: ExpenseFormComponent },
       { path: 'summary', component: ExpenseSummaryComponent },
       { path: 'settings', component: ExpenseSettingsComponent },
+      { path: 'profile', component: ExpenseProfileComponent },
       { path: '', redirectTo: 'list', pathMatch: 'full' }
     ]
   }

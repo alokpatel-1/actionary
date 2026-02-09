@@ -1,41 +1,52 @@
 <div class="expense-settings">
-  <h2>Settings</h2>
-
-  <section class="sync-section">
-    <h3>Sync</h3>
-    <p>Unsynced records: <strong>{{ unsyncedCount() }}</strong></p>
-    <p *ngIf="syncService.lastSyncTimestamp()">Last sync: {{ syncService.lastSyncTimestamp()! | date:'medium' }}</p>
-    <p class="status" [class.offline]="!syncService.isOnline()">{{ syncService.isOnline() ? 'Online' : 'Offline' }}</p>
-    <button pButton label="Sync Now" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()"></button>
-    <p class="sync-msg started" *ngIf="syncService.syncStatus() === 'started'">Sync started…</p>
-    <p class="sync-msg success" *ngIf="syncService.syncStatus() === 'completed'">Sync completed.</p>
-    <p class="sync-msg failed" *ngIf="syncService.syncStatus() === 'failed'">Sync failed: {{ syncService.syncError() }}</p>
-  </section>
-
-  <section class="export-section">
-    <h3>Export Data</h3>
-    <p>Export from IndexedDB by date range. Works offline.</p>
-
-    <div class="export-options">
-      <label>Scope</label>
-      <p-selectButton [options]="scopeOptions" [(ngModel)]="exportScope" optionLabel="label" optionValue="value"></p-selectButton>
-      <div class="scope-labels">
-        <span>Current Year: Jan 1 – today</span>
-        <span>Last Year: Jan 1 – Dec 31 previous year</span>
-        <span>Custom: choose start and end date</span>
-      </div>
-
-      <div class="custom-range" *ngIf="exportScope === 'custom'">
-        <label>Start date</label>
-        <input type="date" [(ngModel)]="customStart" />
-        <label>End date</label>
-        <input type="date" [(ngModel)]="customEnd" />
-      </div>
-
-      <label>Format</label>
-      <p-selectButton [options]="formatOptions" [(ngModel)]="exportFormat" optionLabel="label" optionValue="value"></p-selectButton>
+  <section class="settings-tab">
+    <div class="settings-card sync-section">
+      <h3>Sync</h3>
+      <p class="sync-stat">Unsynced records: <strong>{{ unsyncedCount() }}</strong></p>
+      <p class="sync-stat" *ngIf="syncService.lastSyncTimestamp()">Last sync: {{ syncService.lastSyncTimestamp()! | date:'medium' }}</p>
+      <p class="status" [class.offline]="!syncService.isOnline()">{{ syncService.isOnline() ? 'Online' : 'Offline' }}</p>
+      <button pButton label="Sync Now" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()" class="sync-btn"></button>
+      <p class="sync-msg success" *ngIf="syncService.syncStatus() === 'completed'">Sync completed.</p>
+      <p class="sync-msg started" *ngIf="syncService.syncStatus() === 'started'">Syncing…</p>
+      <p class="sync-msg failed" *ngIf="syncService.syncStatus() === 'failed'">Sync failed: {{ syncService.syncError() }}</p>
     </div>
 
-    <button pButton label="Export Data" (click)="export()" [loading]="exporting()" class="export-btn"></button>
+    <div class="settings-card export-section">
+      <h3>Export Data</h3>
+      <p class="export-desc">Export from IndexedDB by date range. Works offline.</p>
+
+      <div class="export-options">
+        <label>Scope</label>
+        <div class="segment-control">
+          <button type="button" [class.active]="exportScope === 'current-year'" (click)="exportScope = 'current-year'">Current Year</button>
+          <button type="button" [class.active]="exportScope === 'last-year'" (click)="exportScope = 'last-year'">Last Year</button>
+          <button type="button" [class.active]="exportScope === 'custom'" (click)="exportScope = 'custom'">Custom</button>
+        </div>
+        <div class="scope-labels">
+          <span>Current Year: Jan 1 – today</span>
+          <span>Last Year: Jan 1 – Dec 31 previous year</span>
+          <span>Custom: choose start and end date</span>
+        </div>
+
+        <div class="custom-range" *ngIf="exportScope === 'custom'">
+          <div class="custom-range-field">
+            <label>Start date</label>
+            <p-datePicker [(ngModel)]="customStart" dateFormat="yy-mm-dd" styleClass="custom-date" inputStyleClass="custom-date-input" />
+          </div>
+          <div class="custom-range-field">
+            <label>End date</label>
+            <p-datePicker [(ngModel)]="customEnd" dateFormat="yy-mm-dd" styleClass="custom-date" inputStyleClass="custom-date-input" />
+          </div>
+        </div>
+
+        <label>Format</label>
+        <div class="segment-control">
+          <button type="button" [class.active]="exportFormat === 'json'" (click)="exportFormat = 'json'">JSON</button>
+          <button type="button" [class.active]="exportFormat === 'csv'" (click)="exportFormat = 'csv'">CSV</button>
+        </div>
+      </div>
+
+      <button pButton label="Export Data" (click)="export()" [loading]="exporting()" class="export-btn"></button>
+    </div>
   </section>
 </div>

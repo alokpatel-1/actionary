@@ -8,6 +8,88 @@
   background: var(--color-bg-app);
 }
 
+// Status bar: sync status + optional Sync button when data not synced
+.expense-status-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: 0 1rem;
+  margin-top: 0.5rem;
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.status-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.status-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  i {
+    font-size: 0.7rem;
+  }
+
+  &.online {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+  }
+
+  &.offline {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
+}
+
+.status-detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  min-width: 0;
+
+  .sync-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    &.success {
+      color: var(--color-text-muted);
+    }
+
+    &.failed {
+      color: var(--color-error);
+    }
+
+    &.idle {
+      color: var(--color-text-muted);
+    }
+  }
+}
+
+.status-bar-right {
+  flex-shrink: 0;
+}
+
+.expense-status-bar .sync-btn {
+  min-height: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 // Single app header: sync left, user right (user opens settings)
 .expense-app-header {
   flex-shrink: 0;
@@ -246,6 +328,14 @@
     i {
       color: var(--color-primary);
     }
+  }
+
+  .nav-label-user {
+    font-size: 0.5625rem;
+    max-width: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
