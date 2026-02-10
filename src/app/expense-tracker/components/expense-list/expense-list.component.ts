@@ -245,103 +245,33 @@ export class ExpenseListComponent implements OnInit {
     return String(this.currentYear);
   }
 
+  /** Same grouping and sorting as transaction history: by week (Mon–Sun), newest week first, newest expense first within each week. */
   private buildWeekGroups(list: Expense[]): WeekGroup[] {
     if (list.length === 0) return [];
-    const now = new Date();
-    const todayStr = toYYYYMMDD(now);
-    const thisMonday = getMondayOfWeek(now);
-    const thisSunday = new Date(thisMonday);
-    thisSunday.setDate(thisSunday.getDate() + 6);
-    const thisWeekStart = toYYYYMMDD(thisMonday);
-    const thisWeekEnd = toYYYYMMDD(thisSunday);
-
-    const lastMonday = new Date(thisMonday);
-    lastMonday.setDate(lastMonday.getDate() - 7);
-    const lastSunday = new Date(lastMonday);
-    lastSunday.setDate(lastSunday.getDate() + 6);
-    const lastWeekStart = toYYYYMMDD(lastMonday);
-    const lastWeekEnd = toYYYYMMDD(lastSunday);
-
     const weekKey = (d: string) => {
       const m = getMondayOfWeek(new Date(d + 'T12:00:00'));
       return toYYYYMMDD(m);
     };
-
-    const todayExpenses = list.filter((e) => e.date === todayStr);
-    const thisWeekExpenses = list.filter(
-      (e) => e.date >= thisWeekStart && e.date <= thisWeekEnd && e.date !== todayStr
-    );
-    const lastWeekExpenses = list.filter((e) => e.date >= lastWeekStart && e.date <= lastWeekEnd);
-    const otherWeeks = new Map<string, Expense[]>();
+    const byWeek = new Map<string, Expense[]>();
     list.forEach((e) => {
-      if (e.date === todayStr) return;
-      if (e.date >= thisWeekStart && e.date <= thisWeekEnd) return;
-      if (e.date >= lastWeekStart && e.date <= lastWeekEnd) return;
       const key = weekKey(e.date);
-      if (!otherWeeks.has(key)) otherWeeks.set(key, []);
-      otherWeeks.get(key)!.push(e);
+      if (!byWeek.has(key)) byWeek.set(key, []);
+      byWeek.get(key)!.push(e);
     });
-
-    type GroupWithKey = { sortKey: string; group: WeekGroup };
-    const withKeys: GroupWithKey[] = [];
-
-    const byDateDesc = (a: Expense, b: Expense) => b.date.localeCompare(a.date);
-    if (todayExpenses.length > 0) {
-      withKeys.push({
-        sortKey: todayStr + 'Z', // so Today sorts first (newest)
-        group: {
-          label: 'Today',
-          start: todayStr,
-          end: todayStr,
-          expenses: [...todayExpenses].sort(byDateDesc),
-          total: todayExpenses.reduce((s, e) => s + e.amount, 0)
-        }
-      });
-    }
-    if (thisWeekExpenses.length > 0) {
-      withKeys.push({
-        sortKey: thisWeekEnd,
-        group: {
-          label: 'This Week',
-          start: thisWeekStart,
-          end: thisWeekEnd,
-          expenses: [...thisWeekExpenses].sort(byDateDesc),
-          total: thisWeekExpenses.reduce((s, e) => s + e.amount, 0)
-        }
-      });
-    }
-    if (lastWeekExpenses.length > 0) {
-      withKeys.push({
-        sortKey: lastWeekEnd,
-        group: {
-          label: 'Last Week',
-          start: lastWeekStart,
-          end: lastWeekEnd,
-          expenses: [...lastWeekExpenses].sort(byDateDesc),
-          total: lastWeekExpenses.reduce((s, e) => s + e.amount, 0)
-        }
-      });
-    }
-    [...otherWeeks.keys()].sort((a, b) => b.localeCompare(a)).forEach((key) => {
-      const exp = otherWeeks.get(key)!;
+    const keys = [...byWeek.keys()].sort((a, b) => b.localeCompare(a));
+    return keys.map((key) => {
+      const exp = byWeek.get(key)!;
       const mon = new Date(key + 'T12:00:00');
       const sun = new Date(mon);
       sun.setDate(sun.getDate() + 6);
-      const end = toYYYYMMDD(sun);
-      withKeys.push({
-        sortKey: end,
-        group: {
-          label: `Week of ${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-          start: key,
-          end,
-          expenses: [...exp].sort(byDateDesc),
-          total: exp.reduce((s, e) => s + e.amount, 0)
-        }
-      });
+      return {
+        label: `Week of ${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        start: key,
+        end: toYYYYMMDD(sun),
+        expenses: [...exp].sort((a, b) => b.date.localeCompare(a.date)),
+        total: exp.reduce((s, e) => s + e.amount, 0)
+      };
     });
-
-    withKeys.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
-    return withKeys.map((x) => x.group);
   }
 
   private getCurrentYearMonth(): string {
