@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { ExpenseService, getMondayOfWeek, toYYYYMMDD } from '../../services/expense.service';
 import { Expense } from '../../models/expense.model';
 
@@ -22,6 +23,7 @@ type HistoryTab = 'expenses' | 'transfers';
 })
 export class ExpenseHistoryComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private confirmationService = inject(ConfirmationService);
 
   readonly historyTab = signal<HistoryTab>('expenses');
   readonly periodType = signal<PeriodType>('year');
@@ -153,13 +155,20 @@ export class ExpenseHistoryComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    if (!window.confirm('Delete this expense? This will sync to all your devices.')) return;
-    this.expenseService.delete(id).subscribe({
-      next: () => {
-        this.load();
-        this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
-      },
-      error: (err) => console.error('Delete failed', err)
+    this.confirmationService.confirm({
+      message: 'Delete this expense? This will sync to all your devices.',
+      header: 'Delete expense',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.expenseService.delete(id).subscribe({
+          next: () => {
+            this.load();
+            this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+          },
+          error: (err) => console.error('Delete failed', err)
+        });
+      }
     });
   }
 

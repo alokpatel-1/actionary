@@ -148,6 +148,53 @@
   }
 }
 
+// Forgot password flow
+.forgot-intro {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary, #475569);
+  line-height: 1.45;
+}
+
+.forgot-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.forgot-success-icon {
+  font-size: 2.5rem;
+  color: var(--color-success, #22c55e);
+}
+
+.forgot-success-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary, #475569);
+  line-height: 1.5;
+}
+
+.forgot-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--color-primary, #4DA3FF);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.mobile-login-form .error {
+  font-size: 0.75rem;
+  color: var(--color-error, #dc2626);
+}
+
 .mobile-login-footer {
   margin: 1.5rem 0 0;
   font-size: 0.875rem;

@@ -15,6 +15,12 @@ export class MobileLoginComponent implements OnInit {
   loginForm!: FormGroup;
   loading = signal(false);
 
+  readonly showForgotPassword = signal(false);
+  readonly forgotPasswordEmail = signal('');
+  readonly forgotPasswordSent = signal(false);
+  readonly forgotPasswordLoading = signal(false);
+  readonly forgotPasswordError = signal<string | null>(null);
+
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly firebaseAuthService = inject(FirebaseAuthService);
@@ -25,6 +31,44 @@ export class MobileLoginComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
     });
+  }
+
+  onForgotPasswordClick(): void {
+    this.forgotPasswordError.set(null);
+    this.forgotPasswordSent.set(false);
+    this.forgotPasswordEmail.set(this.loginForm.get('email')?.value ?? '');
+    this.showForgotPassword.set(true);
+  }
+
+  onBackToLogin(): void {
+    this.showForgotPassword.set(false);
+    this.forgotPasswordSent.set(false);
+    this.forgotPasswordError.set(null);
+  }
+
+  onSendResetEmail(): void {
+    const email = this.forgotPasswordEmail().trim();
+    if (!email) {
+      this.forgotPasswordError.set('Please enter your email address');
+      return;
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) {
+      this.forgotPasswordError.set('Please enter a valid email address');
+      return;
+    }
+    this.forgotPasswordError.set(null);
+    this.forgotPasswordLoading.set(true);
+    this.firebaseAuthService.sendPasswordResetEmail(email).then(
+      () => {
+        this.forgotPasswordLoading.set(false);
+        this.forgotPasswordSent.set(true);
+      },
+      (err: { message?: string }) => {
+        this.forgotPasswordLoading.set(false);
+        this.forgotPasswordError.set(err?.message ?? 'Failed to send reset email. Check the email address.');
+      }
+    );
   }
 
   onSubmit(): void {

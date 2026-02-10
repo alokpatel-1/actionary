@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { ExpenseService, ViewMode, getMondayOfWeek, toYYYYMMDD } from '../../services/expense.service';
 import { Expense } from '../../models/expense.model';
 
@@ -20,6 +21,7 @@ export interface WeekGroup {
 })
 export class ExpenseListComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private confirmationService = inject(ConfirmationService);
 
   readonly viewMode = signal<ViewMode>('month');
   readonly expenses = signal<Expense[]>([]);
@@ -169,13 +171,20 @@ export class ExpenseListComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    if (!window.confirm('Delete this expense? This will sync to all your devices.')) return;
-    this.expenseService.delete(id).subscribe({
-      next: () => {
-        this.refresh();
-        this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
-      },
-      error: (err) => console.error('Delete failed', err)
+    this.confirmationService.confirm({
+      message: 'Delete this expense? This will sync to all your devices.',
+      header: 'Delete expense',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.expenseService.delete(id).subscribe({
+          next: () => {
+            this.refresh();
+            this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+          },
+          error: (err) => console.error('Delete failed', err)
+        });
+      }
     });
   }
 

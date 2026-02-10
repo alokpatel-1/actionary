@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, User, user } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, updateProfile, User, user } from '@angular/fire/auth';
 import { from, Observable } from 'rxjs';
 
 @Injectable({
@@ -25,6 +25,11 @@ export class FirebaseAuthService {
 
   signInWithFireBase(email: string, password: string): Promise<any> {
     return signInWithEmailAndPassword(this.firbaseAuth, email, password);
+  }
+
+  /** Send a password reset email to the given address. */
+  sendPasswordResetEmail(email: string): Promise<void> {
+    return sendPasswordResetEmail(this.firbaseAuth, email.trim());
   }
 
   signOut(): Promise<any> {
