@@ -4,6 +4,36 @@
     <p class="app-tagline">Track expenses. Stay in control.</p>
   </header>
   <div class="mobile-login-card">
+    @if (showForgotPassword()) {
+    <h2 class="mobile-login-title">Reset password</h2>
+    @if (forgotPasswordSent()) {
+    <div class="forgot-success">
+      <i class="pi pi-check-circle forgot-success-icon"></i>
+      <p class="forgot-success-text">Check your email. We sent a link to <strong>{{ forgotPasswordEmail() }}</strong> to reset your password.</p>
+      <button type="button" class="forgot-back-link" (click)="onBackToLogin()">
+        <i class="pi pi-arrow-left"></i> Back to sign in
+      </button>
+    </div>
+    } @else {
+    <div class="mobile-login-form">
+      <p class="forgot-intro">Enter your email and we’ll send you a link to reset your password.</p>
+      <div class="field">
+        <label for="forgot-email">Email address</label>
+        <div class="input-with-icon">
+          <i class="pi pi-envelope input-icon-left"></i>
+          <input id="forgot-email" type="email" [value]="forgotPasswordEmail()" (input)="forgotPasswordEmail.set($any($event.target).value)" placeholder="you@company.com" pInputText />
+        </div>
+      </div>
+      @if (forgotPasswordError()) {
+      <small class="error">{{ forgotPasswordError() }}</small>
+      }
+      <button pButton type="button" label="Send reset link" [loading]="forgotPasswordLoading()" (click)="onSendResetEmail()" class="submit-btn"></button>
+      <button type="button" class="forgot-back-link" (click)="onBackToLogin()">
+        <i class="pi pi-arrow-left"></i> Back to sign in
+      </button>
+    </div>
+    }
+    } @else {
     <h2 class="mobile-login-title">Sign in to your account</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mobile-login-form">
@@ -14,7 +44,7 @@
           <input id="email" type="email" formControlName="email" placeholder="you@company.com" pInputText />
         </div>
         @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-          <small class="error">Email is required and must be valid</small>
+        <small class="error">Email is required and must be valid</small>
         }
       </div>
       <div class="field">
@@ -27,9 +57,9 @@
           </button>
         </div>
         @if (loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')) {
-          <small class="error">Password is required</small>
+        <small class="error">Password is required</small>
         }
-        <button type="button" class="forgot-link">Forgot password?</button>
+        <button type="button" class="forgot-link" (click)="onForgotPasswordClick()">Forgot password?</button>
       </div>
       <button pButton type="submit" [loading]="loading()" class="submit-btn">
         <span>Sign in</span>
@@ -41,5 +71,6 @@
       Don't have an account?
       <a routerLink="/home/auth/signup">Sign up</a>
     </p>
+    }
   </div>
 </div>

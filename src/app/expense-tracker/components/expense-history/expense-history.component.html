@@ -1,11 +1,14 @@
 <div class="expense-history">
   <header class="history-header">
-    <a routerLink="/expenses/list" class="back-link">
-      <i class="pi pi-arrow-left"></i> Back
-    </a>
-    <h1 class="history-title">All History</h1>
+    <h1 class="history-title">Transaction History</h1>
   </header>
 
+  <div class="history-type-tabs" role="tablist">
+    <button type="button" role="tab" [class.active]="historyTab() === 'expenses'" (click)="setHistoryTab('expenses')">Expense history</button>
+    <button type="button" role="tab" [class.active]="historyTab() === 'transfers'" (click)="setHistoryTab('transfers')">Transfer</button>
+  </div>
+
+  @if (historyTab() === 'expenses') {
   <div class="period-selector">
     <div class="period-tabs" role="tablist">
       <button type="button" role="tab" [class.active]="periodType() === 'year'" (click)="setPeriodType('year')">Year</button>
@@ -52,6 +55,7 @@
     }
     }
   </div>
+  }
 
   <section class="summary-card">
     <div class="summary-primary">
@@ -59,7 +63,7 @@
       <span class="summary-label">{{ periodLabel() }}</span>
     </div>
     <div class="summary-meta">
-      <span>{{ transactionCount() }} transaction{{ transactionCount() !== 1 ? 's' : '' }}</span>
+      <span>{{ transactionCount() }} {{ historyTab() === 'transfers' ? 'transfer' : 'transaction' }}{{ transactionCount() !== 1 ? 's' : '' }}</span>
     </div>
   </section>
 
@@ -67,10 +71,10 @@
   <p class="unsynced-entries">{{ unsyncedCount() }} unsynced entries</p>
   }
 
-  <section class="transactions-section">
+  <section class="transactions-section" (scroll)="onTransactionsScroll($event)">
     <h2 class="transactions-title">Transactions</h2>
 
-    @for (group of weekGroups(); track group.start + group.end) {
+    @for (group of visibleWeekGroups(); track group.start + group.end) {
     <div class="week-group">
       <div class="week-group-header">
         <h3 class="week-group-title">{{ group.label }}</h3>
@@ -79,11 +83,11 @@
       <div class="expense-cards">
         @for (expense of group.expenses; track expense.id) {
         <a [routerLink]="['/expenses', 'edit', expense.id]" class="expense-card">
-          <div class="expense-card-icon" [attr.aria-label]="expense.category">
-            <span class="expense-card-icon-letter">{{ getCategoryLetter(expense.category) }}</span>
+          <div class="expense-card-icon" [attr.aria-label]="getDisplayCategory(expense)">
+            <span class="expense-card-icon-letter">{{ getCategoryLetter(getDisplayCategory(expense)) }}</span>
           </div>
           <div class="expense-card-body">
-            <span class="expense-card-category">{{ expense.category }}</span>
+            <span class="expense-card-category">{{ getDisplayCategory(expense) }}</span>
             <span class="expense-card-date">{{ getDateLabel(expense.date) }}</span>
           </div>
           <span class="expense-card-amount">{{ formatCurrency(expense.amount) }}</span>
@@ -96,7 +100,7 @@
     </div>
     }
     @empty {
-    <p class="expense-list-empty">No expenses for this period.</p>
+    <p class="expense-list-empty">{{ historyTab() === 'transfers' ? 'No transfers for this period.' : 'No expenses for this period.' }}</p>
     }
   </section>
 </div>

@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { ExpenseService, getMondayOfWeek, toYYYYMMDD } from '../../services/expense.service';
 import { Expense } from '../../models/expense.model';
 
@@ -12,6 +13,7 @@ export interface WeekGroup {
 }
 
 type PeriodType = 'year' | 'month' | 'week';
+type HistoryTab = 'expenses' | 'transfers';
 
 @Component({
   selector: 'app-expense-history',
@@ -21,7 +23,9 @@ type PeriodType = 'year' | 'month' | 'week';
 })
 export class ExpenseHistoryComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private confirmationService = inject(ConfirmationService);
 
+  readonly historyTab = signal<HistoryTab>('expenses');
   readonly periodType = signal<PeriodType>('year');
   readonly selectedYear = signal<number>(new Date().getFullYear());
   readonly selectedMonth = signal<number>(new Date().getMonth() + 1); // 1-12
@@ -30,9 +34,22 @@ export class ExpenseHistoryComponent implements OnInit {
   readonly expenses = signal<Expense[]>([]);
   readonly unsyncedCount = signal(0);
 
-  readonly totalAmount = computed(() => this.expenses().reduce((s, e) => s + e.amount, 0));
-  readonly transactionCount = computed(() => this.expenses().length);
-  readonly weekGroups = computed(() => this.buildWeekGroups(this.expenses()));
+  readonly expensesForDisplay = computed(() => {
+    const list = this.expenses();
+    const tab = this.historyTab();
+    if (tab === 'transfers') {
+      return list.filter((e) => e.type === 'transfer' || e.category === 'Transfer');
+    }
+    return list.filter((e) => e.type !== 'transfer' && e.category !== 'Transfer');
+  });
+
+  readonly totalAmount = computed(() => this.expensesForDisplay().reduce((s, e) => s + e.amount, 0));
+  readonly transactionCount = computed(() => this.expensesForDisplay().length);
+  readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
+
+  // Infinite scroll over week groups (cards view)
+  readonly visibleWeekGroupsCount = signal(3);
+  readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
 
   readonly yearOptions = computed(() => {
     const y = new Date().getFullYear();
@@ -63,6 +80,11 @@ export class ExpenseHistoryComponent implements OnInit {
   ngOnInit(): void {
     this.load();
     this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+  }
+
+  setHistoryTab(tab: HistoryTab): void {
+    this.historyTab.set(tab);
+    this.visibleWeekGroupsCount.set(3);
   }
 
   setPeriodType(type: PeriodType): void {
@@ -97,14 +119,20 @@ export class ExpenseHistoryComponent implements OnInit {
     const y = this.selectedYear();
 
     if (t === 'year') {
-      this.expenseService.getForYear(String(y)).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForYear(String(y)).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       return;
     }
 
     if (t === 'month') {
       const m = this.selectedMonth();
       const ym = `${y}-${String(m).padStart(2, '0')}`;
-      this.expenseService.getForMonth(ym).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForMonth(ym).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       return;
     }
 
@@ -115,7 +143,10 @@ export class ExpenseHistoryComponent implements OnInit {
       const sun = new Date(mon);
       sun.setDate(sun.getDate() + 6);
       const end = toYYYYMMDD(sun);
-      this.expenseService.getByDateRange(ws, end).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getByDateRange(ws, end).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
     }
   }
 
@@ -124,18 +155,44 @@ export class ExpenseHistoryComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    if (!window.confirm('Delete this expense? This will sync to all your devices.')) return;
-    this.expenseService.delete(id).subscribe({
-      next: () => {
-        this.load();
-        this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
-      },
-      error: (err) => console.error('Delete failed', err)
+    this.confirmationService.confirm({
+      message: 'Delete this expense? This will sync to all your devices.',
+      header: 'Delete expense',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.expenseService.delete(id).subscribe({
+          next: () => {
+            this.load();
+            this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+          },
+          error: (err) => console.error('Delete failed', err)
+        });
+      }
     });
+  }
+
+  // Triggered when the card list scrolls near the bottom; loads more week groups.
+  onTransactionsScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (!el) return;
+    const threshold = 48;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold) {
+      const total = this.weekGroups().length;
+      const current = this.visibleWeekGroupsCount();
+      if (current < total) {
+        this.visibleWeekGroupsCount.set(Math.min(current + 3, total));
+      }
+    }
   }
 
   getCategoryLetter(category: string): string {
     return (category?.trim().charAt(0) || '?').toUpperCase();
+  }
+
+  /** Display label for category; transfers have no category and show as "Transfer". */
+  getDisplayCategory(expense: Expense): string {
+    return expense.type === 'transfer' || !expense.category?.trim() ? 'Transfer' : expense.category;
   }
 
   getDateLabel(dateStr: string): string {

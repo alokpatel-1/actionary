@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { ExpenseTrackerRoutingModule } from './expense-tracker-routing.module';
 import { ImportsModule } from '../imports';
 import { ExpenseTrackerComponent } from './expense-tracker.component';
@@ -26,6 +27,7 @@ import { ExpenseHistoryComponent } from './components/expense-history/expense-hi
     RouterModule,
     ExpenseTrackerRoutingModule,
     ImportsModule
-  ]
+  ],
+  providers: [ConfirmationService]
 })
 export class ExpenseTrackerModule { }

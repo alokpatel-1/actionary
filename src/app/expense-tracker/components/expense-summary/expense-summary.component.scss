@@ -1,70 +1,338 @@
 .expense-summary {
   width: 100%;
+  padding-bottom: 1rem;
+}
 
-  h2 {
-    margin-bottom: 1rem;
-    font-size: 1.375rem;
-  }
+.summary-page-title {
+  margin: 0 0 1rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
 
-  .period-picker {
-    margin-bottom: 1.25rem;
+// 1. Period selector
+.period-selector {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
-    label {
-      display: block;
-      margin-bottom: 0.375rem;
-      font-weight: 500;
+  button {
+    flex: 1;
+    min-height: 2.5rem;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+
+    &.active {
+      background: var(--color-bg-surface);
+      color: var(--color-primary);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
-
-    input {
-      width: 100%;
-      min-height: 2.75rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid var(--color-border-subtle);
-      font-size: 1rem;
-    }
-  }
-
-  .summary-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-
-    p-card {
-      min-width: 0;
-
-      ::ng-deep .p-card-body,
-      ::ng-deep .p-card-content {
-        padding: 1rem;
-      }
-
-      .stat-value {
-        font-size: 1.375rem;
-        font-weight: 700;
-        color: var(--color-primary);
-      }
-
-      .stat-label {
-        font-size: 0.8125rem;
-        color: var(--color-text-muted);
-      }
-    }
-  }
-
-  h3 {
-    margin-bottom: 0.75rem;
-    font-size: 1.125rem;
-  }
-
-  // Table: full width on mobile, allow horizontal scroll if needed
-  ::ng-deep .p-datatable {
-    overflow-x: auto;
   }
 }
 
+// Date range section
+.date-range-section {
+  margin-bottom: 1rem;
+}
+
+.date-range-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.date-range-pickers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.date-range-field {
+  label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.25rem;
+  }
+}
+
+:host ::ng-deep .range-picker .range-picker-input {
+  width: 100%;
+}
+
+// 2. Metric cards
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--color-border-subtle);
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+// Transfer block (compact)
+.transfer-section {
+  margin-bottom: 1rem;
+
+  .section-title {
+    margin-bottom: 0.4rem;
+    font-size: 0.875rem;
+  }
+}
+
+.transfer-card {
+  background: var(--color-bg-card);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border-subtle);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.transfer-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary, #4DA3FF);
+  line-height: 1.2;
+}
+
+.transfer-meta {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+// Section titles
+.section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+// 3. Donut
+.chart-section {
+  margin-bottom: 1.5rem;
+}
+
+.donut-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.donut-ring {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.donut-hole {
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  background: var(--color-bg-surface);
+}
+
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 12rem;
+  font-size: 0.8125rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+  }
+}
+
+.legend-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  color: var(--color-text-primary);
+  flex: 0 0 auto;
+  min-width: 4rem;
+}
+
+.legend-value {
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+// 4. Line chart
+.line-chart-wrap {
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.line-chart {
+  width: 100%;
+  height: 8rem;
+  display: block;
+}
+
+.line-path {
+  stroke: var(--color-chart-primary);
+}
+
+.line-highlight {
+  fill: var(--color-primary);
+}
+
+.line-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  padding: 0 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.line-label {
+  flex: 1;
+  text-align: center;
+}
+
+// 5. Table
+.table-section {
+  margin-bottom: 1.5rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--color-bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.category-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th,
+  td {
+    padding: 0.625rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  td {
+    color: var(--color-text-primary);
+  }
+
+  td:nth-child(2),
+  td:nth-child(3),
+  td:nth-child(4),
+  th:nth-child(2),
+  th:nth-child(3),
+  th:nth-child(4) {
+    text-align: right;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.no-data-cell {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  padding: 1.5rem 1rem !important;
+}
+
+// 6. Insights
+.insights-section {
+  margin-bottom: 1rem;
+}
+
+.insights-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+
+  li {
+    margin-bottom: 0.35rem;
+  }
+}
+
+// 7. Extra meta
+.extra-meta {
+  margin-top: 0.5rem;
+}
+
+.extra-line {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
 @media (min-width: 480px) {
-  .expense-summary .summary-cards {
+  .metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
+  }
+
+  .metric-value {
+    font-size: 1.375rem;
   }
 }
