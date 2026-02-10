@@ -6,6 +6,7 @@
 
   <form [formGroup]="form" (ngSubmit)="submit()">
     <section class="amount-hero">
+      <label class="amount-label" for="amount">Amount</label>
       <div class="amount-input-wrap">
         <span class="amount-prefix">₹</span>
         <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" styleClass="amount-input" inputStyleClass="amount-input-inner" />
@@ -16,6 +17,7 @@
     </section>
 
     <section class="type-section">
+      <span class="section-label">Type</span>
       <div class="type-segment" role="group">
         <button type="button" class="type-btn" [class.active]="form.get('type')?.value === 'expense'" (click)="form.patchValue({ type: 'expense' })">
           Expense
@@ -27,9 +29,10 @@
     </section>
 
     <section class="details-card">
+      <h2 class="details-card-title">Details</h2>
       @if (form.get('type')?.value === 'expense') {
       <div class="p-field category-field">
-        <label>Category</label>
+        <label class="field-label">Category</label>
         <div class="category-radios">
           @for (cat of allCategories; track cat) {
           <label class="category-radio">
@@ -45,13 +48,13 @@
       }
 
       <div class="detail-row">
-        <label for="date">Date</label>
-        <p-datePicker id="date" formControlName="date" dateFormat="dd M yy" styleClass="detail-date" inputStyleClass="detail-date-input" />
+        <label class="field-label" for="date">Date</label>
+        <p-datePicker id="date" formControlName="date" dateFormat="dd M yy" [maxDate]="maxDate()" styleClass="detail-date" inputStyleClass="detail-date-input" />
       </div>
 
       <div class="detail-row">
-        <label for="note">Note</label>
-        <input pInputText id="note" formControlName="note" class="detail-note-input" placeholder="Add a note" />
+        <label class="field-label" for="note">Note</label>
+        <input pInputText id="note" formControlName="note" class="detail-note-input" placeholder="Add a note (optional)" />
       </div>
     </section>
 
