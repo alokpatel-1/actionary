@@ -14,11 +14,11 @@
     <div class="date-range-pickers">
       <div class="date-range-field">
         <label>From</label>
-        <p-datePicker [ngModel]="rangeStartDate()" (ngModelChange)="onRangeStartSelect($event)" dateFormat="dd M yy" styleClass="range-picker" inputStyleClass="range-picker-input" />
+        <p-datePicker [ngModel]="rangeStartDate()" (ngModelChange)="onRangeStartSelect($event)" [minDate]="dateRangeMin" [maxDate]="rangeFromMaxDate()" dateFormat="dd M yy" styleClass="range-picker" inputStyleClass="range-picker-input" />
       </div>
       <div class="date-range-field">
         <label>To</label>
-        <p-datePicker [ngModel]="rangeEndDate()" (ngModelChange)="onRangeEndSelect($event)" dateFormat="dd M yy" styleClass="range-picker" inputStyleClass="range-picker-input" />
+        <p-datePicker [ngModel]="rangeEndDate()" (ngModelChange)="onRangeEndSelect($event)" [minDate]="rangeToMinDate()" [maxDate]="dateRangeMax()" dateFormat="dd M yy" styleClass="range-picker" inputStyleClass="range-picker-input" />
       </div>
     </div>
   </section>
@@ -35,28 +35,28 @@
   </section>
   }
 
-  <!-- 3. Key metrics -->
+  <!-- 3. Key metrics (exclude transfers) -->
   <section class="metrics-grid">
     <div class="metric-card">
-      <div class="metric-value">{{ formatCurrency(totalAmount()) }}</div>
+      <div class="metric-value">{{ formatCurrency(totalSpendDisplay()) }}</div>
       <div class="metric-label">Total spend</div>
     </div>
     <div class="metric-card">
-      <div class="metric-value">{{ totalCount() }}</div>
+      <div class="metric-value">{{ transactionCountDisplay() }}</div>
       <div class="metric-label">Transactions</div>
     </div>
     <div class="metric-card">
-      <div class="metric-value">{{ formatCurrency(averageSpend()) }}</div>
+      <div class="metric-value">{{ formatCurrency(averageSpendDisplay()) }}</div>
       <div class="metric-label">{{ period() === 'year' ? 'Avg per month' : 'Avg per day' }}</div>
     </div>
     <div class="metric-card">
-      <div class="metric-value">@if (highestExpense(); as he) { {{ formatCurrency(he.amount) }} } @else { — }</div>
+      <div class="metric-value">@if (highestExpenseDisplay(); as he) { {{ formatCurrency(he.amount) }} } @else { — }</div>
       <div class="metric-label">Highest single expense</div>
     </div>
   </section>
 
   <!-- 4. Category distribution (donut) -->
-  <section class="chart-section">
+  <section class="chart-section chart-section-donut">
     <h3 class="section-title">Where your money went</h3>
     <div class="donut-wrap">
       <div class="donut-ring" [style.background]="conicGradient()">
@@ -67,7 +67,7 @@
         <li>
           <span class="legend-dot" [style.background-color]="seg.color"></span>
           <span class="legend-label">{{ seg.category }}</span>
-          <span class="legend-value">{{ formatCurrency(seg.total) }} ({{ seg.percent }}%)</span>
+          <span class="legend-value">{{ formatCurrency(seg.total) }} · {{ seg.percent }}%</span>
         </li>
         }
       </ul>

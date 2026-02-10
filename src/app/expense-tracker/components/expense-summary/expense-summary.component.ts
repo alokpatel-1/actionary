@@ -73,10 +73,60 @@ export class ExpenseSummaryComponent implements OnInit {
   readonly rangeStartDate = computed(() => new Date(this.dateRangeStart() + 'T12:00:00'));
   readonly rangeEndDate = computed(() => new Date(this.dateRangeEnd() + 'T12:00:00'));
 
+  /** Min date for range: 10 years ago. */
+  readonly dateRangeMin = ((): Date => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 10);
+    return d;
+  })();
+
+  /** Max date for range: today (no future dates). */
+  readonly dateRangeMax = computed(() => {
+    const d = new Date();
+    d.setHours(23, 59, 59, 999);
+    return d;
+  });
+
+  /** For "From" picker: cannot be after "To" or after today. */
+  readonly rangeFromMaxDate = computed(() => {
+    const today = new Date();
+    const to = this.rangeEndDate();
+    return to.getTime() > today.getTime() ? today : to;
+  });
+
+  /** For "To" picker: cannot be before "From" or after today. */
+  readonly rangeToMinDate = computed(() => this.rangeStartDate());
+
   readonly totalAmount = computed(() =>
     this.expenses().reduce((s, e) => s + e.amount, 0)
   );
   readonly totalCount = computed(() => this.expenses().length);
+
+  /** Metrics excluding transfers (used for main Summary cards). */
+  readonly totalSpendDisplay = computed(() => this.totalExcludingTransfers());
+  readonly transactionCountDisplay = computed(() => this.expensesExcludingTransfers().length);
+  readonly averageSpendDisplay = computed(() => {
+    const total = this.totalExcludingTransfers();
+    const list = this.expensesExcludingTransfers();
+    if (list.length === 0) return 0;
+    const period = this.period();
+    if (period === 'month') {
+      const d = new Date();
+      const days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      return days ? total / days : 0;
+    }
+    if (period === 'range') {
+      const days = daysBetween(this.dateRangeStart(), this.dateRangeEnd());
+      return days > 0 ? total / days : 0;
+    }
+    return total / 12;
+  });
+  readonly highestExpenseDisplay = computed(() => {
+    const list = this.expensesExcludingTransfers();
+    if (list.length === 0) return null;
+    return list.reduce((a, b) => (a.amount >= b.amount ? a : b));
+  });
+
   readonly averageSpend = computed(() => {
     const total = this.totalAmount();
     const list = this.expenses();
@@ -262,11 +312,16 @@ export class ExpenseSummaryComponent implements OnInit {
     const segs = this.donutSegments();
     const total = this.totalExcludingTransfers();
     if (total === 0 || segs.length === 0) return 'conic-gradient(var(--color-border-subtle) 0 100%)';
+    const MIN_VISUAL_PCT = 2.5;
+    const raw = segs.map((s) => Math.max(s.percent, MIN_VISUAL_PCT));
+    const sum = raw.reduce((a, b) => a + b, 0);
+    const scale = 100 / sum;
     let acc = 0;
-    const parts = segs.map((s) => {
-      const start = (acc / total) * 100;
-      acc += s.total;
-      const end = (acc / total) * 100;
+    const parts = segs.map((s, i) => {
+      const start = acc;
+      const visualPct = raw[i] * scale;
+      acc += visualPct;
+      const end = acc;
       return `${s.color} ${start}% ${end}%`;
     });
     return `conic-gradient(${parts.join(', ')})`;
@@ -311,11 +366,11 @@ export class ExpenseSummaryComponent implements OnInit {
   setPeriod(p: SummaryPeriod): void {
     this.period.set(p);
     if (p === 'range') {
-      const now = new Date();
-      const first = new Date(now.getFullYear(), now.getMonth(), 1);
-      const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      this.dateRangeStart.set(toYYYYMMDD(first));
-      this.dateRangeEnd.set(toYYYYMMDD(last));
+      const end = new Date();
+      const start = new Date();
+      start.setMonth(start.getMonth() - 6);
+      this.dateRangeStart.set(toYYYYMMDD(start));
+      this.dateRangeEnd.set(toYYYYMMDD(end));
     }
     this.refresh();
   }
