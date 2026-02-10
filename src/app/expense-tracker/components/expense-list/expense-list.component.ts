@@ -81,6 +81,10 @@ export class ExpenseListComponent implements OnInit {
   // Week-grouped list (always group by week; excludes transfers)
   readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
 
+  // Infinite scroll over week groups (cards view)
+  readonly visibleWeekGroupsCount = signal(3);
+  readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
+
   // Context-aware date display for the selector area
   readonly periodDisplay = computed(() => this.getPeriodDisplay());
 
@@ -104,7 +108,10 @@ export class ExpenseListComponent implements OnInit {
       list.filter((e) => e.type !== 'transfer' && e.category !== 'Transfer').reduce((s, e) => s + e.amount, 0);
 
     if (mode === 'today') {
-      this.expenseService.getForDay(today).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForDay(today).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       this.expenseService.getForDay(toYYYYMMDD(yesterday)).subscribe((t) =>
@@ -118,7 +125,10 @@ export class ExpenseListComponent implements OnInit {
       sun.setDate(sun.getDate() + 6);
       const start = toYYYYMMDD(monday);
       const end = toYYYYMMDD(sun);
-      this.expenseService.getForWeek(start, end).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForWeek(start, end).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       const lastMon = new Date(monday);
       lastMon.setDate(lastMon.getDate() - 7);
       const lastSun = new Date(lastMon);
@@ -133,13 +143,19 @@ export class ExpenseListComponent implements OnInit {
       const ym = this.currentYearMonth();
       const [y, m] = ym.split('-').map(Number);
       const end = `${ym}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
-      this.expenseService.getForMonth(ym).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForMonth(ym).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       this.comparisonTotal.set(0); // optional: compare to last month
       return;
     }
 
     // year
-    this.expenseService.getForYear(String(this.currentYear)).subscribe((list) => this.expenses.set(list));
+    this.expenseService.getForYear(String(this.currentYear)).subscribe((list) => {
+      this.expenses.set(list);
+      this.visibleWeekGroupsCount.set(3);
+    });
     this.comparisonTotal.set(0);
   }
 
@@ -161,6 +177,20 @@ export class ExpenseListComponent implements OnInit {
       },
       error: (err) => console.error('Delete failed', err)
     });
+  }
+
+  // Triggered when the card list scrolls near the bottom; loads more week groups.
+  onTransactionsScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (!el) return;
+    const threshold = 48;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold) {
+      const total = this.weekGroups().length;
+      const current = this.visibleWeekGroupsCount();
+      if (current < total) {
+        this.visibleWeekGroupsCount.set(Math.min(current + 3, total));
+      }
+    }
   }
 
   getCategoryLetter(category: string): string {

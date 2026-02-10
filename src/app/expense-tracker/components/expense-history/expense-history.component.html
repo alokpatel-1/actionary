@@ -71,10 +71,10 @@
   <p class="unsynced-entries">{{ unsyncedCount() }} unsynced entries</p>
   }
 
-  <section class="transactions-section">
+  <section class="transactions-section" (scroll)="onTransactionsScroll($event)">
     <h2 class="transactions-title">Transactions</h2>
 
-    @for (group of weekGroups(); track group.start + group.end) {
+    @for (group of visibleWeekGroups(); track group.start + group.end) {
     <div class="week-group">
       <div class="week-group-header">
         <h3 class="week-group-title">{{ group.label }}</h3>

@@ -45,6 +45,10 @@ export class ExpenseHistoryComponent implements OnInit {
   readonly transactionCount = computed(() => this.expensesForDisplay().length);
   readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
 
+  // Infinite scroll over week groups (cards view)
+  readonly visibleWeekGroupsCount = signal(3);
+  readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
+
   readonly yearOptions = computed(() => {
     const y = new Date().getFullYear();
     return [y, y - 1, y - 2, y - 3, y - 4];
@@ -78,6 +82,7 @@ export class ExpenseHistoryComponent implements OnInit {
 
   setHistoryTab(tab: HistoryTab): void {
     this.historyTab.set(tab);
+    this.visibleWeekGroupsCount.set(3);
   }
 
   setPeriodType(type: PeriodType): void {
@@ -112,14 +117,20 @@ export class ExpenseHistoryComponent implements OnInit {
     const y = this.selectedYear();
 
     if (t === 'year') {
-      this.expenseService.getForYear(String(y)).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForYear(String(y)).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       return;
     }
 
     if (t === 'month') {
       const m = this.selectedMonth();
       const ym = `${y}-${String(m).padStart(2, '0')}`;
-      this.expenseService.getForMonth(ym).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getForMonth(ym).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
       return;
     }
 
@@ -130,7 +141,10 @@ export class ExpenseHistoryComponent implements OnInit {
       const sun = new Date(mon);
       sun.setDate(sun.getDate() + 6);
       const end = toYYYYMMDD(sun);
-      this.expenseService.getByDateRange(ws, end).subscribe((list) => this.expenses.set(list));
+      this.expenseService.getByDateRange(ws, end).subscribe((list) => {
+        this.expenses.set(list);
+        this.visibleWeekGroupsCount.set(3);
+      });
     }
   }
 
@@ -147,6 +161,20 @@ export class ExpenseHistoryComponent implements OnInit {
       },
       error: (err) => console.error('Delete failed', err)
     });
+  }
+
+  // Triggered when the card list scrolls near the bottom; loads more week groups.
+  onTransactionsScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (!el) return;
+    const threshold = 48;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold) {
+      const total = this.weekGroups().length;
+      const current = this.visibleWeekGroupsCount();
+      if (current < total) {
+        this.visibleWeekGroupsCount.set(Math.min(current + 3, total));
+      }
+    }
   }
 
   getCategoryLetter(category: string): string {
