@@ -1,8 +1,10 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { ExpenseService, ViewMode, getMondayOfWeek, toYYYYMMDD } from '../../services/expense.service';
+import { ExpenseSyncService } from '../../services/expense-sync.service';
 import { Expense } from '../../models/expense.model';
 
 export interface WeekGroup {
@@ -21,7 +23,9 @@ export interface WeekGroup {
 })
 export class ExpenseListComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private syncService = inject(ExpenseSyncService);
   private confirmationService = inject(ConfirmationService);
+  private destroyRef = inject(DestroyRef);
 
   readonly viewMode = signal<ViewMode>('month');
   readonly expenses = signal<Expense[]>([]);
@@ -93,6 +97,10 @@ export class ExpenseListComponent implements OnInit {
   ngOnInit(): void {
     this.refresh();
     this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+    this.syncService.syncCompleted$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.refresh();
+      this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+    });
   }
 
   setViewMode(mode: ViewMode): void {

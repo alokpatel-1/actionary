@@ -5,7 +5,7 @@ import { Expense } from '../models/expense.model';
 import { Auth, user } from '@angular/fire/auth';
 import { Firestore, collection, doc, getDocs, setDoc, deleteDoc } from '@angular/fire/firestore';
 import { map, take } from 'rxjs/operators';
-import { from, Observable, of } from 'rxjs';
+import { from, Observable, of, Subject } from 'rxjs';
 
 const EXPENSES_COLLECTION = 'expenses';
 
@@ -31,6 +31,9 @@ export class ExpenseSyncService {
   lastSyncTimestamp = signal<number | null>(null);
   syncError = signal<string | null>(null);
   isOnline = signal(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  /** Emits after a successful sync so list/history/summary can reload data. */
+  readonly syncCompleted$ = new Subject<void>();
 
   constructor() {
     if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
@@ -132,9 +135,10 @@ export class ExpenseSyncService {
       }
       await this.idb.putAll(merged);
 
-      // 4. Update last sync time
+      // 4. Update last sync time and notify listeners to refresh
       this.lastSyncTimestamp.set(Date.now());
       this.syncStatus.set('completed');
+      this.syncCompleted$.next();
       return { success: true };
     } catch (err: any) {
       const message = err?.message || String(err);

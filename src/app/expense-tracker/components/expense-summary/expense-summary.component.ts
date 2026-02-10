@@ -1,5 +1,7 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExpenseService } from '../../services/expense.service';
+import { ExpenseSyncService } from '../../services/expense-sync.service';
 import { Expense } from '../../models/expense.model';
 
 export type SummaryPeriod = 'month' | 'year' | 'range';
@@ -54,6 +56,8 @@ const DONUT_COLORS = [
 })
 export class ExpenseSummaryComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private syncService = inject(ExpenseSyncService);
+  private destroyRef = inject(DestroyRef);
 
   readonly period = signal<SummaryPeriod>('month');
   readonly dateRangeStart = signal<string>(toYYYYMMDD(new Date()));
@@ -361,6 +365,7 @@ export class ExpenseSummaryComponent implements OnInit {
 
   ngOnInit(): void {
     this.refresh();
+    this.syncService.syncCompleted$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refresh());
   }
 
   setPeriod(p: SummaryPeriod): void {

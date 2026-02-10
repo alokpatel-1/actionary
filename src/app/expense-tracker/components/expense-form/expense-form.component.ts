@@ -1,7 +1,8 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ExpenseService } from '../../services/expense.service';
 import { ExpenseType } from '../../models/expense.model';
 
@@ -29,7 +30,7 @@ export const ALL_CATEGORIES = [
 export class ExpenseFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private expenseService = inject(ExpenseService);
-  private router = inject(Router);
+  private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
 
   readonly allCategories = ALL_CATEGORIES;
@@ -106,7 +107,7 @@ export class ExpenseFormComponent implements OnInit {
       this.expenseService.update(this.id()!, payload).subscribe({
         next: () => {
           this.saving.set(false);
-          this.router.navigate(['/expenses', 'list']);
+          this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Record updated.' });
         },
         error: () => this.saving.set(false)
       });
@@ -114,7 +115,7 @@ export class ExpenseFormComponent implements OnInit {
       this.expenseService.add(payload).subscribe({
         next: () => {
           this.saving.set(false);
-          this.router.navigate(['/expenses', 'list']);
+          this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Record added.' });
         },
         error: () => this.saving.set(false)
       });

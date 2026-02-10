@@ -88,6 +88,19 @@
   min-height: 2rem;
   font-size: 0.8125rem;
   font-weight: 600;
+  background: transparent !important;
+  border: none !important;
+  color: var(--p-button-text-color, inherit);
+
+  &.sync-btn-icon {
+    min-width: 2rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--p-button-text-hover-bg, rgba(0, 0, 0, 0.04)) !important;
+  }
 }
 
 // Single app header: sync left, user right (user opens settings)
