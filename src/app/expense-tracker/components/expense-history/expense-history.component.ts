@@ -54,6 +54,7 @@ export class ExpenseHistoryComponent implements OnInit {
   // Infinite scroll over week groups (cards view)
   readonly visibleWeekGroupsCount = signal(3);
   readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
+  readonly deletingId = signal<string | null>(null);
 
   readonly yearOptions = computed(() => {
     const y = new Date().getFullYear();
@@ -169,12 +170,17 @@ export class ExpenseHistoryComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
+        this.deletingId.set(id);
         this.expenseService.delete(id).subscribe({
           next: () => {
+            this.deletingId.set(null);
             this.load();
             this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
           },
-          error: (err) => console.error('Delete failed', err)
+          error: (err) => {
+            this.deletingId.set(null);
+            console.error('Delete failed', err);
+          }
         });
       }
     });

@@ -82,19 +82,27 @@
       </div>
       <div class="expense-cards">
         @for (expense of group.expenses; track expense.id) {
-        <a [routerLink]="['/expenses', 'edit', expense.id]" class="expense-card">
-          <div class="expense-card-icon" [attr.aria-label]="getDisplayCategory(expense)">
-            <span class="expense-card-icon-letter">{{ getCategoryLetter(getDisplayCategory(expense)) }}</span>
+        <div class="expense-card-wrap">
+          @if (deletingId() === expense.id) {
+          <div class="expense-card-loading" aria-live="polite">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Deleting…</span>
           </div>
-          <div class="expense-card-body">
-            <span class="expense-card-category">{{ getDisplayCategory(expense) }}</span>
-            <span class="expense-card-date">{{ getDateLabel(expense.date) }}</span>
-          </div>
-          <span class="expense-card-amount">{{ formatCurrency(expense.amount) }}</span>
-          <button type="button" class="expense-card-delete" (click)="deleteExpense(expense.id, $event)" aria-label="Delete expense">
-            <i class="pi pi-trash"></i>
-          </button>
-        </a>
+          }
+          <a [routerLink]="['/expenses', 'edit', expense.id]" class="expense-card" [class.card-loading]="deletingId() === expense.id">
+            <div class="expense-card-icon" [attr.aria-label]="getDisplayCategory(expense)">
+              <span class="expense-card-icon-letter">{{ getCategoryLetter(getDisplayCategory(expense)) }}</span>
+            </div>
+            <div class="expense-card-body">
+              <span class="expense-card-category">{{ getDisplayCategory(expense) }}</span>
+              <span class="expense-card-date">{{ getDateLabel(expense.date) }}</span>
+            </div>
+            <span class="expense-card-amount">{{ formatCurrency(expense.amount) }}</span>
+            <button type="button" class="expense-card-delete" (click)="deleteExpense(expense.id, $event)" aria-label="Delete expense">
+              <i class="pi pi-trash"></i>
+            </button>
+          </a>
+        </div>
         }
       </div>
     </div>

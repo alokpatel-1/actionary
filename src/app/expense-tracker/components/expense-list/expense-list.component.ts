@@ -90,6 +90,7 @@ export class ExpenseListComponent implements OnInit {
   // Infinite scroll over week groups (cards view)
   readonly visibleWeekGroupsCount = signal(3);
   readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
+  readonly deletingId = signal<string | null>(null);
 
   // Context-aware date display for the selector area
   readonly periodDisplay = computed(() => this.getPeriodDisplay());
@@ -185,12 +186,17 @@ export class ExpenseListComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
+        this.deletingId.set(id);
         this.expenseService.delete(id).subscribe({
           next: () => {
+            this.deletingId.set(null);
             this.refresh();
             this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
           },
-          error: (err) => console.error('Delete failed', err)
+          error: (err) => {
+            this.deletingId.set(null);
+            console.error('Delete failed', err);
+          }
         });
       }
     });

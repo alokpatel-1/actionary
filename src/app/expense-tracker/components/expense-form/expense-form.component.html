@@ -1,4 +1,13 @@
 <div class="expense-form">
+  @if (saving()) {
+  <div class="form-loading-overlay" aria-live="polite">
+    <div class="form-loading-spinner"><i class="pi pi-spin pi-spinner"></i></div>
+    <span class="form-loading-text">Saving…</span>
+  </div>
+  }
+  @if (successMessage(); as msg) {
+  <div class="form-success-msg" role="status">{{ msg }}</div>
+  }
   <header class="form-header">
     <h1 class="form-title">{{ isEdit() ? 'Edit Expense' : 'Add Expense' }}</h1>
   </header>
@@ -62,7 +71,7 @@
     <div class="form-spacer"></div>
 
     <div class="form-actions">
-      <button pButton type="submit" [label]="isEdit() ? 'Save' : 'ADD EXPENSE'" [loading]="saving()" [disabled]="form.invalid" class="add-expense-btn"></button>
+      <button pButton type="submit" [label]="isEdit() ? 'UPDATE' : 'ADD EXPENSE'" [loading]="saving()" [disabled]="form.invalid" class="add-expense-btn"></button>
     </div>
   </form>
 </div>
