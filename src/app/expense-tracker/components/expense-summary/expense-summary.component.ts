@@ -101,6 +101,32 @@ export class ExpenseSummaryComponent implements OnInit {
     this.expenses().reduce((s, e) => s + e.amount, 0)
   );
   readonly totalCount = computed(() => this.expenses().length);
+
+  /** Metrics excluding transfers (used for main Summary cards). */
+  readonly totalSpendDisplay = computed(() => this.totalExcludingTransfers());
+  readonly transactionCountDisplay = computed(() => this.expensesExcludingTransfers().length);
+  readonly averageSpendDisplay = computed(() => {
+    const total = this.totalExcludingTransfers();
+    const list = this.expensesExcludingTransfers();
+    if (list.length === 0) return 0;
+    const period = this.period();
+    if (period === 'month') {
+      const d = new Date();
+      const days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      return days ? total / days : 0;
+    }
+    if (period === 'range') {
+      const days = daysBetween(this.dateRangeStart(), this.dateRangeEnd());
+      return days > 0 ? total / days : 0;
+    }
+    return total / 12;
+  });
+  readonly highestExpenseDisplay = computed(() => {
+    const list = this.expensesExcludingTransfers();
+    if (list.length === 0) return null;
+    return list.reduce((a, b) => (a.amount >= b.amount ? a : b));
+  });
+
   readonly averageSpend = computed(() => {
     const total = this.totalAmount();
     const list = this.expenses();
@@ -340,11 +366,11 @@ export class ExpenseSummaryComponent implements OnInit {
   setPeriod(p: SummaryPeriod): void {
     this.period.set(p);
     if (p === 'range') {
-      const now = new Date();
-      const first = new Date(now.getFullYear(), now.getMonth(), 1);
-      const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      this.dateRangeStart.set(toYYYYMMDD(first));
-      this.dateRangeEnd.set(toYYYYMMDD(last));
+      const end = new Date();
+      const start = new Date();
+      start.setMonth(start.getMonth() - 6);
+      this.dateRangeStart.set(toYYYYMMDD(start));
+      this.dateRangeEnd.set(toYYYYMMDD(end));
     }
     this.refresh();
   }

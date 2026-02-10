@@ -35,22 +35,22 @@
   </section>
   }
 
-  <!-- 3. Key metrics -->
+  <!-- 3. Key metrics (exclude transfers) -->
   <section class="metrics-grid">
     <div class="metric-card">
-      <div class="metric-value">{{ formatCurrency(totalAmount()) }}</div>
+      <div class="metric-value">{{ formatCurrency(totalSpendDisplay()) }}</div>
       <div class="metric-label">Total spend</div>
     </div>
     <div class="metric-card">
-      <div class="metric-value">{{ totalCount() }}</div>
+      <div class="metric-value">{{ transactionCountDisplay() }}</div>
       <div class="metric-label">Transactions</div>
     </div>
     <div class="metric-card">
-      <div class="metric-value">{{ formatCurrency(averageSpend()) }}</div>
+      <div class="metric-value">{{ formatCurrency(averageSpendDisplay()) }}</div>
       <div class="metric-label">{{ period() === 'year' ? 'Avg per month' : 'Avg per day' }}</div>
     </div>
     <div class="metric-card">
-      <div class="metric-value">@if (highestExpense(); as he) { {{ formatCurrency(he.amount) }} } @else { — }</div>
+      <div class="metric-value">@if (highestExpenseDisplay(); as he) { {{ formatCurrency(he.amount) }} } @else { — }</div>
       <div class="metric-label">Highest single expense</div>
     </div>
   </section>
