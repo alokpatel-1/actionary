@@ -1,8 +1,10 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { ExpenseService, ViewMode, getMondayOfWeek, toYYYYMMDD } from '../../services/expense.service';
+import { ExpenseSyncService } from '../../services/expense-sync.service';
 import { Expense } from '../../models/expense.model';
 
 export interface WeekGroup {
@@ -21,7 +23,9 @@ export interface WeekGroup {
 })
 export class ExpenseListComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private syncService = inject(ExpenseSyncService);
   private confirmationService = inject(ConfirmationService);
+  private destroyRef = inject(DestroyRef);
 
   readonly viewMode = signal<ViewMode>('month');
   readonly expenses = signal<Expense[]>([]);
@@ -86,6 +90,7 @@ export class ExpenseListComponent implements OnInit {
   // Infinite scroll over week groups (cards view)
   readonly visibleWeekGroupsCount = signal(3);
   readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
+  readonly deletingId = signal<string | null>(null);
 
   // Context-aware date display for the selector area
   readonly periodDisplay = computed(() => this.getPeriodDisplay());
@@ -93,6 +98,10 @@ export class ExpenseListComponent implements OnInit {
   ngOnInit(): void {
     this.refresh();
     this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+    this.syncService.syncCompleted$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.refresh();
+      this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+    });
   }
 
   setViewMode(mode: ViewMode): void {
@@ -177,12 +186,17 @@ export class ExpenseListComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
+        this.deletingId.set(id);
         this.expenseService.delete(id).subscribe({
           next: () => {
+            this.deletingId.set(null);
             this.refresh();
             this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
           },
-          error: (err) => console.error('Delete failed', err)
+          error: (err) => {
+            this.deletingId.set(null);
+            console.error('Delete failed', err);
+          }
         });
       }
     });
@@ -245,103 +259,33 @@ export class ExpenseListComponent implements OnInit {
     return String(this.currentYear);
   }
 
+  /** Same grouping and sorting as transaction history: by week (Mon–Sun), newest week first, newest expense first within each week. */
   private buildWeekGroups(list: Expense[]): WeekGroup[] {
     if (list.length === 0) return [];
-    const now = new Date();
-    const todayStr = toYYYYMMDD(now);
-    const thisMonday = getMondayOfWeek(now);
-    const thisSunday = new Date(thisMonday);
-    thisSunday.setDate(thisSunday.getDate() + 6);
-    const thisWeekStart = toYYYYMMDD(thisMonday);
-    const thisWeekEnd = toYYYYMMDD(thisSunday);
-
-    const lastMonday = new Date(thisMonday);
-    lastMonday.setDate(lastMonday.getDate() - 7);
-    const lastSunday = new Date(lastMonday);
-    lastSunday.setDate(lastSunday.getDate() + 6);
-    const lastWeekStart = toYYYYMMDD(lastMonday);
-    const lastWeekEnd = toYYYYMMDD(lastSunday);
-
     const weekKey = (d: string) => {
       const m = getMondayOfWeek(new Date(d + 'T12:00:00'));
       return toYYYYMMDD(m);
     };
-
-    const todayExpenses = list.filter((e) => e.date === todayStr);
-    const thisWeekExpenses = list.filter(
-      (e) => e.date >= thisWeekStart && e.date <= thisWeekEnd && e.date !== todayStr
-    );
-    const lastWeekExpenses = list.filter((e) => e.date >= lastWeekStart && e.date <= lastWeekEnd);
-    const otherWeeks = new Map<string, Expense[]>();
+    const byWeek = new Map<string, Expense[]>();
     list.forEach((e) => {
-      if (e.date === todayStr) return;
-      if (e.date >= thisWeekStart && e.date <= thisWeekEnd) return;
-      if (e.date >= lastWeekStart && e.date <= lastWeekEnd) return;
       const key = weekKey(e.date);
-      if (!otherWeeks.has(key)) otherWeeks.set(key, []);
-      otherWeeks.get(key)!.push(e);
+      if (!byWeek.has(key)) byWeek.set(key, []);
+      byWeek.get(key)!.push(e);
     });
-
-    type GroupWithKey = { sortKey: string; group: WeekGroup };
-    const withKeys: GroupWithKey[] = [];
-
-    const byDateDesc = (a: Expense, b: Expense) => b.date.localeCompare(a.date);
-    if (todayExpenses.length > 0) {
-      withKeys.push({
-        sortKey: todayStr + 'Z', // so Today sorts first (newest)
-        group: {
-          label: 'Today',
-          start: todayStr,
-          end: todayStr,
-          expenses: [...todayExpenses].sort(byDateDesc),
-          total: todayExpenses.reduce((s, e) => s + e.amount, 0)
-        }
-      });
-    }
-    if (thisWeekExpenses.length > 0) {
-      withKeys.push({
-        sortKey: thisWeekEnd,
-        group: {
-          label: 'This Week',
-          start: thisWeekStart,
-          end: thisWeekEnd,
-          expenses: [...thisWeekExpenses].sort(byDateDesc),
-          total: thisWeekExpenses.reduce((s, e) => s + e.amount, 0)
-        }
-      });
-    }
-    if (lastWeekExpenses.length > 0) {
-      withKeys.push({
-        sortKey: lastWeekEnd,
-        group: {
-          label: 'Last Week',
-          start: lastWeekStart,
-          end: lastWeekEnd,
-          expenses: [...lastWeekExpenses].sort(byDateDesc),
-          total: lastWeekExpenses.reduce((s, e) => s + e.amount, 0)
-        }
-      });
-    }
-    [...otherWeeks.keys()].sort((a, b) => b.localeCompare(a)).forEach((key) => {
-      const exp = otherWeeks.get(key)!;
+    const keys = [...byWeek.keys()].sort((a, b) => b.localeCompare(a));
+    return keys.map((key) => {
+      const exp = byWeek.get(key)!;
       const mon = new Date(key + 'T12:00:00');
       const sun = new Date(mon);
       sun.setDate(sun.getDate() + 6);
-      const end = toYYYYMMDD(sun);
-      withKeys.push({
-        sortKey: end,
-        group: {
-          label: `Week of ${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-          start: key,
-          end,
-          expenses: [...exp].sort(byDateDesc),
-          total: exp.reduce((s, e) => s + e.amount, 0)
-        }
-      });
+      return {
+        label: `Week of ${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+        start: key,
+        end: toYYYYMMDD(sun),
+        expenses: [...exp].sort((a, b) => b.date.localeCompare(a.date)),
+        total: exp.reduce((s, e) => s + e.amount, 0)
+      };
     });
-
-    withKeys.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
-    return withKeys.map((x) => x.group);
   }
 
   private getCurrentYearMonth(): string {

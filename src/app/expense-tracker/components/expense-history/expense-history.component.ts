@@ -1,7 +1,9 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { ExpenseService, getMondayOfWeek, toYYYYMMDD } from '../../services/expense.service';
+import { ExpenseSyncService } from '../../services/expense-sync.service';
 import { Expense } from '../../models/expense.model';
 
 export interface WeekGroup {
@@ -23,7 +25,9 @@ type HistoryTab = 'expenses' | 'transfers';
 })
 export class ExpenseHistoryComponent implements OnInit {
   private expenseService = inject(ExpenseService);
+  private syncService = inject(ExpenseSyncService);
   private confirmationService = inject(ConfirmationService);
+  private destroyRef = inject(DestroyRef);
 
   readonly historyTab = signal<HistoryTab>('expenses');
   readonly periodType = signal<PeriodType>('year');
@@ -50,6 +54,7 @@ export class ExpenseHistoryComponent implements OnInit {
   // Infinite scroll over week groups (cards view)
   readonly visibleWeekGroupsCount = signal(3);
   readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
+  readonly deletingId = signal<string | null>(null);
 
   readonly yearOptions = computed(() => {
     const y = new Date().getFullYear();
@@ -80,6 +85,10 @@ export class ExpenseHistoryComponent implements OnInit {
   ngOnInit(): void {
     this.load();
     this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+    this.syncService.syncCompleted$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.load();
+      this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+    });
   }
 
   setHistoryTab(tab: HistoryTab): void {
@@ -161,12 +170,17 @@ export class ExpenseHistoryComponent implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
+        this.deletingId.set(id);
         this.expenseService.delete(id).subscribe({
           next: () => {
+            this.deletingId.set(null);
             this.load();
             this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
           },
-          error: (err) => console.error('Delete failed', err)
+          error: (err) => {
+            this.deletingId.set(null);
+            console.error('Delete failed', err);
+          }
         });
       }
     });

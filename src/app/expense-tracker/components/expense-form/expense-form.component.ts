@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ExpenseService } from '../../services/expense.service';
 import { ExpenseType } from '../../models/expense.model';
@@ -29,8 +29,8 @@ export const ALL_CATEGORIES = [
 export class ExpenseFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private expenseService = inject(ExpenseService);
-  private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   readonly allCategories = ALL_CATEGORIES;
 
@@ -41,6 +41,8 @@ export class ExpenseFormComponent implements OnInit {
   isEdit = signal(false);
   id = signal<string | null>(null);
   saving = signal(false);
+  /** In-screen success message; cleared after 5 seconds. */
+  successMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -93,7 +95,7 @@ export class ExpenseFormComponent implements OnInit {
     this.saving.set(true);
     const raw = this.form.getRawValue();
     const type = (raw.type ?? 'expense') as ExpenseType;
-    const date = typeof raw.date === 'string' ? raw.date : (raw.date as Date) ? this.dateToLocalYYYYMMDD(raw.date as Date) : this.todayStr();
+    const date = this.getDateStrFromForm(raw.date);
     const payload = {
       amount: raw.amount,
       type,
@@ -114,11 +116,52 @@ export class ExpenseFormComponent implements OnInit {
       this.expenseService.add(payload).subscribe({
         next: () => {
           this.saving.set(false);
-          this.router.navigate(['/expenses', 'list']);
+          this.showSuccessMessage('Record added.');
+          this.resetForm();
         },
         error: () => this.saving.set(false)
       });
     }
+  }
+
+  private resetForm(): void {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    this.maxDate.set(new Date());
+    this.form.patchValue({
+      amount: null,
+      type: 'expense',
+      category: '',
+      date: today,
+      note: ''
+    });
+    this.form.markAsUntouched();
+    // PrimeNG date picker can hold internal state; set date again next tick so it reflects today
+    setTimeout(() => {
+      const dateControl = this.form.get('date');
+      if (dateControl) {
+        const freshToday = new Date();
+        freshToday.setHours(12, 0, 0, 0);
+        dateControl.setValue(freshToday, { emitEvent: false });
+      }
+    }, 0);
+  }
+
+  private showSuccessMessage(text: string): void {
+    this.successMessage.set(text);
+    setTimeout(() => this.successMessage.set(null), 5000);
+  }
+
+  /** Normalize form date (Date or string) to YYYY-MM-DD in local time to avoid timezone data loss. */
+  private getDateStrFromForm(value: Date | string | null): string {
+    if (value == null) return this.todayStr();
+    if (typeof value === 'string') {
+      const trimmed = value.trim().slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+      const d = new Date(value + (value.length === 10 ? 'T12:00:00' : ''));
+      return isNaN(d.getTime()) ? this.todayStr() : this.dateToLocalYYYYMMDD(d);
+    }
+    return this.dateToLocalYYYYMMDD(value);
   }
 
   private todayStr(): string {

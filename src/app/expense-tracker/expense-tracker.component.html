@@ -7,9 +7,7 @@
         {{ syncService.isOnline() ? 'Online' : 'Offline' }}
       </span>
       <div class="status-detail">
-        <span class="sync-state" *ngIf="syncService.syncStatus() === 'started'">
-          <i class="pi pi-spin pi-spinner"></i> Syncing…
-        </span>
+        <span class="sync-state" *ngIf="syncService.syncStatus() === 'started'">Syncing…</span>
         <span class="sync-state success" *ngIf="syncService.syncStatus() === 'completed' && syncService.lastSyncTimestamp()">
           Synced · {{ syncService.lastSyncTimestamp()! | date:'short' }}
         </span>
@@ -21,8 +19,8 @@
         </span>
       </div>
     </div>
-    <div class="status-bar-right" *ngIf="unsyncedCount() > 0 || syncService.syncStatus() === 'failed'">
-      <button pButton label="Sync" icon="pi pi-refresh" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()" class="sync-btn" aria-label="Sync now"></button>
+    <div class="status-bar-right">
+      <button pButton icon="pi pi-refresh" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()" class="p-button-text p-button-rounded sync-btn sync-btn-icon" aria-label="Sync now"></button>
     </div>
   </header>
 

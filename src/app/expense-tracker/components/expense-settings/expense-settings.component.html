@@ -1,4 +1,10 @@
 <div class="expense-settings">
+  @if (exporting()) {
+  <div class="settings-export-overlay" aria-live="polite">
+    <div class="settings-export-spinner"><i class="pi pi-spin pi-spinner"></i></div>
+    <span class="settings-export-text">Exporting…</span>
+  </div>
+  }
   <section class="settings-tab">
     <div class="settings-card sync-section">
       <h3>Sync</h3>
