@@ -267,8 +267,6 @@ export class ExpenseListComponent implements OnInit {
       return toYYYYMMDD(m);
     };
 
-    const groups: WeekGroup[] = [];
-    // Order: Today (if any), This Week (rest), Last Week, then "Week of Mon – Sun"
     const todayExpenses = list.filter((e) => e.date === todayStr);
     const thisWeekExpenses = list.filter(
       (e) => e.date >= thisWeekStart && e.date <= thisWeekEnd && e.date !== todayStr
@@ -284,49 +282,66 @@ export class ExpenseListComponent implements OnInit {
       otherWeeks.get(key)!.push(e);
     });
 
+    type GroupWithKey = { sortKey: string; group: WeekGroup };
+    const withKeys: GroupWithKey[] = [];
+
+    const byDateDesc = (a: Expense, b: Expense) => b.date.localeCompare(a.date);
     if (todayExpenses.length > 0) {
-      groups.push({
-        label: 'Today',
-        start: todayStr,
-        end: todayStr,
-        expenses: todayExpenses,
-        total: todayExpenses.reduce((s, e) => s + e.amount, 0)
+      withKeys.push({
+        sortKey: todayStr + 'Z', // so Today sorts first (newest)
+        group: {
+          label: 'Today',
+          start: todayStr,
+          end: todayStr,
+          expenses: [...todayExpenses].sort(byDateDesc),
+          total: todayExpenses.reduce((s, e) => s + e.amount, 0)
+        }
       });
     }
     if (thisWeekExpenses.length > 0) {
-      groups.push({
-        label: 'This Week',
-        start: thisWeekStart,
-        end: thisWeekEnd,
-        expenses: thisWeekExpenses,
-        total: thisWeekExpenses.reduce((s, e) => s + e.amount, 0)
+      withKeys.push({
+        sortKey: thisWeekEnd,
+        group: {
+          label: 'This Week',
+          start: thisWeekStart,
+          end: thisWeekEnd,
+          expenses: [...thisWeekExpenses].sort(byDateDesc),
+          total: thisWeekExpenses.reduce((s, e) => s + e.amount, 0)
+        }
       });
     }
     if (lastWeekExpenses.length > 0) {
-      groups.push({
-        label: 'Last Week',
-        start: lastWeekStart,
-        end: lastWeekEnd,
-        expenses: lastWeekExpenses,
-        total: lastWeekExpenses.reduce((s, e) => s + e.amount, 0)
+      withKeys.push({
+        sortKey: lastWeekEnd,
+        group: {
+          label: 'Last Week',
+          start: lastWeekStart,
+          end: lastWeekEnd,
+          expenses: [...lastWeekExpenses].sort(byDateDesc),
+          total: lastWeekExpenses.reduce((s, e) => s + e.amount, 0)
+        }
       });
     }
-    const otherKeys = [...otherWeeks.keys()].sort((a, b) => b.localeCompare(a));
-    otherKeys.forEach((key) => {
+    [...otherWeeks.keys()].sort((a, b) => b.localeCompare(a)).forEach((key) => {
       const exp = otherWeeks.get(key)!;
       const mon = new Date(key + 'T12:00:00');
       const sun = new Date(mon);
       sun.setDate(sun.getDate() + 6);
-      groups.push({
-        label: `Week of ${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-        start: key,
-        end: toYYYYMMDD(sun),
-        expenses: exp,
-        total: exp.reduce((s, e) => s + e.amount, 0)
+      const end = toYYYYMMDD(sun);
+      withKeys.push({
+        sortKey: end,
+        group: {
+          label: `Week of ${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+          start: key,
+          end,
+          expenses: [...exp].sort(byDateDesc),
+          total: exp.reduce((s, e) => s + e.amount, 0)
+        }
       });
     });
 
-    return groups;
+    withKeys.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+    return withKeys.map((x) => x.group);
   }
 
   private getCurrentYearMonth(): string {

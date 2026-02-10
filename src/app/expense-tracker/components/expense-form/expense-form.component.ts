@@ -34,6 +34,9 @@ export class ExpenseFormComponent implements OnInit {
 
   readonly allCategories = ALL_CATEGORIES;
 
+  /** Maximum selectable date (today) — disables future dates. */
+  maxDate = signal<Date>(new Date());
+
   form!: FormGroup;
   isEdit = signal(false);
   id = signal<string | null>(null);

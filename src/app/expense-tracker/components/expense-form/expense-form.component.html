@@ -1,21 +1,12 @@
 <div class="expense-form">
   <header class="form-header">
-    <h1 class="form-title">{{ isEdit() ? 'Edit expense' : 'Log Expense' }}</h1>
-    <p class="form-subtitle">Enter the amount and details below to track your spending.</p>
+    <h1 class="form-title">{{ isEdit() ? 'Edit Expense' : 'Add Expense' }}</h1>
   </header>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <section class="amount-hero">
-      <div class="amount-input-wrap">
-        <span class="amount-prefix">₹</span>
-        <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" styleClass="amount-input" inputStyleClass="amount-input-inner" />
-      </div>
-      @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
-      <p class="amount-error">Amount must be greater than 0</p>
-      }
-    </section>
-
-    <section class="type-section">
+    <!-- 1. Type -->
+    <section class="field-section">
+      <span class="field-label">Type</span>
       <div class="type-segment" role="group">
         <button type="button" class="type-btn" [class.active]="form.get('type')?.value === 'expense'" (click)="form.patchValue({ type: 'expense' })">
           Expense
@@ -26,39 +17,52 @@
       </div>
     </section>
 
-    <section class="details-card">
-      @if (form.get('type')?.value === 'expense') {
-      <div class="p-field category-field">
-        <label>Category</label>
-        <div class="category-radios">
-          @for (cat of allCategories; track cat) {
-          <label class="category-radio">
-            <input type="radio" formControlName="category" [value]="cat" />
-            <span class="category-radio-label">{{ cat }}</span>
-          </label>
-          }
-        </div>
-        @if (form.get('category')?.invalid && form.get('category')?.touched) {
-        <p class="field-error">Choose a category</p>
+    <!-- 3. Amount -->
+    <section class="field-section">
+      <label class="field-label" for="amount">Amount</label>
+      <div class="amount-input-wrap">
+        <span class="amount-prefix">₹</span>
+        <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" placeholder="0.00" styleClass="amount-input" inputStyleClass="amount-input-inner" />
+      </div>
+      @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+      <p class="field-error">Amount must be greater than 0</p>
+      }
+    </section>
+
+    <!-- 4. Category -->
+    @if (form.get('type')?.value === 'expense') {
+    <section class="field-section category-section">
+      <label class="field-label">Category</label>
+      <div class="category-radios">
+        @for (cat of allCategories; track cat) {
+        <label class="category-radio">
+          <input type="radio" formControlName="category" [value]="cat" />
+          <span class="category-radio-label">{{ cat }}</span>
+        </label>
         }
       </div>
+      @if (form.get('category')?.invalid && form.get('category')?.touched) {
+      <p class="field-error">Choose a category</p>
       }
+    </section>
+    }
 
-      <div class="detail-row">
-        <label for="date">Date</label>
-        <p-datePicker id="date" formControlName="date" dateFormat="dd M yy" styleClass="detail-date" inputStyleClass="detail-date-input" />
-      </div>
+    <!-- 5. Date (just below category – input with calendar icon on right) -->
+    <section class="field-section date-field">
+      <label class="field-label" for="date">Date</label>
+      <p-datePicker id="date" formControlName="date" dateFormat="dd M yy" [maxDate]="maxDate()" [showIcon]="true" [showOnFocus]="true" appendTo="body" styleClass="date-input-with-icon" inputStyleClass="date-input-inner" />
+    </section>
 
-      <div class="detail-row">
-        <label for="note">Note</label>
-        <input pInputText id="note" formControlName="note" class="detail-note-input" placeholder="Add a note" />
-      </div>
+    <!-- 6. Note -->
+    <section class="field-section">
+      <label class="field-label" for="note">Note</label>
+      <input pInputText id="note" formControlName="note" class="text-input" placeholder="Add a note (optional)" />
     </section>
 
     <div class="form-spacer"></div>
 
     <div class="form-actions">
-      <button pButton type="submit" label="Save" [loading]="saving()" [disabled]="form.invalid" class="save-btn"></button>
+      <button pButton type="submit" [label]="isEdit() ? 'Save' : 'ADD EXPENSE'" [loading]="saving()" [disabled]="form.invalid" class="add-expense-btn"></button>
     </div>
   </form>
 </div>

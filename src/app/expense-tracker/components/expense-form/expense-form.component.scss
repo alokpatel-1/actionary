@@ -1,71 +1,169 @@
-// Gordon-style: cards, spacing, one primary color, minimal borders
+// Add Expense form — layout like reference: date card, title, amount, type, category, button
 .expense-form {
   width: 100%;
   max-width: 28rem;
-  padding-bottom: 5rem; // space for sticky Save
+  margin: 0 auto;
+  padding-bottom: 5rem;
 }
 
 .form-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-title {
-  margin: 0 0 0.375rem;
-  font-size: 1.375rem;
-  font-weight: 500;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--color-text-primary);
 }
 
-.form-subtitle {
-  margin: 0;
+// ——— Reusable field block ———
+.field-section {
+  margin-bottom: 1.25rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.field-error {
+  margin: 0.375rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-error);
+}
+
+// ——— Date (below category: visible border, calendar icon opens panel) ———
+.date-field {
+  .field-label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+}
+
+// Wrapper that contains input + icon: visible border so the field is clearly an input
+:host ::ng-deep .date-field .p-datepicker,
+:host ::ng-deep .date-field.p-datepicker {
+  width: 100% !important;
+}
+
+:host ::ng-deep .date-field .p-inputwrapper {
+  width: 100% !important;
+  min-height: 2.75rem !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 12px !important;
+  background: var(--color-bg-surface) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:host ::ng-deep .date-field .p-inputwrapper:hover {
+  border-color: var(--color-border-soft) !important;
+}
+
+:host ::ng-deep .date-field .p-inputwrapper.p-inputwrapper-focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.2) !important;
+}
+
+:host ::ng-deep .date-field .date-input-inner.p-inputtext,
+:host ::ng-deep .date-field .p-inputtext {
+  border: none !important;
+  background: transparent !important;
+  font-size: 0.9375rem !important;
+  color: var(--color-text-primary) !important;
+  padding: 0.625rem 0.875rem !important;
+  min-height: 2.75rem !important;
+  flex: 1 !important;
+}
+
+:host ::ng-deep .date-field .p-datepicker .p-datepicker-trigger,
+:host ::ng-deep .date-field .p-datepicker-dropdown {
+  border: none !important;
+  background: transparent !important;
+  color: var(--color-text-secondary) !important;
+  cursor: pointer !important;
+}
+
+// ——— Text input (note) ———
+.text-input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
-  color: var(--color-text-muted);
-  line-height: 1.4;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-primary-muted);
+  border-radius: 12px;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.2);
+  }
 }
 
-// ——— Amount (hero): full width of screen ———
-.amount-hero {
-  margin-bottom: 1.5rem;
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-}
-
+// ——— 3. Amount (single border only; strip PrimeNG wrapper borders) ———
 .amount-input-wrap {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1.25rem 1rem;
-  margin: 0 1rem;
-  background: var(--color-primary-soft);
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  min-height: 2.75rem;
+  padding: 0 0.875rem;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.2);
+  }
 
   .amount-prefix {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: var(--color-primary);
+    color: var(--color-text-primary);
   }
 
-  :host ::ng-deep .amount-input,
-  :host ::ng-deep .p-inputnumber {
-    flex: 1;
-    border: none;
-    background: transparent;
-  }
-
-  :host ::ng-deep .amount-input-inner,
-  :host ::ng-deep .p-inputnumber-input {
+  // Single border is on .amount-input-wrap only; strip all inner borders/outlines
+  ::ng-deep .p-inputnumber,
+  ::ng-deep .p-inputwrapper,
+  ::ng-deep .amount-input,
+  ::ng-deep .p-inputnumber-input,
+  ::ng-deep .amount-input-inner,
+  ::ng-deep .p-inputnumber input {
     border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
     background: transparent !important;
-    font-size: 1.75rem !important;
+  }
+
+  ::ng-deep .p-inputnumber,
+  ::ng-deep .p-inputwrapper,
+  ::ng-deep .amount-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  ::ng-deep .p-inputnumber-input,
+  ::ng-deep .amount-input-inner,
+  ::ng-deep .p-inputnumber input {
+    font-size: 1.25rem !important;
     font-weight: 600 !important;
-    padding: 0 !important;
-    min-height: 2.5rem !important;
+    padding: 0.5rem 0 !important;
+    min-height: 2.25rem !important;
     color: var(--color-text-primary) !important;
+    text-align: left !important;
   }
 }
 
@@ -73,74 +171,38 @@ p-inputnumber {
   width: 100% !important;
 }
 
-.amount-error {
-  margin: 0.75rem 1rem 0;
-  font-size: 0.875rem;
-  color: var(--color-error);
-}
-
-// ——— Type segment ———
-.type-section {
-  margin-bottom: 1.5rem;
-}
-
+// ——— 4. Type segment ———
 .type-segment {
   display: flex;
   gap: 0;
   padding: 0.25rem;
   background: var(--color-bg-card);
-  border-radius: 9999px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
 }
 
 .type-btn {
   flex: 1;
   padding: 0.75rem 1rem;
   border: none;
-  border-radius: 9999px;
+  border-radius: 10px;
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 600;
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s ease, color 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 
   &.active {
-    background: var(--color-bg-surface);
-    color: var(--color-primary);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
   }
 }
 
-// ——— Details card (one soft card) ———
-.details-card {
-  background: var(--color-bg-card);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.p-field {
-  margin-bottom: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-  }
-
-  .field-error {
-    margin: 0.5rem 0 0;
-    font-size: 0.8125rem;
-    color: var(--color-error);
-  }
+// ——— 5. Category (unchanged from current) ———
+.category-section {
+  margin-bottom: 1.25rem;
 }
 
 .category-radios {
@@ -169,96 +231,60 @@ p-inputnumber {
     font-weight: 500;
     color: var(--color-text-secondary);
     background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 10px;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
 
   input:checked+.category-radio-label {
     background: var(--color-primary-soft);
     color: var(--color-primary);
+    border-color: var(--color-primary);
   }
 }
 
-.category-field {
-  margin-bottom: 1.25rem;
-}
-
-// Tappable rows for Date and Note
-.detail-row {
-  padding: 0.875rem 0;
-  border-top: 1px solid var(--color-border-subtle);
-
-  &:first-of-type {
-    border-top: none;
-  }
-
-  label {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    margin-bottom: 0.375rem;
-  }
-}
-
-.detail-date-input,
-.detail-note-input {
-  width: 100%;
-  min-height: 2.5rem;
-  padding: 0.5rem 0;
-  font-size: 0.9375rem;
-  color: var(--color-text-primary);
-  background: transparent;
-  border: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-:host ::ng-deep .detail-date .p-inputtext,
-:host ::ng-deep .detail-date-input {
-  border: none !important;
-  background: transparent !important;
-  padding-left: 0 !important;
-}
-
-.detail-note-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-// Spacer so content isn't under sticky button
+// ——— Spacer & Add Expense button ———
 .form-spacer {
   min-height: 1rem;
 }
 
-// ——— Save (sticky primary CTA) ———
 .form-actions {
   position: sticky;
   bottom: 0;
   left: 0;
   right: 0;
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  background: linear-gradient(to top, var(--color-bg-surface) 70%, transparent);
+  padding: 1rem 0 max(1rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--color-bg-surface) 75%, transparent);
 }
 
-.save-btn {
+.add-expense-btn {
   width: 100%;
   min-height: 3.25rem;
   font-weight: 600;
   font-size: 1rem;
-  border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(77, 163, 255, 0.35);
+  letter-spacing: 0.04em;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(77, 163, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
-// Match Save button to theme primary
-:host ::ng-deep .form-actions .save-btn.p-button,
-:host ::ng-deep .form-actions button.save-btn {
+:host ::ng-deep .form-actions .add-expense-btn.p-button,
+:host ::ng-deep .form-actions button.add-expense-btn {
   background: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
   color: var(--color-text-inverse) !important;
+  text-transform: uppercase !important;
 }
 
-:host ::ng-deep .form-actions .save-btn.p-button:hover:not(:disabled),
-:host ::ng-deep .form-actions button.save-btn:hover:not(:disabled) {
+:host ::ng-deep .form-actions .add-expense-btn.p-button:hover:not(:disabled),
+:host ::ng-deep .form-actions button.add-expense-btn:hover:not(:disabled) {
   background: var(--color-primary-muted) !important;
   border-color: var(--color-primary-muted) !important;
   color: var(--color-text-inverse) !important;
+  box-shadow: 0 6px 20px rgba(77, 163, 255, 0.4);
+}
+
+:host ::ng-deep .form-actions .add-expense-btn.p-button:active:not(:disabled),
+:host ::ng-deep .form-actions button.add-expense-btn:active:not(:disabled) {
+  transform: scale(0.99);
 }
