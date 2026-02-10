@@ -6,7 +6,25 @@
         <span class="avatar-letter">{{ avatarLetter() }}</span>
       </ng-template>
     </div>
+
+    @if (editingName()) {
+    <div class="profile-name-edit">
+      <input type="text" class="profile-name-input" [value]="editNameValue()" (input)="editNameValue.set($any($event.target).value)" placeholder="Your name" maxlength="64" />
+      @if (nameError()) {
+      <p class="profile-name-error">{{ nameError() }}</p>
+      }
+      <div class="profile-name-actions">
+        <button pButton label="Cancel" (click)="cancelEditName()" class="p-button-text" [disabled]="savingName()"></button>
+        <button pButton label="Save" (click)="saveName()" [loading]="savingName()" class="profile-name-save-btn"></button>
+      </div>
+    </div>
+    } @else {
     <h2 class="profile-name">{{ displayName() }}</h2>
+    <button type="button" class="profile-change-name" (click)="startEditName()">
+      <i class="pi pi-pencil"></i> Change name
+    </button>
+    }
+
     @if (email()) {
     <p class="profile-email">{{ email() }}</p>
     }

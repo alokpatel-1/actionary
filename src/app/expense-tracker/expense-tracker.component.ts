@@ -5,6 +5,7 @@ import { ExpenseIdbService } from './services/expense-idb.service';
 import { CommonModule } from '@angular/common';
 import { Auth, user } from '@angular/fire/auth';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FirebaseAuthService } from '../firebase/firebase-auth.service';
 
 @Component({
   selector: 'app-expense-tracker',
@@ -16,18 +17,21 @@ export class ExpenseTrackerComponent implements OnInit {
   readonly syncService = inject(ExpenseSyncService);
   private idb = inject(ExpenseIdbService);
   private auth = inject(Auth);
+  private firebaseAuthService = inject(FirebaseAuthService);
 
   unsyncedCount = signal(0);
   syncInProgress = signal(false);
 
   readonly firebaseUser = toSignal(user(this.auth), { initialValue: null });
   readonly displayName = computed(() => {
-    const u = this.firebaseUser();
-    if (u?.displayName) return u.displayName;
+    const override = this.firebaseAuthService.displayNameOverride();
+    if (override) return override;
     if (typeof sessionStorage !== 'undefined') {
       const name = sessionStorage.getItem('displayName');
       if (name) return name;
     }
+    const u = this.firebaseUser();
+    if (u?.displayName) return u.displayName;
     return 'Guest';
   });
   readonly photoURL = computed(() => this.firebaseUser()?.photoURL ?? null);

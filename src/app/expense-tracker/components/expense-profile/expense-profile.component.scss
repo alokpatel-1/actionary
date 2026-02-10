@@ -9,6 +9,7 @@
   padding: 2rem 1.5rem;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
 }
 
 .profile-avatar {
@@ -40,6 +41,102 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+.profile-change-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+  }
+}
+
+.profile-name-edit {
+  margin-bottom: 0.5rem;
+  text-align: center;
+  animation: profile-edit-in 0.2s ease;
+}
+
+@keyframes profile-edit-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-name-input {
+  width: 100%;
+  max-width: 18rem;
+  margin: 0 auto 0.5rem;
+  display: block;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-subtle);
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+  }
+}
+
+.profile-name-error {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: #dc2626;
+}
+
+.profile-name-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+// Save = primary (same as other screens); Cancel = text
+:host ::ng-deep .profile-name-save-btn.p-button,
+:host ::ng-deep button.profile-name-save-btn {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: #fff !important;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+:host ::ng-deep .profile-name-save-btn.p-button:hover:not(:disabled),
+:host ::ng-deep button.profile-name-save-btn:hover:not(:disabled) {
+  background: var(--color-primary-muted, #7FB9FF) !important;
+  border-color: var(--color-primary-muted, #7FB9FF) !important;
+}
+
+:host ::ng-deep .profile-name-actions .p-button-text {
+  color: var(--color-text-muted) !important;
+}
+
+:host ::ng-deep .profile-name-actions .p-button-text:hover {
+  color: var(--color-text-secondary) !important;
+  background: var(--color-bg-surface) !important;
 }
 
 .profile-email {
