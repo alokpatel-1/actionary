@@ -29,11 +29,16 @@ export class ExpenseListComponent implements OnInit {
   currentYearMonth = signal<string>(this.getCurrentYearMonth());
   readonly currentYear = new Date().getFullYear();
 
-  // Summary (recomputed when expenses change)
-  readonly totalAmount = computed(() => this.expenses().reduce((s, e) => s + e.amount, 0));
-  readonly transactionCount = computed(() => this.expenses().length);
+  /** Expenses excluding transfers — used for list display and summary on this screen. */
+  readonly expensesForDisplay = computed(() =>
+    this.expenses().filter((e) => e.type !== 'transfer' && e.category !== 'Transfer')
+  );
+
+  // Summary (recomputed when expenses change; excludes transfers)
+  readonly totalAmount = computed(() => this.expensesForDisplay().reduce((s, e) => s + e.amount, 0));
+  readonly transactionCount = computed(() => this.expensesForDisplay().length);
   readonly avgPerDay = computed(() => {
-    const list = this.expenses();
+    const list = this.expensesForDisplay();
     const mode = this.viewMode();
     if (list.length === 0) return 0;
     if (mode === 'today') return list.reduce((s, e) => s + e.amount, 0);
@@ -66,15 +71,15 @@ export class ExpenseListComponent implements OnInit {
     return pct;
   });
 
-  // Largest expense in current set
+  // Largest expense in current set (excludes transfers)
   readonly largestExpense = computed(() => {
-    const list = this.expenses();
+    const list = this.expensesForDisplay();
     if (list.length === 0) return null;
     return list.reduce((a, b) => (a.amount >= b.amount ? a : b));
   });
 
-  // Week-grouped list (always group by week)
-  readonly weekGroups = computed(() => this.buildWeekGroups(this.expenses()));
+  // Week-grouped list (always group by week; excludes transfers)
+  readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
 
   // Context-aware date display for the selector area
   readonly periodDisplay = computed(() => this.getPeriodDisplay());
@@ -95,12 +100,15 @@ export class ExpenseListComponent implements OnInit {
     const monday = getMondayOfWeek(new Date());
     const monthStart = this.currentYearMonth() + '-01';
 
+    const nonTransferSum = (list: Expense[]) =>
+      list.filter((e) => e.type !== 'transfer' && e.category !== 'Transfer').reduce((s, e) => s + e.amount, 0);
+
     if (mode === 'today') {
       this.expenseService.getForDay(today).subscribe((list) => this.expenses.set(list));
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       this.expenseService.getForDay(toYYYYMMDD(yesterday)).subscribe((t) =>
-        this.comparisonTotal.set(t.reduce((s, e) => s + e.amount, 0))
+        this.comparisonTotal.set(nonTransferSum(t))
       );
       return;
     }
@@ -117,7 +125,7 @@ export class ExpenseListComponent implements OnInit {
       lastSun.setDate(lastSun.getDate() + 6);
       this.expenseService
         .getByDateRange(toYYYYMMDD(lastMon), toYYYYMMDD(lastSun))
-        .subscribe((list) => this.comparisonTotal.set(list.reduce((s, e) => s + e.amount, 0)));
+        .subscribe((list) => this.comparisonTotal.set(nonTransferSum(list)));
       return;
     }
 
@@ -157,6 +165,11 @@ export class ExpenseListComponent implements OnInit {
 
   getCategoryLetter(category: string): string {
     return (category?.trim().charAt(0) || '?').toUpperCase();
+  }
+
+  /** Display label for category; transfers have no category and show as "Transfer". */
+  getDisplayCategory(expense: Expense): string {
+    return expense.type === 'transfer' || !expense.category?.trim() ? 'Transfer' : expense.category;
   }
 
   getDateLabel(dateStr: string): string {

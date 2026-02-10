@@ -27,6 +27,7 @@
     </section>
 
     <section class="details-card">
+      @if (form.get('type')?.value === 'expense') {
       <div class="p-field category-field">
         <label>Category</label>
         <div class="category-radios">
@@ -41,6 +42,7 @@
         <p class="field-error">Choose a category</p>
         }
       </div>
+      }
 
       <div class="detail-row">
         <label for="date">Date</label>

@@ -9,6 +9,7 @@ import { ExpenseType } from '../../models/expense.model';
 export const ALL_CATEGORIES = [
   'Food',
   'Transport',
+  'Parking',
   'Shopping',
   'Entertainment',
   'Health',
@@ -48,18 +49,34 @@ export class ExpenseFormComponent implements OnInit {
     this.form = this.fb.group({
       amount: [null, [Validators.required, Validators.min(0.01)]],
       type: ['expense' as ExpenseType, Validators.required],
-      category: ['', Validators.required],
+      category: [''],
       date: [today, Validators.required],
       note: ['']
     });
 
+    this.form.get('type')?.valueChanges.subscribe((t: ExpenseType) => {
+      const cat = this.form.get('category');
+      if (t === 'transfer') {
+        cat?.clearValidators();
+        cat?.setValue('Transfer');
+      } else {
+        cat?.setValidators(Validators.required);
+      }
+      cat?.updateValueAndValidity();
+    });
+
+    // Set initial validator: expense requires category
+    this.form.get('category')?.setValidators(Validators.required);
+    this.form.get('category')?.updateValueAndValidity();
+
     if (id) {
       this.expenseService.getById(id).subscribe((e) => {
         if (e) {
+          const type = (e.type ?? 'expense') as ExpenseType;
           this.form.patchValue({
             amount: e.amount,
-            type: e.type ?? 'expense',
-            category: e.category,
+            type,
+            category: type === 'transfer' ? 'Transfer' : (e.category ?? ''),
             date: e.date ? new Date(e.date + 'T12:00:00') : null,
             note: e.note ?? ''
           });
@@ -72,11 +89,12 @@ export class ExpenseFormComponent implements OnInit {
     if (this.form.invalid || this.saving()) return;
     this.saving.set(true);
     const raw = this.form.getRawValue();
-    const date = typeof raw.date === 'string' ? raw.date : (raw.date as Date)?.toISOString?.().slice(0, 10) ?? this.todayStr();
+    const type = (raw.type ?? 'expense') as ExpenseType;
+    const date = typeof raw.date === 'string' ? raw.date : (raw.date as Date) ? this.dateToLocalYYYYMMDD(raw.date as Date) : this.todayStr();
     const payload = {
       amount: raw.amount,
-      type: (raw.type ?? 'expense') as ExpenseType,
-      category: raw.category,
+      type,
+      category: type === 'transfer' ? 'Transfer' : (raw.category ?? ''),
       date,
       note: raw.note ?? ''
     };
@@ -101,7 +119,11 @@ export class ExpenseFormComponent implements OnInit {
   }
 
   private todayStr(): string {
-    const d = new Date();
+    return this.dateToLocalYYYYMMDD(new Date());
+  }
+
+  /** Format date as YYYY-MM-DD in local time (avoids UTC shift when saving). */
+  private dateToLocalYYYYMMDD(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');

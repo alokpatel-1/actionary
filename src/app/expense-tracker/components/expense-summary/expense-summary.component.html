@@ -1,45 +1,146 @@
 <div class="expense-summary">
-  <h2>Summary</h2>
-  <div class="period-picker">
-    <label>Month</label>
-    <input type="month" [value]="yearMonth()" (change)="onMonthChange($any($event.target).value)" />
+  <h2 class="summary-page-title">Summary</h2>
+
+  <!-- 1. Period selector -->
+  <div class="period-selector" role="tablist">
+    <button type="button" role="tab" [class.active]="period() === 'month'" (click)="setPeriod('month')">This Month</button>
+    <button type="button" role="tab" [class.active]="period() === 'year'" (click)="setPeriod('year')">This Year</button>
+    <button type="button" role="tab" [class.active]="period() === 'range'" (click)="setPeriod('range')">Date range</button>
   </div>
 
-  <div class="summary-cards">
-    <p-card>
-      <ng-template pTemplate="content">
-        <div class="stat-value">{{ totalAmount() | number:'1.2-2' }}</div>
-        <div class="stat-label">Total</div>
-      </ng-template>
-    </p-card>
-    <p-card>
-      <ng-template pTemplate="content">
-        <div class="stat-value">{{ totalCount() }}</div>
-        <div class="stat-label">Transactions</div>
-      </ng-template>
-    </p-card>
-  </div>
+  @if (period() === 'range') {
+  <section class="date-range-section">
+    <p class="date-range-label">{{ dateRangeLabel() }}</p>
+    <div class="date-range-pickers">
+      <div class="date-range-field">
+        <label>From</label>
+        <p-datePicker [ngModel]="rangeStartDate()" (ngModelChange)="onRangeStartSelect($event)" dateFormat="dd M yy" styleClass="range-picker" inputStyleClass="range-picker-input" />
+      </div>
+      <div class="date-range-field">
+        <label>To</label>
+        <p-datePicker [ngModel]="rangeEndDate()" (ngModelChange)="onRangeEndSelect($event)" dateFormat="dd M yy" styleClass="range-picker" inputStyleClass="range-picker-input" />
+      </div>
+    </div>
+  </section>
+  }
 
-  <h3>By category</h3>
-  <p-table [value]="byCategory()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '20rem' }">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Category</th>
-        <th>Count</th>
-        <th>Total</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-row>
-      <tr>
-        <td>{{ row.category }}</td>
-        <td>{{ row.count }}</td>
-        <td>{{ row.total | number:'1.2-2' }}</td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="3">No data for this month.</td>
-      </tr>
-    </ng-template>
-  </p-table>
+  <!-- 2. Transfer summary -->
+  @if (transferCount() > 0) {
+  <section class="transfer-section">
+    <h3 class="section-title">Transfer</h3>
+    <div class="transfer-card">
+      <div class="transfer-total">{{ formatCurrency(transferTotal()) }}</div>
+      <div class="transfer-meta">{{ transferCount() }} transfer{{ transferCount() !== 1 ? 's' : '' }}</div>
+    </div>
+  </section>
+  }
+
+  <!-- 3. Key metrics -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value">{{ formatCurrency(totalAmount()) }}</div>
+      <div class="metric-label">Total spend</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ totalCount() }}</div>
+      <div class="metric-label">Transactions</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{{ formatCurrency(averageSpend()) }}</div>
+      <div class="metric-label">{{ period() === 'year' ? 'Avg per month' : 'Avg per day' }}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">@if (highestExpense(); as he) { {{ formatCurrency(he.amount) }} } @else { — }</div>
+      <div class="metric-label">Highest single expense</div>
+    </div>
+  </section>
+
+  <!-- 4. Category distribution (donut) -->
+  <section class="chart-section">
+    <h3 class="section-title">Where your money went</h3>
+    <div class="donut-wrap">
+      <div class="donut-ring" [style.background]="conicGradient()">
+        <div class="donut-hole"></div>
+      </div>
+      <ul class="donut-legend">
+        @for (seg of donutSegments(); track seg.category) {
+        <li>
+          <span class="legend-dot" [style.background-color]="seg.color"></span>
+          <span class="legend-label">{{ seg.category }}</span>
+          <span class="legend-value">{{ formatCurrency(seg.total) }} ({{ seg.percent }}%)</span>
+        </li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. Spending trend (line chart) -->
+  <section class="chart-section">
+    <h3 class="section-title">{{ period() === 'year' ? 'Monthly spending' : 'Daily spending' }}</h3>
+    <div class="line-chart-wrap">
+      <svg class="line-chart" viewBox="0 0 100 40" preserveAspectRatio="xMidYMid meet">
+        @if (trendPoints().length) {
+        <path [attr.d]="lineChartPath()" class="line-path" fill="none" stroke="var(--color-chart-primary)" stroke-width="0.8" vector-effect="non-scaling-stroke" />
+        @if (lineChartHighlight(); as hl) {
+        <circle class="line-highlight" [attr.cx]="hl.x" [attr.cy]="hl.y" r="1.2" fill="var(--color-primary)" />
+        }
+        }
+      </svg>
+      <div class="line-chart-labels">
+        @for (i of lineChartLabelIndices(); track i) {
+        <span class="line-label">{{ trendPoints()[i].label }}</span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Category breakdown table -->
+  <section class="table-section">
+    <h3 class="section-title">Category breakdown</h3>
+    <div class="table-wrap">
+      <table class="category-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Count</th>
+            <th>Total</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of categoryTable(); track row.category) {
+          <tr>
+            <td>{{ row.category }}</td>
+            <td>{{ row.count }}</td>
+            <td>{{ formatCurrency(row.total) }}</td>
+            <td>{{ row.percent }}%</td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="4" class="no-data-cell">No data for this period.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 7. Insights -->
+  @if (insights().length) {
+  <section class="insights-section">
+    <h3 class="section-title">Insights</h3>
+    <ul class="insights-list">
+      @for (line of insights(); track line) {
+      <li>{{ line }}</li>
+      }
+    </ul>
+  </section>
+  }
+
+  <!-- 8. Optional: zero-spend days (month / range) -->
+  @if ((period() === 'month' || period() === 'range') && zeroSpendDays() !== null && zeroSpendDays()! > 0) {
+  <section class="extra-meta">
+    <p class="extra-line">{{ zeroSpendDays() }} day{{ zeroSpendDays() !== 1 ? 's' : '' }} with no spending {{ period() === 'month' ? 'this month' : 'in this period' }}.</p>
+  </section>
+  }
 </div>

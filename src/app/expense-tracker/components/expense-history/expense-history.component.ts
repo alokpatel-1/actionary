@@ -12,6 +12,7 @@ export interface WeekGroup {
 }
 
 type PeriodType = 'year' | 'month' | 'week';
+type HistoryTab = 'expenses' | 'transfers';
 
 @Component({
   selector: 'app-expense-history',
@@ -22,6 +23,7 @@ type PeriodType = 'year' | 'month' | 'week';
 export class ExpenseHistoryComponent implements OnInit {
   private expenseService = inject(ExpenseService);
 
+  readonly historyTab = signal<HistoryTab>('expenses');
   readonly periodType = signal<PeriodType>('year');
   readonly selectedYear = signal<number>(new Date().getFullYear());
   readonly selectedMonth = signal<number>(new Date().getMonth() + 1); // 1-12
@@ -30,9 +32,18 @@ export class ExpenseHistoryComponent implements OnInit {
   readonly expenses = signal<Expense[]>([]);
   readonly unsyncedCount = signal(0);
 
-  readonly totalAmount = computed(() => this.expenses().reduce((s, e) => s + e.amount, 0));
-  readonly transactionCount = computed(() => this.expenses().length);
-  readonly weekGroups = computed(() => this.buildWeekGroups(this.expenses()));
+  readonly expensesForDisplay = computed(() => {
+    const list = this.expenses();
+    const tab = this.historyTab();
+    if (tab === 'transfers') {
+      return list.filter((e) => e.type === 'transfer' || e.category === 'Transfer');
+    }
+    return list.filter((e) => e.type !== 'transfer' && e.category !== 'Transfer');
+  });
+
+  readonly totalAmount = computed(() => this.expensesForDisplay().reduce((s, e) => s + e.amount, 0));
+  readonly transactionCount = computed(() => this.expensesForDisplay().length);
+  readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
 
   readonly yearOptions = computed(() => {
     const y = new Date().getFullYear();
@@ -63,6 +74,10 @@ export class ExpenseHistoryComponent implements OnInit {
   ngOnInit(): void {
     this.load();
     this.expenseService.getUnsyncedCount().subscribe((c) => this.unsyncedCount.set(c));
+  }
+
+  setHistoryTab(tab: HistoryTab): void {
+    this.historyTab.set(tab);
   }
 
   setPeriodType(type: PeriodType): void {
@@ -136,6 +151,11 @@ export class ExpenseHistoryComponent implements OnInit {
 
   getCategoryLetter(category: string): string {
     return (category?.trim().charAt(0) || '?').toUpperCase();
+  }
+
+  /** Display label for category; transfers have no category and show as "Transfer". */
+  getDisplayCategory(expense: Expense): string {
+    return expense.type === 'transfer' || !expense.category?.trim() ? 'Transfer' : expense.category;
   }
 
   getDateLabel(dateStr: string): string {

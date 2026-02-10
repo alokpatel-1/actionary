@@ -29,7 +29,7 @@
     </div>
     }
     @if (largestExpense(); as le) {
-    <p class="summary-largest">Largest expense: {{ le.category }} – {{ formatCurrency(le.amount) }}</p>
+    <p class="summary-largest">Largest expense: {{ getDisplayCategory(le) }} – {{ formatCurrency(le.amount) }}</p>
     }
   </section>
 
@@ -74,11 +74,11 @@
       <div class="expense-cards">
         @for (expense of group.expenses; track expense.id) {
         <a [routerLink]="['/expenses', 'edit', expense.id]" class="expense-card">
-          <div class="expense-card-icon" [attr.aria-label]="expense.category">
-            <span class="expense-card-icon-letter">{{ getCategoryLetter(expense.category) }}</span>
+          <div class="expense-card-icon" [attr.aria-label]="getDisplayCategory(expense)">
+            <span class="expense-card-icon-letter">{{ getCategoryLetter(getDisplayCategory(expense)) }}</span>
           </div>
           <div class="expense-card-body">
-            <span class="expense-card-category">{{ expense.category }}</span>
+            <span class="expense-card-category">{{ getDisplayCategory(expense) }}</span>
             <span class="expense-card-date">{{ getDateLabel(expense.date) }}</span>
           </div>
           <span class="expense-card-amount">{{ formatCurrency(expense.amount) }}</span>
@@ -97,7 +97,7 @@
 
   <!-- Desktop: table (hidden on small screens) -->
   <div class="expense-table-wrap">
-    <p-table [value]="expenses()" styleClass="p-datatable-sm p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }">
+    <p-table [value]="expensesForDisplay()" styleClass="p-datatable-sm p-datatable-striped" [tableStyle]="{ 'min-width': '50rem' }">
       <ng-template pTemplate="header">
         <tr>
           <th>Date</th>
@@ -110,7 +110,7 @@
       <ng-template pTemplate="body" let-expense>
         <tr>
           <td>{{ expense.date }}</td>
-          <td>{{ expense.category }}</td>
+          <td>{{ getDisplayCategory(expense) }}</td>
           <td>{{ expense.amount | number:'1.2-2' }}</td>
           <td>{{ expense.note }}</td>
           <td>
