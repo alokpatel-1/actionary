@@ -99,9 +99,13 @@ export class ExpenseSyncService {
   }
 
   private async runSync(remoteCol: ReturnType<typeof collection>): Promise<{ success: boolean; error?: string }> {
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return { success: false, error: 'Not authenticated' };
+
     try {
-      // 1. Upload all records where synced = false
-      const unsynced = await this.idb.getUnsynced();
+      // 1. Upload all records where synced = false (current user only)
+      const allUnsynced = await this.idb.getUnsynced();
+      const unsynced = allUnsynced.filter((e) => e.userId === uid);
       for (const e of unsynced) {
         const d = doc(remoteCol, e.id);
         await setDoc(d, { ...e });
@@ -111,15 +115,17 @@ export class ExpenseSyncService {
       const remoteSnap = await getDocs(remoteCol);
       const remoteList: Expense[] = remoteSnap.docs.map((d) => ({ ...d.data(), id: d.id } as Expense));
 
-      // 3. Merge: latest updatedAt wins; drop local items that were synced but no longer on remote (deletion sync)
+      // 3. Merge: latest updatedAt wins; only current user's local data
       const remoteIds = new Set(remoteList.map((e) => e.id));
-      const localList = await this.idb.getAll();
+      const allLocal = await this.idb.getAll();
+      const localList = allLocal.filter((e) => e.userId === uid);
       const byId = new Map<string, Expense>();
       localList.forEach((e) => byId.set(e.id, e));
       remoteList.forEach((e) => {
         const existing = byId.get(e.id);
+        const withUser = { ...e, userId: e.userId ?? uid, synced: true };
         if (!existing || e.updatedAt >= existing.updatedAt) {
-          byId.set(e.id, { ...e, synced: true });
+          byId.set(e.id, withUser);
         } else {
           byId.set(e.id, { ...existing, synced: true });
         }
