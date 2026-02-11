@@ -9,7 +9,7 @@
     <div class="settings-card sync-section">
       <h3>Sync</h3>
       <p class="sync-stat">Unsynced records: <strong>{{ unsyncedCount() }}</strong></p>
-      <p class="sync-stat" *ngIf="syncService.lastSyncTimestamp()">Last sync: {{ syncService.lastSyncTimestamp()! | date:'medium' }}</p>
+      <p class="sync-stat" *ngIf="syncService.lastSyncTimestamp()">Last sync: {{ syncService.lastSyncTimestamp()! | date:'d MMM yy, h:mm a' }}</p>
       <p class="status" [class.offline]="!syncService.isOnline()">{{ syncService.isOnline() ? 'Online' : 'Offline' }}</p>
       <button pButton label="Sync Now" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()" class="sync-btn"></button>
       <p class="sync-msg success" *ngIf="syncService.syncStatus() === 'completed'">Sync completed.</p>

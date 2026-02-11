@@ -9,13 +9,13 @@
       <div class="status-detail">
         <span class="sync-state" *ngIf="syncService.syncStatus() === 'started'">Syncing…</span>
         <span class="sync-state success" *ngIf="syncService.syncStatus() === 'completed' && syncService.lastSyncTimestamp()">
-          Synced · {{ syncService.lastSyncTimestamp()! | date:'short' }}
+          Synced · {{ syncService.lastSyncTimestamp()! | date:'d MMM yy, h:mm a' }}
         </span>
         <span class="sync-state failed" *ngIf="syncService.syncStatus() === 'failed'">
           {{ syncService.syncError() }}
         </span>
         <span class="sync-state idle" *ngIf="syncService.syncStatus() === 'idle' && syncService.lastSyncTimestamp()">
-          Last sync {{ syncService.lastSyncTimestamp()! | date:'short' }}
+          Last sync {{ syncService.lastSyncTimestamp()! | date:'d MMM yy, h:mm a' }}
         </span>
       </div>
     </div>
