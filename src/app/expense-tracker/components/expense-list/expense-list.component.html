@@ -10,16 +10,20 @@
   <!-- 2. Context summary card -->
   <section class="summary-card">
     <div class="summary-top">
-      <div class="summary-primary">
-        <span class="summary-total">{{ formatCurrency(totalExcludingRent()) }}</span>
-        <span class="summary-label">Without Rent</span>
+      <div class="summary-top-left">
+        <div class="summary-primary">
+          <span class="summary-total">{{ formatCurrency(totalExcludingRent()) }}</span>
+          <span class="summary-label">Without Rent</span>
+        </div>
+        <div class="summary-meta-row">
+          <span class="summary-meta-item">{{ transactionCount() }} txns</span>
+          @if (viewMode() === 'week' || viewMode() === 'month' || viewMode() === 'year') {
+          <span class="summary-meta-item">Avg/day {{ formatCurrency(avgPerDay()) }}</span>
+          }
+        </div>
       </div>
-      <div class="summary-meta-row">
-        <span class="summary-meta-item">{{ transactionCount() }} txns</span>
-        @if (viewMode() === 'week' || viewMode() === 'month' || viewMode() === 'year') {
-        <span class="summary-meta-item">Avg/day {{ formatCurrency(avgPerDay()) }}</span>
-        }
-        @if (trend(); as t) {
+      @if (trend(); as t) {
+      <div class="summary-trend-corner">
         <span class="summary-trend" [class.up]="t === 'up'" [class.down]="t === 'down'" [class.same]="t === 'same'">
           @switch (t) {
           @case ('up') { ↑ {{ trendPercent() ? trendPercent() + '%' : '' }} higher than last period }
@@ -27,8 +31,8 @@
           @case ('same') { – Same as last period }
           }
         </span>
-        }
       </div>
+      }
     </div>
     <div class="summary-detail-cards">
       @if (totalAmount() > 0) {

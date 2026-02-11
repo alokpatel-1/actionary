@@ -37,6 +37,7 @@
 
 // Summary card: compact, no blank space
 .summary-card {
+  position: relative;
   background: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-bg-card) 100%);
   border-radius: 12px;
   padding: 1.25rem 1rem;
@@ -45,7 +46,17 @@
 }
 
 .summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
   margin-bottom: 0;
+}
+
+.summary-top-left {
+  flex: 1;
+  min-width: 0;
+  padding-right: 11rem; // leave space for trend badge in top-right corner
 }
 
 .summary-primary {
@@ -71,7 +82,7 @@
 
 .summary-meta-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.5rem 0.75rem;
   font-size: 0.75rem;
@@ -82,14 +93,28 @@
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+
+  @media (max-width: 360px) {
+    font-size: 0.6875rem;
+    padding: 0.15rem 0.35rem;
+  }
+}
+
+.summary-trend-corner {
+  position: absolute;
+  top: 1.25rem;
+  right: 1rem;
+  flex-shrink: 0;
 }
 
 .summary-trend {
+  display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 12px;
-  margin-left: auto;
+  white-space: nowrap;
 
   &.up {
     color: #b45309;
