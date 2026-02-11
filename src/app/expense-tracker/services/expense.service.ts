@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
 import { ExpenseIdbService } from './expense-idb.service';
 import { ExpenseSyncService } from './expense-sync.service';
 import { Expense, ExpenseCreate } from '../models/expense.model';
@@ -29,8 +30,21 @@ function toYYYYMMDD(d: Date): string {
 export class ExpenseService {
   private idb = inject(ExpenseIdbService);
   private syncService = inject(ExpenseSyncService);
+  private auth = inject(Auth);
+
+  /** Current user ID for scoping all expense data. */
+  private get currentUserId(): string | null {
+    return this.auth.currentUser?.uid ?? (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('localId') : null);
+  }
+
+  private filterByUser(expenses: Expense[]): Expense[] {
+    const uid = this.currentUserId;
+    if (!uid) return [];
+    return expenses.filter((e) => e.userId === uid);
+  }
 
   add(data: ExpenseCreate): Observable<Expense> {
+    const uid = this.currentUserId;
     const expense: Expense = {
       id: uuidv4(),
       amount: data.amount,
@@ -39,7 +53,8 @@ export class ExpenseService {
       date: data.date,
       note: data.note ?? '',
       updatedAt: Date.now(),
-      synced: false
+      synced: false,
+      userId: uid ?? undefined
     };
     return from(this.idb.add(expense)).pipe(map(() => expense));
   }
@@ -48,13 +63,15 @@ export class ExpenseService {
     return from(this.idb.get(id)).pipe(
       switchMap((existing) => {
         if (!existing) throw new Error('Expense not found');
+        if (existing.userId !== this.currentUserId) throw new Error('Expense not found');
         const updated: Expense = {
           ...existing,
           ...data,
           id: existing.id,
           type: data.type ?? existing.type ?? 'expense',
           updatedAt: Date.now(),
-          synced: false
+          synced: false,
+          userId: existing.userId
         };
         return from(this.idb.add(updated));
       })
@@ -62,26 +79,38 @@ export class ExpenseService {
   }
 
   delete(id: string): Observable<void> {
-    return from(this.idb.delete(id)).pipe(
-      switchMap(() => this.syncService.deleteRemote(id)),
-      map(() => undefined)
+    return from(this.idb.get(id)).pipe(
+      switchMap((existing) => {
+        if (!existing || existing.userId !== this.currentUserId) return from(Promise.resolve());
+        return from(this.idb.delete(id)).pipe(
+          switchMap(() => this.syncService.deleteRemote(id)),
+          map(() => undefined)
+        );
+      })
     );
   }
 
   getById(id: string): Observable<Expense | undefined> {
-    return from(this.idb.get(id));
+    return from(this.idb.get(id)).pipe(
+      map((e) => {
+        if (!e || e.userId !== this.currentUserId) return undefined;
+        return e;
+      })
+    );
   }
 
   getAll(): Observable<Expense[]> {
-    return this.idb.getAll$();
+    return from(this.idb.getAll()).pipe(map((list) => this.filterByUser(list)));
   }
 
   getByDateRange(start: string, end: string): Observable<Expense[]> {
-    return from(this.idb.getByDateRange(start, end));
+    return from(this.idb.getByDateRange(start, end)).pipe(map((list) => this.filterByUser(list)));
   }
 
   getUnsyncedCount(): Observable<number> {
-    return from(this.idb.getUnsyncedCount());
+    return from(this.idb.getUnsynced()).pipe(
+      map((list) => this.filterByUser(list).length)
+    );
   }
 
   /** Get expenses for a given day (YYYY-MM-DD). */

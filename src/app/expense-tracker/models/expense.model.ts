@@ -13,6 +13,8 @@ export interface Expense {
   note: string;
   updatedAt: number;
   synced: boolean;
+  /** Firebase Auth UID; expenses are filtered by this so each user sees only their data. */
+  userId?: string;
 }
 
 export type ExpenseCreate = Omit<Expense, 'id' | 'updatedAt' | 'synced'>;
