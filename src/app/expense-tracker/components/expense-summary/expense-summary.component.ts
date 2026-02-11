@@ -132,8 +132,8 @@ export class ExpenseSummaryComponent implements OnInit {
   });
 
   readonly averageSpend = computed(() => {
-    const total = this.totalAmount();
-    const list = this.expenses();
+    const total = this.totalExcludingTransfers();
+    const list = this.expensesExcludingTransfers();
     if (list.length === 0) return 0;
     const period = this.period();
     if (period === 'month') {
@@ -148,7 +148,7 @@ export class ExpenseSummaryComponent implements OnInit {
     return total / 12;
   });
   readonly highestExpense = computed(() => {
-    const list = this.expenses();
+    const list = this.expensesExcludingTransfers();
     if (list.length === 0) return null;
     return list.reduce((a, b) => (a.amount >= b.amount ? a : b));
   });
@@ -333,7 +333,7 @@ export class ExpenseSummaryComponent implements OnInit {
 
   readonly insights = computed(() => {
     const lines: string[] = [];
-    const total = this.totalAmount();
+    const total = this.totalExcludingTransfers();
     const prev = this.previousPeriodTotal();
     const p = this.period();
     const periodLabel = p === 'month' ? 'month' : p === 'year' ? 'year' : 'period';
@@ -403,17 +403,19 @@ export class ExpenseSummaryComponent implements OnInit {
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const y = String(now.getFullYear());
 
+    const excludeTransfers = (arr: { type?: string; category?: string; amount: number }[]) =>
+      arr.filter((e) => e.type !== 'transfer' && e.category !== 'Transfer').reduce((s, e) => s + e.amount, 0);
     if (p === 'month') {
       this.expenseService.getForMonth(ym).subscribe((list) => this.expenses.set(list));
       const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
       const prevYm = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
       this.expenseService.getForMonth(prevYm).subscribe((list) => {
-        this.previousPeriodTotal.set(list.reduce((s, e) => s + e.amount, 0));
+        this.previousPeriodTotal.set(excludeTransfers(list));
       });
     } else if (p === 'year') {
       this.expenseService.getForYear(y).subscribe((list) => this.expenses.set(list));
       this.expenseService.getForYear(String(now.getFullYear() - 1)).subscribe((list) => {
-        this.previousPeriodTotal.set(list.reduce((s, e) => s + e.amount, 0));
+        this.previousPeriodTotal.set(excludeTransfers(list));
       });
     } else {
       const start = this.dateRangeStart();

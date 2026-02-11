@@ -55,8 +55,10 @@ export class ExpenseListComponent implements OnInit {
       const days = new Date(y, m, 0).getDate();
       return days ? this.totalAmount() / days : 0;
     }
-    // year: avg per month
-    return list.length ? this.totalAmount() / 12 : 0;
+    // year: avg per day (days in that year for fair comparison with month avg/day)
+    const y = this.currentYear;
+    const daysInYear = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 366 : 365;
+    return list.length ? this.totalAmount() / daysInYear : 0;
   });
 
   // Comparison period totals for trend (today vs yesterday, week vs last week, etc.)
@@ -83,6 +85,20 @@ export class ExpenseListComponent implements OnInit {
     if (list.length === 0) return null;
     return list.reduce((a, b) => (a.amount >= b.amount ? a : b));
   });
+
+  /** Sum of all expenses in period excluding Rent (excludes transfers too). */
+  readonly totalExcludingRent = computed(() =>
+    this.expensesForDisplay()
+      .filter((e) => e.category !== 'Rent')
+      .reduce((s, e) => s + e.amount, 0)
+  );
+
+  /** Rent total in current period (for display in summary). */
+  readonly rentAmount = computed(() =>
+    this.expensesForDisplay()
+      .filter((e) => e.category === 'Rent')
+      .reduce((s, e) => s + e.amount, 0)
+  );
 
   // Week-grouped list (always group by week; excludes transfers)
   readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
