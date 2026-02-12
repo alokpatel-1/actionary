@@ -20,6 +20,9 @@
           @if (viewMode() === 'week' || viewMode() === 'month' || viewMode() === 'year') {
           <span class="summary-meta-item">Avg/day {{ formatCurrency(avgPerDay()) }}</span>
           }
+          @if (viewMode() === 'month' && daysWithoutTransactions() > 0) {
+          <span class="summary-meta-item">{{ daysWithoutTransactions() }} days no spend</span>
+          }
         </div>
       </div>
       @if (trend(); as t) {

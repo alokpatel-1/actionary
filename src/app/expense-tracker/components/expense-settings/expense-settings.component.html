@@ -6,35 +6,64 @@
   </div>
   }
   <section class="settings-tab">
+    <!-- Sync Section -->
     <div class="settings-card sync-section">
-      <h3>Sync</h3>
-      <p class="sync-stat">Unsynced records: <strong>{{ unsyncedCount() }}</strong></p>
-      <p class="sync-stat" *ngIf="syncService.lastSyncTimestamp()">Last sync: {{ syncService.lastSyncTimestamp()! | date:'d MMM yy, h:mm a' }}</p>
-      <p class="status" [class.offline]="!syncService.isOnline()">{{ syncService.isOnline() ? 'Online' : 'Offline' }}</p>
+      <div class="card-header">
+        <h3>Sync</h3>
+        <span class="status-badge" [class.offline]="!syncService.isOnline()">
+          <i class="pi" [ngClass]="syncService.isOnline() ? 'pi-wifi' : 'pi-wifi-off'"></i>
+          {{ syncService.isOnline() ? 'Online' : 'Offline' }}
+        </span>
+      </div>
+
+      <div class="sync-info">
+        <div class="info-row">
+          <span class="info-label">Unsynced records</span>
+          <span class="info-value">{{ unsyncedCount() }}</span>
+        </div>
+        <div class="info-row" *ngIf="syncService.lastSyncTimestamp()">
+          <span class="info-label">Last sync</span>
+          <span class="info-value">{{ syncService.lastSyncTimestamp()! | date:'d MMM yy, h:mm a' }}</span>
+        </div>
+      </div>
+
       <button pButton label="Sync Now" (click)="syncNow()" [loading]="syncInProgress()" [disabled]="!syncService.isOnline()" class="sync-btn"></button>
-      <p class="sync-msg success" *ngIf="syncService.syncStatus() === 'completed'">Sync completed.</p>
-      <p class="sync-msg started" *ngIf="syncService.syncStatus() === 'started'">Syncing…</p>
-      <p class="sync-msg failed" *ngIf="syncService.syncStatus() === 'failed'">Sync failed: {{ syncService.syncError() }}</p>
+
+      @if (syncService.syncStatus() === 'completed') {
+      <p class="sync-msg success"><i class="pi pi-check-circle"></i> Sync completed</p>
+      }
+      @if (syncService.syncStatus() === 'started') {
+      <p class="sync-msg started"><i class="pi pi-spin pi-spinner"></i> Syncing…</p>
+      }
+      @if (syncService.syncStatus() === 'failed') {
+      <p class="sync-msg failed"><i class="pi pi-exclamation-circle"></i> {{ syncService.syncError() }}</p>
+      }
     </div>
 
+    <!-- Export Section -->
     <div class="settings-card export-section">
-      <h3>Export Data</h3>
-      <p class="export-desc">Export from IndexedDB by date range. Works offline.</p>
+      <div class="card-header">
+        <h3>Export Data</h3>
+        <span class="info-badge">Works offline</span>
+      </div>
 
       <div class="export-options">
-        <label>Scope</label>
-        <div class="segment-control">
-          <button type="button" [class.active]="exportScope === 'current-year'" (click)="exportScope = 'current-year'">Current Year</button>
-          <button type="button" [class.active]="exportScope === 'last-year'" (click)="exportScope = 'last-year'">Last Year</button>
-          <button type="button" [class.active]="exportScope === 'custom'" (click)="exportScope = 'custom'">Custom</button>
-        </div>
-        <div class="scope-labels">
-          <span>Current Year: Jan 1 – today</span>
-          <span>Last Year: Jan 1 – Dec 31 previous year</span>
-          <span>Custom: choose start and end date</span>
+        <div class="option-group">
+          <label>Scope</label>
+          <div class="segment-control">
+            <button type="button" [class.active]="exportScope === 'current-year'" (click)="exportScope = 'current-year'">Current Year</button>
+            <button type="button" [class.active]="exportScope === 'last-year'" (click)="exportScope = 'last-year'">Last Year</button>
+            <button type="button" [class.active]="exportScope === 'custom'" (click)="exportScope = 'custom'">Custom</button>
+          </div>
+          <p class="scope-hint">
+            @if (exportScope === 'current-year') { Jan 1 – today }
+            @else if (exportScope === 'last-year') { Jan 1 – Dec 31 previous year }
+            @else { Choose start and end date }
+          </p>
         </div>
 
-        <div class="custom-range" *ngIf="exportScope === 'custom'">
+        @if (exportScope === 'custom') {
+        <div class="custom-range">
           <div class="custom-range-field">
             <label>Start date</label>
             <p-datePicker [(ngModel)]="customStart" dateFormat="yy-mm-dd" styleClass="custom-date" inputStyleClass="custom-date-input" />
@@ -44,11 +73,14 @@
             <p-datePicker [(ngModel)]="customEnd" dateFormat="yy-mm-dd" styleClass="custom-date" inputStyleClass="custom-date-input" />
           </div>
         </div>
+        }
 
-        <label>Format</label>
-        <div class="segment-control">
-          <button type="button" [class.active]="exportFormat === 'json'" (click)="exportFormat = 'json'">JSON</button>
-          <button type="button" [class.active]="exportFormat === 'csv'" (click)="exportFormat = 'csv'">CSV</button>
+        <div class="option-group">
+          <label>Format</label>
+          <div class="segment-control">
+            <button type="button" [class.active]="exportFormat === 'json'" (click)="exportFormat = 'json'">JSON</button>
+            <button type="button" [class.active]="exportFormat === 'csv'" (click)="exportFormat = 'csv'">CSV</button>
+          </div>
         </div>
       </div>
 

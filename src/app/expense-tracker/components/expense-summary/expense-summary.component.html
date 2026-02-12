@@ -77,19 +77,26 @@
   <!-- 5. Spending trend (line chart) -->
   <section class="chart-section">
     <h3 class="section-title">{{ period() === 'year' ? 'Monthly spending' : 'Daily spending' }}</h3>
-    <div class="line-chart-wrap">
-      <svg class="line-chart" viewBox="0 0 100 40" preserveAspectRatio="xMidYMid meet">
-        @if (trendPoints().length) {
-        <path [attr.d]="lineChartPath()" class="line-path" fill="none" stroke="var(--color-chart-primary)" stroke-width="0.8" vector-effect="non-scaling-stroke" />
-        @if (lineChartHighlight(); as hl) {
-        <circle class="line-highlight" [attr.cx]="hl.x" [attr.cy]="hl.y" r="1.2" fill="var(--color-primary)" />
+    <div class="line-chart-container">
+      <div class="line-chart-y-axis">
+        @for (label of yAxisLabels(); track label) {
+        <span class="y-axis-label">{{ label }}</span>
         }
-        }
-      </svg>
-      <div class="line-chart-labels">
-        @for (i of lineChartLabelIndices(); track i) {
-        <span class="line-label">{{ trendPoints()[i].label }}</span>
-        }
+      </div>
+      <div class="line-chart-wrap">
+        <svg class="line-chart" viewBox="0 0 100 40" preserveAspectRatio="xMidYMid meet">
+          @if (trendPoints().length) {
+          <path [attr.d]="lineChartPath()" class="line-path" fill="none" stroke="var(--color-chart-primary)" stroke-width="0.8" vector-effect="non-scaling-stroke" />
+          @if (lineChartHighlight(); as hl) {
+          <circle class="line-highlight" [attr.cx]="hl.x" [attr.cy]="hl.y" r="1.2" fill="var(--color-primary)" />
+          }
+          }
+        </svg>
+        <div class="line-chart-labels">
+          @for (i of lineChartLabelIndices(); track i) {
+          <span class="line-label">{{ trendPoints()[i].label }}</span>
+          }
+        </div>
       </div>
     </div>
   </section>

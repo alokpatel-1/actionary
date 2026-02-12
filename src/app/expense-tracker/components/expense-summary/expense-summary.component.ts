@@ -298,6 +298,30 @@ export class ExpenseSummaryComponent implements OnInit {
     return Array.from({ length: 7 }, (_, i) => Math.min(Math.round(i * step), n - 1));
   });
 
+  readonly yAxisLabels = computed(() => {
+    const points = this.trendPoints();
+    if (points.length === 0) return ['₹0'];
+    const max = Math.max(...points.map((p) => p.value), 1);
+
+    // Generate 5 evenly spaced y-axis labels from max to 0
+    const labels: string[] = [];
+    for (let i = 0; i < 5; i++) {
+      const value = max * (1 - i / 4);
+      labels.push(this.formatYAxisCurrency(value));
+    }
+    return labels;
+  });
+
+  private formatYAxisCurrency(value: number): string {
+    if (value >= 10000) {
+      return '₹' + (value / 1000).toFixed(0) + 'k';
+    } else if (value >= 1000) {
+      return '₹' + (value / 1000).toFixed(1) + 'k';
+    } else {
+      return '₹' + Math.round(value);
+    }
+  }
+
   readonly lineChartHighlight = computed(() => {
     const points = this.trendPoints();
     const maxI = this.lineChartMaxIndex();

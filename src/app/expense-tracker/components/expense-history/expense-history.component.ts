@@ -51,6 +51,51 @@ export class ExpenseHistoryComponent implements OnInit {
   readonly transactionCount = computed(() => this.expensesForDisplay().length);
   readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
 
+  /** Transfer totals for current month and year (shown only in Transfer tab). */
+  readonly transferCurrentMonth = computed(() => {
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const transfers = this.expenses().filter((e) => e.type === 'transfer' || e.category === 'Transfer');
+    return transfers.filter((e) => e.date.startsWith(ym)).reduce((s, e) => s + e.amount, 0);
+  });
+
+  readonly transferCurrentYear = computed(() => {
+    const now = new Date();
+    const y = String(now.getFullYear());
+    const transfers = this.expenses().filter((e) => e.type === 'transfer' || e.category === 'Transfer');
+    return transfers.filter((e) => e.date.startsWith(y)).reduce((s, e) => s + e.amount, 0);
+  });
+
+  /** Days without transactions in the current filter period (for Expense tab only). */
+  readonly daysWithoutTransactions = computed(() => {
+    const tab = this.historyTab();
+    if (tab === 'transfers') return 0; // not applicable for transfers
+
+    const list = this.expensesForDisplay();
+    const t = this.periodType();
+    const y = this.selectedYear();
+
+    if (t === 'year') {
+      const daysInYear = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 366 : 365;
+      const uniqueDates = new Set(list.map(e => e.date));
+      return daysInYear - uniqueDates.size;
+    }
+
+    if (t === 'month') {
+      const m = this.selectedMonth();
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const uniqueDates = new Set(list.map(e => e.date));
+      return daysInMonth - uniqueDates.size;
+    }
+
+    if (t === 'week') {
+      const uniqueDates = new Set(list.map(e => e.date));
+      return 7 - uniqueDates.size;
+    }
+
+    return 0;
+  });
+
   // Infinite scroll over week groups (cards view)
   readonly visibleWeekGroupsCount = signal(3);
   readonly visibleWeekGroups = computed(() => this.weekGroups().slice(0, this.visibleWeekGroupsCount()));
@@ -94,6 +139,13 @@ export class ExpenseHistoryComponent implements OnInit {
   setHistoryTab(tab: HistoryTab): void {
     this.historyTab.set(tab);
     this.visibleWeekGroupsCount.set(3);
+    if (tab === 'transfers') {
+      // Load all transfers (no filter)
+      this.loadAllTransfers();
+    } else {
+      // Load expenses based on current filter
+      this.load();
+    }
   }
 
   setPeriodType(type: PeriodType): void {
@@ -124,6 +176,12 @@ export class ExpenseHistoryComponent implements OnInit {
   }
 
   load(): void {
+    const tab = this.historyTab();
+    if (tab === 'transfers') {
+      this.loadAllTransfers();
+      return;
+    }
+
     const t = this.periodType();
     const y = this.selectedYear();
 
@@ -157,6 +215,14 @@ export class ExpenseHistoryComponent implements OnInit {
         this.visibleWeekGroupsCount.set(3);
       });
     }
+  }
+
+  /** Load all transfers (for Transfer tab, no filter applied). */
+  private loadAllTransfers(): void {
+    this.expenseService.getAll().subscribe((list) => {
+      this.expenses.set(list);
+      this.visibleWeekGroupsCount.set(3);
+    });
   }
 
   deleteExpense(id: string, event?: Event): void {
