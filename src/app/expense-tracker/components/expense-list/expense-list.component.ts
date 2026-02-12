@@ -100,6 +100,33 @@ export class ExpenseListComponent implements OnInit {
       .reduce((s, e) => s + e.amount, 0)
   );
 
+  /** Count of days without transactions in current period. */
+  readonly daysWithoutTransactions = computed(() => {
+    const mode = this.viewMode();
+    const list = this.expensesForDisplay();
+
+    if (mode === 'today') return list.length === 0 ? 1 : 0;
+
+    if (mode === 'week') {
+      const uniqueDates = new Set(list.map(e => e.date));
+      return 7 - uniqueDates.size;
+    }
+
+    if (mode === 'month') {
+      const ym = this.currentYearMonth();
+      const [y, m] = ym.split('-').map(Number);
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const uniqueDates = new Set(list.map(e => e.date));
+      return daysInMonth - uniqueDates.size;
+    }
+
+    // year
+    const y = this.currentYear;
+    const daysInYear = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 366 : 365;
+    const uniqueDates = new Set(list.map(e => e.date));
+    return daysInYear - uniqueDates.size;
+  });
+
   // Week-grouped list (always group by week; excludes transfers)
   readonly weekGroups = computed(() => this.buildWeekGroups(this.expensesForDisplay()));
 

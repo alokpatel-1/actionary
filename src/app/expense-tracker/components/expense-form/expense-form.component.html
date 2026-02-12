@@ -72,6 +72,7 @@
 
     <div class="form-actions">
       <button pButton type="submit" [label]="isEdit() ? 'UPDATE' : 'ADD EXPENSE'" [loading]="saving()" [disabled]="form.invalid" class="add-expense-btn"></button>
+      <a pButton [routerLink]="['/expenses', 'list']" label="Cancel" class="p-button-text cancel-btn"></a>
     </div>
   </form>
 </div>

@@ -10,10 +10,13 @@
 
   @if (historyTab() === 'expenses') {
   <div class="period-selector">
-    <div class="period-tabs" role="tablist">
-      <button type="button" role="tab" [class.active]="periodType() === 'year'" (click)="setPeriodType('year')">Year</button>
-      <button type="button" role="tab" [class.active]="periodType() === 'month'" (click)="setPeriodType('month')">Month</button>
-      <button type="button" role="tab" [class.active]="periodType() === 'week'" (click)="setPeriodType('week')">Week</button>
+    <div class="period-type-field">
+      <label>Filter by</label>
+      <select [value]="periodType()" (change)="setPeriodType($any($event.target).value)">
+        <option value="year">Year</option>
+        <option value="month">Month</option>
+        <option value="week">Week</option>
+      </select>
     </div>
 
     @switch (periodType()) {
@@ -49,7 +52,7 @@
     }
     @case ('week') {
     <div class="period-fields">
-      <label>Week starting (pick any day)</label>
+      <label>Week starting</label>
       <input type="date" [value]="selectedWeekStart()" (change)="onWeekStartChange($any($event.target).value)" class="week-date-input" />
     </div>
     }
@@ -57,15 +60,34 @@
   </div>
   }
 
+  @if (historyTab() === 'transfers') {
+  <!-- Transfer summary: current month and year -->
+  <section class="transfer-summary-cards">
+    <div class="transfer-summary-card">
+      <span class="transfer-summary-label">This Month</span>
+      <span class="transfer-summary-amount">{{ formatCurrency(transferCurrentMonth()) }}</span>
+    </div>
+    <div class="transfer-summary-card">
+      <span class="transfer-summary-label">This Year</span>
+      <span class="transfer-summary-amount">{{ formatCurrency(transferCurrentYear()) }}</span>
+    </div>
+  </section>
+  } @else {
+  <!-- Expense summary -->
   <section class="summary-card">
     <div class="summary-primary">
       <span class="summary-total">{{ formatCurrency(totalAmount()) }}</span>
       <span class="summary-label">{{ periodLabel() }}</span>
     </div>
     <div class="summary-meta">
-      <span>{{ transactionCount() }} {{ historyTab() === 'transfers' ? 'transfer' : 'transaction' }}{{ transactionCount() !== 1 ? 's' : '' }}</span>
+      <span>{{ transactionCount() }} transaction{{ transactionCount() !== 1 ? 's' : '' }}</span>
+      @if (daysWithoutTransactions() > 0) {
+      <span class="summary-meta-sep">·</span>
+      <span>{{ daysWithoutTransactions() }} days no spend</span>
+      }
     </div>
   </section>
+  }
 
   @if (unsyncedCount() > 0) {
   <p class="unsynced-entries">{{ unsyncedCount() }} unsynced entries</p>
