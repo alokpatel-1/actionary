@@ -22,7 +22,6 @@ import { NgxSpinnerModule } from 'ngx-spinner';
     UpcomingTaskComponent,
     TodaysTaskComponent,
     CalenderViewComponent,
-    CreateTaskComponent,
     PendingTasksComponent,
     CdkEditorComponent,
     TaskListComponent
@@ -33,7 +32,8 @@ import { NgxSpinnerModule } from 'ngx-spinner';
     SidebarComponent,
     TopBarComponent,
     ImportsModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    CreateTaskComponent
   ]
 })
 export class ActionaryModule { }

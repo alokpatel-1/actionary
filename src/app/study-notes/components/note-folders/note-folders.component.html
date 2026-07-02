@@ -1,0 +1,99 @@
+<div class="folders-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Folders</h1>
+      <p class="page-subtitle">Organize your notes</p>
+    </div>
+  </div>
+
+  <!-- Folder Grid -->
+  <div class="folder-grid">
+    <div class="folder-card"
+         *ngFor="let folder of folders()"
+         [style.--folder-color]="folder.color"
+         (click)="openEditDialog(folder)">
+      <div class="folder-card-header">
+        <div class="folder-icon-wrap" [style.background]="folder.color + '1a'">
+          <i [class]="folder.icon" [style.color]="folder.color"></i>
+        </div>
+        <button class="folder-menu-btn"
+                *ngIf="!isDefault(folder.id)"
+                (click)="$event.stopPropagation(); deleteFolder(folder)"
+                title="Delete folder">
+          <i class="pi pi-trash"></i>
+        </button>
+        <span class="default-badge" *ngIf="isDefault(folder.id)">Default</span>
+      </div>
+      <h3 class="folder-name">{{ folder.name }}</h3>
+      <p class="folder-count">{{ getNoteCount(folder.id) }} {{ getNoteCount(folder.id) === 1 ? 'note' : 'notes' }}</p>
+    </div>
+
+    <!-- Add Folder Card -->
+    <div class="folder-card add-card" (click)="openCreateDialog()">
+      <div class="add-icon">
+        <i class="pi pi-plus"></i>
+      </div>
+      <h3 class="folder-name">Add Folder</h3>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Dialog -->
+<p-dialog [(visible)]="showDialog"
+          [modal]="true"
+          [closable]="true"
+          [draggable]="false"
+          [resizable]="false"
+          [style]="{width: '22rem', maxWidth: '92vw'}"
+          [header]="isNewFolder() ? 'New Folder' : 'Edit Folder'"
+          styleClass="folder-dialog">
+
+  <div class="dialog-body">
+    <!-- Name -->
+    <div class="field">
+      <label class="field-label">Folder Name</label>
+      <input pInputText
+             [ngModel]="folderName()"
+             (ngModelChange)="folderName.set($event)"
+             placeholder="e.g. Mathematics"
+             class="folder-name-input"
+             autocomplete="off">
+    </div>
+
+    <!-- Color Picker -->
+    <div class="field">
+      <label class="field-label">Color</label>
+      <div class="color-grid">
+        <button *ngFor="let color of FOLDER_COLORS"
+                class="color-swatch"
+                [style.background]="color"
+                [class.selected]="folderColor() === color"
+                (click)="folderColor.set(color)">
+          <i class="pi pi-check" *ngIf="folderColor() === color"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Icon Picker -->
+    <div class="field">
+      <label class="field-label">Icon</label>
+      <div class="icon-grid">
+        <button *ngFor="let icon of FOLDER_ICONS"
+                class="icon-option"
+                [class.selected]="folderIcon() === icon"
+                [style.--sel-color]="folderColor()"
+                (click)="folderIcon.set(icon)">
+          <i [class]="icon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" class="p-button-text p-button-sm" (click)="showDialog.set(false)"></button>
+    <button pButton [label]="isNewFolder() ? 'Create' : 'Save'" class="p-button-sm save-btn"
+            [disabled]="!folderName().trim()"
+            (click)="saveFolder()">
+    </button>
+  </ng-template>
+</p-dialog>

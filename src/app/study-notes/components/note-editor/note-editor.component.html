@@ -1,0 +1,57 @@
+<div class="editor-page">
+  <!-- Minimal top bar: back + save status + actions -->
+  <div class="editor-bar">
+    <div class="bar-center">
+      <span class="save-dot saving" *ngIf="saving()"></span>
+      <span class="save-label" *ngIf="saving()">Saving…</span>
+      <span class="save-dot saved" *ngIf="!saving() && lastSaved()"></span>
+      <span class="save-label saved" *ngIf="!saving() && lastSaved()">Saved</span>
+    </div>
+
+    <div class="bar-right">
+      <button *ngIf="!isEditMode()" class="edit-btn-pill" (click)="enableEditMode()" title="Edit note">
+        <i class="pi pi-pencil"></i>
+        <span>Edit</span>
+      </button>
+      <button *ngIf="isEditMode()" class="save-btn-pill" (click)="save(true)" [disabled]="saving()" title="Save note">
+        <i class="pi" [ngClass]="saving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
+        <span>Save</span>
+      </button>
+      <button class="bar-btn" [class.pinned]="isPinned()" (click)="onPinToggle()" title="Pin">
+        <i class="pi pi-thumbtack"></i>
+      </button>
+      <button class="bar-btn danger" (click)="deleteNote()" title="Delete">
+        <i class="pi pi-trash"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Title Preview Mode -->
+  <h1 *ngIf="!isEditMode()" class="note-title-preview">{{ title() || 'Untitled Note' }}</h1>
+
+  <!-- Title Edit Mode -->
+  <input *ngIf="isEditMode()"
+         type="text"
+         class="note-title"
+         [value]="title()"
+         (input)="onTitleChange($any($event.target).value)"
+         placeholder="Note title…"
+         autocomplete="off"
+         spellcheck="true">
+
+  <!-- Preview Area -->
+  <div class="preview-area" *ngIf="!isEditMode()">
+    <div *ngIf="content(); else emptyTemplate" [innerHTML]="content()"></div>
+    <ng-template #emptyTemplate>
+      <p class="empty-preview">No content yet.</p>
+    </ng-template>
+  </div>
+
+  <!-- CKEditor — Full Height -->
+  <div class="editor-area" *ngIf="isEditMode() && isLayoutReady">
+    <ckeditor [editor]="Editor"
+              [config]="editorConfig"
+              (change)="onEditorChange($event)">
+    </ckeditor>
+  </div>
+</div>

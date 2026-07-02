@@ -1,0 +1,66 @@
+<div class="search-page">
+  <!-- Search Bar -->
+  <div class="search-bar-wrap">
+    <div class="search-bar">
+      <i class="pi pi-search search-icon"></i>
+      <input type="text"
+             class="search-input"
+             [value]="query()"
+             (input)="onSearch($any($event.target).value)"
+             placeholder="Search notes…"
+             autocomplete="off"
+             spellcheck="false"
+             autofocus>
+      <button class="clear-btn" *ngIf="query()" (click)="clearSearch()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Searching indicator -->
+  <div class="searching" *ngIf="searching()">
+    <i class="pi pi-spin pi-spinner"></i>
+    <span>Searching…</span>
+  </div>
+
+  <!-- Results -->
+  <div class="results" *ngIf="!searching() && hasSearched()">
+    <p class="result-count">{{ results().length }} {{ results().length === 1 ? 'result' : 'results' }}</p>
+
+    <div class="result-list" *ngIf="results().length > 0">
+      <div class="result-item"
+           *ngFor="let note of results()"
+           (click)="openNote(note)">
+        <div class="result-accent" [style.background]="getFolderColor(note.folderId)"></div>
+        <div class="result-body">
+          <h3 class="result-title" [innerHTML]="getHighlightedTitle(note.title)"></h3>
+          <p class="result-preview">{{ getPreview(note.content) }}</p>
+          <div class="result-meta">
+            <span class="result-folder" [style.color]="getFolderColor(note.folderId)">
+              {{ getFolderName(note.folderId) }}
+            </span>
+            <span class="result-date">{{ formatDate(note.updatedAt) }}</span>
+          </div>
+        </div>
+        <i class="pi pi-chevron-right result-arrow"></i>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="results().length === 0">
+      <div class="no-results-icon">
+        <i class="pi pi-search"></i>
+      </div>
+      <h3>No notes found</h3>
+      <p>Try a different search term</p>
+    </div>
+  </div>
+
+  <!-- Initial State -->
+  <div class="initial-state" *ngIf="!searching() && !hasSearched()">
+    <div class="initial-icon">
+      <i class="pi pi-search"></i>
+    </div>
+    <p>Search by title or content</p>
+  </div>
+</div>
