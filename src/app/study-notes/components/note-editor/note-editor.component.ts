@@ -193,7 +193,18 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
     setTimeout(() => this.editor?.commands.focus(), 0);
   }
 
+  focusEditor(event: Event): void {
+    if (!this.isEditMode() || !this.editor) return;
+    
+    // If the click is on the editor-area or content wrapper itself (and not inside the text), focus the end of the text
+    const target = event.target as HTMLElement;
+    if (target.classList.contains('editor-area') || target.classList.contains('tiptap-editor-wrapper')) {
+      this.editor.commands.focus('end');
+    }
+  }
+
   save(manual = false): void {
+    if (this.saving()) return;
     this.saving.set(true);
     const data = {
       title: this.title() || 'Untitled Note',

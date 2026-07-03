@@ -43,7 +43,7 @@
            maxlength="100">
 
     <!-- Tiptap Editor Area -->
-    <div class="editor-area" *ngIf="editor">
+    <div class="editor-area" *ngIf="editor" (click)="focusEditor($event)">
       
       <!-- Bubble Menu (Shown on highlight) -->
       <div tiptapBubbleMenu [editor]="editor" class="bubble-menu" *ngIf="isEditMode()">

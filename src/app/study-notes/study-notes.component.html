@@ -24,10 +24,10 @@
     </div>
 
     <!-- Create Note Button -->
-    <a (click)="createNewNote()" class="create-btn" style="cursor: pointer;">
-      <i class="pi pi-plus"></i>
+    <button (click)="createNewNote()" class="create-btn" style="cursor: pointer; border: none; font-family: inherit;" [disabled]="isCreatingNote()" [style.opacity]="isCreatingNote() ? '0.7' : '1'">
+      <i class="pi" [ngClass]="isCreatingNote() ? 'pi-spin pi-spinner' : 'pi-plus'"></i>
       <span class="nav-text" *ngIf="sidebarExpanded()">New Note</span>
-    </a>
+    </button>
 
     <!-- Nav Links (Search, etc.) -->
     <div class="sidebar-nav">

@@ -183,6 +183,7 @@
 :host ::ng-deep {
   .ProseMirror, .tiptap-content {
     flex: 1;
+    min-height: 65vh;
     outline: none;
     font-size: 1.125rem;
     line-height: 1.7;

@@ -26,7 +26,10 @@ export class StudyNotesComponent implements OnInit {
     this.isSidebarFoldersExpanded.set(!this.isSidebarFoldersExpanded());
   }
 
+  isCreatingNote = signal(false);
+
   createNewNote(): void {
+    if (this.isCreatingNote()) return;
     this.closeMobileSidebar();
     const activeFid = this.noteService.activeFolderId();
     
@@ -39,8 +42,15 @@ export class StudyNotesComponent implements OnInit {
       isPinned: false
     };
     
-    this.noteService.addNote(newNote).subscribe(note => {
-      this.router.navigate(['/notes', note.id], { queryParams: { edit: 'true' } });
+    this.isCreatingNote.set(true);
+    this.noteService.addNote(newNote).subscribe({
+      next: note => {
+        this.isCreatingNote.set(false);
+        this.router.navigate(['/notes', note.id], { queryParams: { edit: 'true' } });
+      },
+      error: () => {
+        this.isCreatingNote.set(false);
+      }
     });
   }
 
