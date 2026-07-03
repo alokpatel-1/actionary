@@ -98,8 +98,6 @@ export class StudyNotesComponent implements OnInit {
   showDeleteConfirmModal = signal(false);
   noteToDelete = signal<Note | null>(null);
 
-  showBulkSelectionModal = signal(false);
-  selectedNotes = signal<Set<string>>(new Set());
 
   showArchiveModal = signal(false);
   archivedNotes = signal<Note[]>([]);
@@ -547,59 +545,6 @@ export class StudyNotesComponent implements OnInit {
     });
   }
 
-  triggerBulkDelete(): void {
-    this.showProfileMenu.set(false);
-    this.selectedNotes.set(new Set());
-    this.showBulkSelectionModal.set(true);
-  }
-
-  closeBulkSelectionModal(): void {
-    this.showBulkSelectionModal.set(false);
-    this.selectedNotes.set(new Set());
-  }
-
-  toggleNoteSelection(noteId: string): void {
-    const current = new Set(this.selectedNotes());
-    if (current.has(noteId)) {
-      current.delete(noteId);
-    } else {
-      current.add(noteId);
-    }
-    this.selectedNotes.set(current);
-  }
-
-  toggleSelectAll(): void {
-    const current = new Set(this.selectedNotes());
-    const all = this.allNotes();
-    if (current.size === all.length) {
-      this.selectedNotes.set(new Set()); // Deselect all
-    } else {
-      this.selectedNotes.set(new Set(all.map(n => n.id))); // Select all
-    }
-  }
-
-  confirmBulkDelete(): void {
-    const ids = Array.from(this.selectedNotes());
-    if (ids.length === 0) {
-      this.showBulkSelectionModal.set(false);
-      return;
-    }
-
-    this.noteService.bulkDeleteNotes(ids).subscribe({
-      next: () => {
-        this.showBulkSelectionModal.set(false);
-        this.selectedNotes.set(new Set());
-        this.noteService.triggerRefresh();
-        this.noteService.syncService.sync().subscribe();
-        this.router.navigate(['/notes', 'create']);
-      },
-      error: (err) => {
-        console.error('Error clearing notes:', err);
-        this.showBulkSelectionModal.set(false);
-      }
-    });
-  }
-
   triggerManualSync(): void {
     this.noteService.syncService.sync().subscribe();
   }
@@ -745,10 +690,6 @@ export class StudyNotesComponent implements OnInit {
   getUserInitials(): string {
     const name = this.userName();
     if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+    return name.trim().charAt(0).toUpperCase();
   }
 }

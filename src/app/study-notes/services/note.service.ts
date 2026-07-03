@@ -13,6 +13,11 @@ import { map, switchMap, tap } from 'rxjs/operators';
 export class NoteService {
   private idb = inject(NoteIdbService);
   public syncService = inject(NoteSyncService);
+
+  get sync() {
+    return this.syncService;
+  }
+  
   private auth = inject(Auth);
 
   private notesUpdated$ = new BehaviorSubject<void>(undefined);
@@ -23,8 +28,22 @@ export class NoteService {
     effect(() => {
       if (this.syncService.syncStatus() === 'completed') {
         this.triggerRefresh();
+        this.cleanupOldArchivedNotes().subscribe();
       }
     });
+  }
+
+  private cleanupOldArchivedNotes(): Observable<void> {
+    const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return from(this.idb.getAllNotes()).pipe(
+      switchMap(notes => {
+        const toDelete = notes.filter(n => n.isDeleted && (now - n.updatedAt) > NINETY_DAYS_MS);
+        const deletes = toDelete.map(n => this.permanentlyDeleteNote(n.id));
+        return deletes.length ? forkJoin(deletes) : of(null);
+      }),
+      map(() => void 0)
+    );
   }
 
   triggerRefresh(): void {

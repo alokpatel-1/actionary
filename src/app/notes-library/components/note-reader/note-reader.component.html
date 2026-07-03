@@ -1,0 +1,41 @@
+<div class="reader-container">
+  <app-library-navbar 
+    [showSearch]="true"
+    [noteIdToEdit]="note()?.id"
+    (searchChange)="onSearchChange($event)">
+  </app-library-navbar>
+
+  <!-- Article View -->
+  <main class="reader-main" *ngIf="note()">
+    <article class="reader-article">
+      <!-- Article Header -->
+      <header class="article-header">
+        <div class="article-meta">
+          <span class="folder-badge" *ngIf="folder()">
+            <span class="folder-icon">{{ folder()?.icon }}</span> {{ folder()?.name }}
+          </span>
+          <span class="folder-badge" *ngIf="!folder()">
+            <span class="folder-icon">📁</span> Uncategorized
+          </span>
+        </div>
+
+        <h1 class="article-title">{{ note()?.title || 'Untitled Note' }}</h1>
+
+        <div class="article-author-row">
+          <div class="article-author-info">
+            <span class="date">Updated {{ note()?.updatedAt | date:'mediumDate' }}</span>
+            <span class="dot">&middot;</span>
+            <span class="read-time">{{ readingTime() }} min read</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Article Content (Read-Only HTML) -->
+      <div class="article-content" [innerHTML]="safeContent()"></div>
+    </article>
+  </main>
+
+  <div class="loading-state" *ngIf="!note()">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #bdbdbd;"></i>
+  </div>
+</div>

@@ -30,13 +30,6 @@ export class NoteSyncService {
         this.tryAutoSync();
       });
       window.addEventListener('offline', () => this.isOnline.set(false));
-
-      // Periodic background sync every 30 seconds
-      setInterval(() => {
-        if (this.isOnline() && this.uid && !this.isSyncing) {
-          this.sync().subscribe();
-        }
-      }, 30000);
     }
   }
 

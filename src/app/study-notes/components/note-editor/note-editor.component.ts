@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject, signal, effect } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject, signal, effect, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../../services/note.service';
 import { Note, NoteFolder, DEFAULT_FOLDER } from '../../models/note.model';
@@ -54,6 +54,7 @@ const CustomCodeBlock = CodeBlock.extend({
 });
 
 import { SlashCommands } from './slash-commands';
+import { StudyNotesComponent } from '../../study-notes.component';
 
 @Component({
   selector: 'app-note-editor',
@@ -64,11 +65,14 @@ import { SlashCommands } from './slash-commands';
 export class NoteEditorComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private noteService = inject(NoteService);
+  public noteService = inject(NoteService);
+  public studyNotes = inject(StudyNotesComponent);
   private cdr = inject(ChangeDetectorRef);
   private confirmationService = inject(ConfirmationService);
   private destroy$ = new Subject<void>();
   private autoSave$ = new Subject<void>();
+
+  showProfileMenu = signal(false);
 
   noteId = signal<string | null>(null);
   title = signal('');
@@ -91,6 +95,18 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
         this.folderId.set(activeFid || DEFAULT_FOLDER.id);
       }
     });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClick(event: Event) {
+    if (this.showProfileMenu()) {
+      this.showProfileMenu.set(false);
+    }
+  }
+
+  toggleProfileMenu(event: Event) {
+    event.stopPropagation();
+    this.showProfileMenu.update(v => !v);
   }
 
   ngOnInit(): void {
@@ -276,6 +292,12 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  triggerManualSync(): void {
+    if (this.noteService.syncService.syncStatus() !== 'started') {
+      this.noteService.syncService.sync().subscribe();
+    }
+  }
+
   deleteNote(): void {
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this note?',
@@ -293,5 +315,10 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  goToReadMode(): void {
+    if (this.isNew()) return;
+    this.router.navigate(['/library/read', this.noteId()]);
   }
 }

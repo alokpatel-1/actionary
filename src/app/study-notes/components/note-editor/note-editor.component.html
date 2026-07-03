@@ -9,6 +9,28 @@
     </div>
 
     <div class="bar-right">
+      <!-- Sync Status Group -->
+      <div class="editor-sync-group">
+        <span class="sync-badge syncing" *ngIf="noteService.sync.syncStatus() === 'started'" title="Syncing with Firebase...">
+          <i class="pi pi-spin pi-spinner"></i>
+        </span>
+        <span class="sync-badge synced" *ngIf="noteService.sync.syncStatus() === 'completed'" title="Synced with Firebase">
+          <i class="pi pi-check-circle"></i>
+        </span>
+        <span class="sync-badge failed" *ngIf="noteService.sync.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.sync.syncError()">
+          <i class="pi pi-exclamation-circle"></i>
+        </span>
+        <button class="bar-btn manual-sync-btn"
+                (click)="triggerManualSync()"
+                [disabled]="noteService.sync.syncStatus() === 'started'"
+                title="Sync now">
+          <i class="pi"
+             [class.pi-refresh]="noteService.sync.syncStatus() !== 'started'"
+             [class.pi-spin]="noteService.sync.syncStatus() === 'started'"
+             [class.pi-spinner]="noteService.sync.syncStatus() === 'started'"></i>
+        </button>
+      </div>
+
       <button *ngIf="!isEditMode()" class="edit-btn-pill" (click)="enableEditMode()" title="Edit note">
         <i class="pi pi-pencil"></i>
         <span>Edit</span>
@@ -17,12 +39,32 @@
         <i class="pi" [ngClass]="saving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
         <span>Save</span>
       </button>
-      <button class="bar-btn" [class.pinned]="isPinned()" (click)="onPinToggle()" title="Pin">
-        <i class="pi pi-thumbtack"></i>
+      <button class="bar-btn" *ngIf="!isNew()" (click)="goToReadMode()" title="Read Mode">
+        <i class="pi pi-book"></i>
       </button>
-      <button class="bar-btn danger" (click)="deleteNote()" title="Delete">
-        <i class="pi pi-trash"></i>
-      </button>
+
+      <!-- Profile Avatar Dropdown -->
+      <div class="avatar-circle-wrapper" (click)="toggleProfileMenu($event)">
+        <div class="avatar-circle">
+          {{ studyNotes.getUserInitials() }}
+        </div>
+        
+        <div class="profile-dropdown" *ngIf="showProfileMenu()">
+          <div class="popover-user-details" style="padding: 0.75rem 1rem; border-bottom: 1px solid #eaeaea; margin-bottom: 0;">
+            <div style="font-weight: 600; font-size: 0.9rem; color: #292929;">{{ studyNotes.userName() }}</div>
+            <div style="font-size: 0.75rem; color: #757575;">{{ studyNotes.userEmail() }}</div>
+          </div>
+          <div class="dropdown-item" routerLink="/library">
+            <i class="pi pi-book"></i> Read content
+          </div>
+          <div class="dropdown-item" (click)="$event.stopPropagation(); studyNotes.openArchiveModal()">
+            <i class="pi pi-inbox"></i> Archived notes
+          </div>
+          <div class="dropdown-item logout" (click)="$event.stopPropagation(); studyNotes.logout()">
+            <i class="pi pi-sign-out"></i> Log out
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

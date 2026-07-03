@@ -25,7 +25,7 @@ export class SplashComponent implements OnInit {
             (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('email'))
           );
           if (isLoggedIn) {
-            this.router.navigate(['/notes/create']);
+            this.router.navigate(['/library']);
           } else {
             this.router.navigate(['/home/auth/login']);
           }

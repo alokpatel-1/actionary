@@ -59,7 +59,7 @@ export class SignInComponent implements OnInit {
         this.spinner.hide();
 
         // Redirect to new note after successful login
-        this.router.navigate(['/notes/create']);
+        this.router.navigate(['/library']);
       },
       error: ({ error }) => {
         console.error('Login failed:', error.error);
@@ -98,7 +98,7 @@ export class SignInComponent implements OnInit {
         this.firebaseAuthService.isUserLoggedIn.set(true);
         this.spinner.hide();
         // Redirect to new note after successful login
-        this.router.navigate(['/notes/create']);
+        this.router.navigate(['/library']);
       },
       (err) => {
         console.log('Login failed:', err);

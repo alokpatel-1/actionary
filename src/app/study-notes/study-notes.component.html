@@ -14,54 +14,13 @@
   <aside class="sidebar" [class.mobile-open]="sidebarMobileOpen()">
     <!-- Sidebar Header -->
     <div class="sidebar-header">
-      <!-- Expanded Sidebar: brand, sync badges, and manual sync button -->
+      <!-- Expanded Sidebar: brand -->
       <div class="sidebar-brand" *ngIf="sidebarExpanded()">
         <span class="brand-icon">📝</span>
-        <span class="brand-text">Notes</span>
-        
-        <!-- Expanded Sync Indicator -->
-        <span class="sidebar-sync-badge syncing" *ngIf="noteService.syncService.syncStatus() === 'started'" title="Syncing with Firebase...">
-          <i class="pi pi-spin pi-spinner"></i>
-        </span>
-        <span class="sidebar-sync-badge synced" *ngIf="noteService.syncService.syncStatus() === 'completed'" title="Synced with Firebase">
-          <i class="pi pi-check-circle"></i>
-        </span>
-        <span class="sidebar-sync-badge failed" *ngIf="noteService.syncService.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.syncService.syncError()">
-          <i class="pi pi-exclamation-circle"></i>
-        </span>
-
-        <!-- Manual Sync Button (expanded) -->
-        <button class="manual-sync-btn"
-                (click)="triggerManualSync()"
-                [disabled]="noteService.syncService.syncStatus() === 'started'"
-                title="Sync now">
-          <i class="pi"
-             [class.pi-refresh]="noteService.syncService.syncStatus() !== 'started'"
-             [class.pi-spin]="noteService.syncService.syncStatus() === 'started'"
-             [class.pi-spinner]="noteService.syncService.syncStatus() === 'started'"></i>
-        </button>
-      </div>
-
-      <!-- Collapsed Sync Indicator -->
-      <div class="collapsed-sync-indicator" *ngIf="!sidebarExpanded()">
-        <span class="sync-dot syncing" *ngIf="noteService.syncService.syncStatus() === 'started'" title="Syncing with Firebase..."></span>
-        <span class="sync-dot synced" *ngIf="noteService.syncService.syncStatus() === 'completed'" title="Synced with Firebase"></span>
-        <span class="sync-dot failed" *ngIf="noteService.syncService.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.syncService.syncError()"></span>
+        <span class="brand-text">Scribe</span>
       </div>
 
       <div class="sidebar-header-actions">
-        <!-- Manual Sync Button (collapsed) -->
-        <button class="manual-sync-btn collapsed"
-                *ngIf="!sidebarExpanded()"
-                (click)="triggerManualSync()"
-                [disabled]="noteService.syncService.syncStatus() === 'started'"
-                title="Sync now">
-          <i class="pi"
-             [class.pi-refresh]="noteService.syncService.syncStatus() !== 'started'"
-             [class.pi-spin]="noteService.syncService.syncStatus() === 'started'"
-             [class.pi-spinner]="noteService.syncService.syncStatus() === 'started'"></i>
-        </button>
-
         <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
           <i class="pi" [ngClass]="sidebarExpanded() ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
         </button>
@@ -82,7 +41,8 @@
         <i class="pi pi-search"></i>
         <span class="nav-text" *ngIf="sidebarExpanded()">Search notes</span>
       </button>
-      
+
+
       <button class="nav-item" *ngIf="sidebarExpanded()" routerLink="/notes/folders" style="width: 100%; border: none; background: transparent; cursor: pointer; text-align: left; padding-right: 0.5rem;">
         <i class="pi pi-folder"></i>
         <span class="nav-text" style="flex: 1;">Folders</span>
@@ -187,45 +147,7 @@
       </div>
     </div>
 
-    <!-- Sidebar Footer with Profile Action -->
-    <div class="sidebar-footer">
-      <div class="profile-container">
-        <!-- Profile Menu Popover -->
-        <div class="profile-popover" *ngIf="showProfileMenu() && sidebarExpanded()">
-          <div class="popover-user-details">
-            <span class="popover-name">{{ userName() }}</span>
-            <span class="popover-email">{{ userEmail() }}</span>
-          </div>
-          
-          <button class="popover-action archive-btn" (click)="openArchiveModal()">
-            <i class="pi pi-inbox"></i>
-            <span>Archived notes</span>
-          </button>
-
-          <button class="popover-action select-btn" (click)="triggerBulkDelete()">
-            <i class="pi pi-check-square"></i>
-            <span>Bulk delete</span>
-          </button>
-
-          <button class="popover-action logout-btn" (click)="logout()">
-            <i class="pi pi-sign-out"></i>
-            <span>Log out</span>
-          </button>
-        </div>
-
-        <!-- Profile Card Button -->
-        <button class="profile-card" (click)="toggleProfileMenu()" [title]="userName()">
-          <div class="profile-avatar">
-            {{ getUserInitials() }}
-          </div>
-          <div class="profile-info" *ngIf="sidebarExpanded()">
-            <span class="profile-name">{{ userName() }}</span>
-            <span class="profile-email">{{ userEmail() }}</span>
-          </div>
-          <i class="pi pi-ellipsis-v profile-more" *ngIf="sidebarExpanded()"></i>
-        </button>
-      </div>
-    </div>
+    <!-- Empty space where profile footer used to be -->
   </aside>
 
   <!-- Main Content -->
@@ -301,58 +223,6 @@
     </div>
   </div>
 
-  <!-- Bulk Selection Modal -->
-  <div class="archive-modal-backdrop" *ngIf="showBulkSelectionModal()" (click)="closeBulkSelectionModal()">
-    <div class="archive-modal-card" (click)="$event.stopPropagation()">
-      <div class="archive-modal-header">
-        <h3 class="archive-modal-title">
-          <i class="pi pi-check-square"></i>
-          <span>Select Notes to Delete</span>
-        </h3>
-        <button class="archive-modal-close" (click)="closeBulkSelectionModal()" title="Close">
-          <i class="pi pi-times"></i>
-        </button>
-      </div>
-
-      <div class="bulk-select-header-actions">
-        <button (click)="toggleSelectAll()" class="btn-select-all">
-          <i class="pi" [ngClass]="selectedNotes().size === allNotes().length && allNotes().length > 0 ? 'pi-times' : 'pi-check-circle'"></i>
-          {{ selectedNotes().size === allNotes().length && allNotes().length > 0 ? 'Deselect All' : 'Select All' }}
-        </button>
-      </div>
-
-      <div class="bulk-select-list" *ngIf="allNotes().length > 0; else emptySelection">
-        <div class="bulk-select-item" 
-             *ngFor="let note of allNotes()" 
-             (click)="toggleNoteSelection(note.id)"
-             [class.selected]="selectedNotes().has(note.id)">
-          <div class="note-checkbox" [class.checked]="selectedNotes().has(note.id)">
-            <i class="pi" [ngClass]="selectedNotes().has(note.id) ? 'pi-check' : ''"></i>
-          </div>
-          <span class="bulk-select-title">
-            {{ note.title || 'Untitled Note' }}
-          </span>
-        </div>
-      </div>
-
-      <ng-template #emptySelection>
-        <div class="archive-empty">
-          <i class="pi pi-inbox"></i>
-          <p>No active notes available.</p>
-        </div>
-      </ng-template>
-      
-      <div class="archive-modal-footer">
-        <button class="confirm-btn-cancel" (click)="closeBulkSelectionModal()">Cancel</button>
-        <button class="bulk-delete-btn" 
-                [disabled]="selectedNotes().size === 0" 
-                (click)="confirmBulkDelete()">
-          <i class="pi pi-trash" *ngIf="selectedNotes().size > 0"></i>
-          Delete Selected {{ selectedNotes().size > 0 ? '(' + selectedNotes().size + ')' : '' }}
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- Custom Archived Chats Modal Overlay -->
   <div class="archive-modal-backdrop" *ngIf="showArchiveModal()" (click)="closeArchiveModal()">
