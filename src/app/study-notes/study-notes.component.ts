@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteService } from './services/note.service';
-import { Note } from './models/note.model';
+import { Note, NoteFolder, DEFAULT_FOLDERS } from './models/note.model';
+import { Popover } from 'primeng/popover';
 import { FirebaseAuthService } from '../firebase/firebase-auth.service';
 
 @Component({
@@ -11,14 +12,32 @@ import { FirebaseAuthService } from '../firebase/firebase-auth.service';
   styleUrl: './study-notes.component.scss'
 })
 export class StudyNotesComponent implements OnInit {
-  private noteService = inject(NoteService);
+  public noteService = inject(NoteService);
   private router = inject(Router);
   private firebaseAuthService = inject(FirebaseAuthService);
 
   sidebarExpanded = signal(true);
   sidebarMobileOpen = signal(false);
+  isSidebarFoldersExpanded = signal(true);
 
-  notes = signal<Note[]>([]);
+  toggleSidebarFolders(event: Event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.isSidebarFoldersExpanded.set(!this.isSidebarFoldersExpanded());
+  }
+
+  allNotes = signal<Note[]>([]);
+  folders = signal<NoteFolder[]>([]);
+
+  notes = computed(() => {
+    const list = this.allNotes();
+    const folderId = this.noteService.activeFolderId();
+    if (!folderId) {
+      return list;
+    }
+    return list.filter(n => n.folderId === folderId);
+  });
+
   userName = signal('User');
   userEmail = signal('');
   showProfileMenu = signal(false);
@@ -36,14 +55,237 @@ export class StudyNotesComponent implements OnInit {
   showPermanentDeleteConfirmModal = signal(false);
   noteToPermanentlyDelete = signal<Note | null>(null);
 
+  // Folder options and picker state
+  showNoteMenuModal = signal(false);
+  showMoveToFolderModal = signal(false);
+  selectedMenuNote = signal<Note | null>(null);
+
+  // Sidebar folder actions state
+  showFolderMenuModal = signal(false);
+  selectedMenuFolder = signal<NoteFolder | null>(null);
+  showRenameFolderDialog = signal(false);
+  renameFolderTitle = signal('');
+
+  // Create folder state
+  showCreateFolderDialog = signal(false);
+  createFolderTitle = signal('');
+
+  @ViewChild('noteMenu') noteMenuPopover!: Popover;
+  @ViewChild('folderMenu') folderMenuPopover!: Popover;
+
   ngOnInit(): void {
     this.loadNotes();
+    this.loadFolders();
     this.loadUserProfile();
 
     // Subscribe to note refreshes
     this.noteService.getNotesRefreshObservable().subscribe(() => {
       this.loadNotes();
+      this.loadFolders();
     });
+  }
+
+  loadFolders(): void {
+    this.noteService.getFolders().subscribe(folders => {
+      this.folders.set(folders);
+    });
+  }
+
+  getUserFolders(): NoteFolder[] {
+    const systemIds = DEFAULT_FOLDERS.map(f => f.id);
+    return this.folders().filter(f => !systemIds.includes(f.id));
+  }
+
+  // Sidebar Tree Helpers
+  getNotesForFolder(folderId: string): Note[] {
+    return this.allNotes().filter(n => n.folderId === folderId);
+  }
+
+  getUnassignedNotes(): Note[] {
+    return this.allNotes().filter(n => !n.folderId || n.folderId === '__uncategorized__');
+  }
+
+  isExpanded(folderId: string): boolean {
+    return !!this.noteService.expandedFolders()[folderId];
+  }
+
+  toggleFolderExpand(event: Event, folderId: string): void {
+    event.stopPropagation();
+    const current = this.noteService.expandedFolders();
+    this.noteService.expandedFolders.set({
+      ...current,
+      [folderId]: !current[folderId]
+    });
+  }
+
+  getFolderNoteCount(folderId: string): number {
+    return this.allNotes().filter(n => n.folderId === folderId).length;
+  }
+
+  // Sidebar Folder Action Handlers
+  openFolderMenu(event: Event, folder: NoteFolder): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.selectedMenuFolder.set(folder);
+    if (this.folderMenuPopover) {
+      this.folderMenuPopover.toggle(event);
+    }
+  }
+
+  closeFolderMenu(): void {
+    this.selectedMenuFolder.set(null);
+    if (this.folderMenuPopover) {
+      this.folderMenuPopover.hide();
+    }
+  }
+
+  triggerCreateNoteInFolder(event: Event, folderId: string): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.noteService.activeFolderId.set(folderId);
+    this.router.navigate(['/notes', 'create']);
+  }
+
+  triggerRenameFolder(): void {
+    const folder = this.selectedMenuFolder();
+    this.closeFolderMenu();
+    if (folder) {
+      this.renameFolderTitle.set(folder.name);
+      this.showRenameFolderDialog.set(true);
+    }
+  }
+
+  saveRenameFolder(): void {
+    const folder = this.selectedMenuFolder();
+    const newName = this.renameFolderTitle().trim();
+    if (!folder || !newName) return;
+
+    this.noteService.updateFolder({ ...folder, name: newName }).subscribe(() => {
+      this.loadFolders();
+      this.showRenameFolderDialog.set(false);
+    });
+  }
+
+  triggerCreateFolder(): void {
+    this.createFolderTitle.set('');
+    this.showCreateFolderDialog.set(true);
+  }
+
+  saveCreateFolder(): void {
+    const name = this.createFolderTitle().trim();
+    if (!name) return;
+
+    this.noteService.addFolder({
+      name,
+      icon: 'pi-folder',
+      color: '#6366F1',
+      order: this.folders().length
+    }).subscribe(() => {
+      this.loadFolders();
+      this.showCreateFolderDialog.set(false);
+    });
+  }
+
+  triggerDeleteFolder(): void {
+    const folder = this.selectedMenuFolder();
+    this.closeFolderMenu();
+    if (folder) {
+      this.noteService.deleteFolder(folder.id).subscribe(() => {
+        this.selectedMenuFolder.set(null);
+        this.loadFolders();
+        this.loadNotes();
+      });
+    }
+  }
+
+  toggleNoteMenu(event: Event, note: Note): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.selectedMenuNote.set(note);
+    if (this.noteMenuPopover) {
+      this.noteMenuPopover.toggle(event);
+    }
+  }
+
+  closeNoteMenu(): void {
+    this.selectedMenuNote.set(null);
+    if (this.noteMenuPopover) {
+      this.noteMenuPopover.hide();
+    }
+  }
+
+  triggerMoveToFolder(): void {
+    this.closeNoteMenu();
+    this.showMoveToFolderModal.set(true);
+  }
+
+  closeMoveToFolderModal(): void {
+    this.showMoveToFolderModal.set(false);
+    this.selectedMenuNote.set(null);
+  }
+
+  triggerDeleteFromMenu(): void {
+    const note = this.selectedMenuNote();
+    this.closeNoteMenu();
+    if (note) {
+      this.noteToDelete.set(note);
+      this.showDeleteConfirmModal.set(true);
+    }
+  }
+
+  moveNoteToFolder(folderId: string): void {
+    const note = this.selectedMenuNote();
+    if (!note) return;
+
+    this.noteService.updateNote(note.id, { folderId }).subscribe({
+      next: () => {
+        this.closeMoveToFolderModal();
+        this.noteService.triggerRefresh();
+      },
+      error: (err) => {
+        console.error('Error moving note to folder:', err);
+        this.closeMoveToFolderModal();
+      }
+    });
+  }
+
+  isNoteUncategorized(note: Note | null): boolean {
+    if (!note) return true;
+    return !note.folderId || note.folderId === '__uncategorized__';
+  }
+
+  getSelectedNoteFolderName(): string {
+    const note = this.selectedMenuNote();
+    if (!note || !note.folderId || note.folderId === '__uncategorized__') return 'Folder';
+    const folder = this.folders().find(f => f.id === note.folderId);
+    return folder ? folder.name : 'Folder';
+  }
+
+  removeFromFolder(): void {
+    const note = this.selectedMenuNote();
+    if (!note) return;
+
+    this.noteService.updateNote(note.id, { folderId: '__uncategorized__' }).subscribe({
+      next: () => {
+        this.closeNoteMenu();
+        this.noteService.triggerRefresh();
+      },
+      error: (err) => {
+        console.error('Error removing note from folder:', err);
+        this.closeNoteMenu();
+      }
+    });
+  }
+
+  getActiveFolderName(): string {
+    const folderId = this.noteService.activeFolderId();
+    if (!folderId) return '';
+    const folder = this.folders().find(f => f.id === folderId);
+    return folder ? folder.name : '';
+  }
+
+  clearActiveFolder(): void {
+    this.noteService.activeFolderId.set(null);
   }
 
   openSearchModal(): void {
@@ -82,7 +324,7 @@ export class StudyNotesComponent implements OnInit {
 
   loadNotes(): void {
     this.noteService.getAllNotes().subscribe(notes => {
-      this.notes.set(notes);
+      this.allNotes.set(notes);
     });
   }
 

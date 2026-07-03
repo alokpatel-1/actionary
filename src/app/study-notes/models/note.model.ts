@@ -20,6 +20,7 @@ export interface NoteFolder {
   color: string;             // hex color for accent
   order: number;
   userId?: string;
+  parentId?: string;         // optional parent folder ID for hierarchical folders
 }
 
 /** IndexedDB constants */

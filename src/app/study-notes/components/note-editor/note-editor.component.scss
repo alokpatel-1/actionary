@@ -298,14 +298,12 @@
 .preview-area {
   flex: 1;
   min-height: 0;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem;
+  padding: 0 0 1.25rem 0; /* Remove horizontal padding so it aligns with title, add bottom padding for scroll */
   font-family: 'Roboto', sans-serif;
   font-size: 1rem;
   line-height: 1.8;
   color: var(--color-text-primary);
-  background: var(--color-bg-card);
+  background: transparent;
   overflow-y: auto;
 
   p { margin: 0.4em 0; }
@@ -367,7 +365,7 @@
   }
 
   .preview-area {
-    padding: 1rem;
+    padding: 0 0 1rem 0;
     font-size: 0.9375rem;
   }
 

@@ -35,37 +35,101 @@
               (click)="openSearchModal(); closeMobileSidebar()"
               title="Search">
         <i class="pi pi-search"></i>
-        <span class="nav-text" *ngIf="sidebarExpanded()">Search chats</span>
+        <span class="nav-text" *ngIf="sidebarExpanded()">Search notes</span>
       </button>
     </div>
 
-    <!-- Notes History List (Chat history style, flat list with no grouping) -->
+    <!-- Notes History List (Chat history style, collapsible tree explorer) -->
     <div class="sidebar-notes-history">
-      <span class="history-label" *ngIf="sidebarExpanded() && notes().length > 0">Notes History</span>
+      <div class="history-header-row" *ngIf="sidebarExpanded()" style="display: flex; justify-content: space-between; align-items: center; padding-right: 0.5rem;">
+        <span class="history-label" routerLink="/notes/folders" style="margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+          Folders 
+          <i class="pi" 
+             [class.pi-chevron-down]="isSidebarFoldersExpanded()"
+             [class.pi-chevron-right]="!isSidebarFoldersExpanded()"
+             (click)="toggleSidebarFolders($event)" 
+             style="font-size: 0.7rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s;"
+             title="Toggle Folders"
+             onmouseover="this.style.background='var(--color-hover)'"
+             onmouseout="this.style.background='transparent'"></i>
+        </span>
+        <button class="add-folder-btn" (click)="triggerCreateFolder()" title="New Folder" style="background: none; border: none; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; padding: 0.2rem; border-radius: 4px;">
+          <i class="pi pi-plus" style="font-size: 0.75rem;"></i>
+        </button>
+      </div>
       
       <div class="history-list">
-        <!-- Loop over all notes in simple flat list -->
-        <a *ngFor="let note of notes()"
+        <!-- COLLAPSIBLE FOLDERS TREE -->
+        <ng-container *ngIf="isSidebarFoldersExpanded()">
+          <div class="sidebar-folder-node" *ngFor="let folder of getUserFolders()" [style.--folder-accent]="folder.color">
+            <!-- Folder Row -->
+            <div class="sidebar-folder-row" 
+               [class.active]="noteService.activeFolderId() === folder.id"
+               (click)="toggleFolderExpand($event, folder.id)">
+            <i [class]="folder.icon" class="sidebar-folder-icon" [style.color]="folder.color"></i>
+            <span class="sidebar-folder-name" *ngIf="sidebarExpanded()">{{ folder.name }}</span>
+            
+            <!-- Folder hover options -->
+            <div class="sidebar-folder-actions" *ngIf="sidebarExpanded()">
+              <button class="sidebar-action-btn" (click)="triggerCreateNoteInFolder($event, folder.id)" title="Create Note inside Folder">
+                <i class="pi pi-plus"></i>
+              </button>
+              <button class="sidebar-action-btn" (click)="openFolderMenu($event, folder)" title="Folder Options">
+                <i class="pi pi-ellipsis-h"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nested Notes in Folder -->
+          <div class="sidebar-folder-children" *ngIf="isExpanded(folder.id) && sidebarExpanded()">
+            <div class="sidebar-nested-notes" *ngIf="getNotesForFolder(folder.id).length > 0; else sidebarEmptyFolder">
+              <a *ngFor="let note of getNotesForFolder(folder.id)"
+                 class="history-item sidebar-note-item"
+                 [class.active]="getActiveNoteId() === note.id"
+                 [title]="note.title || 'Untitled'"
+                 (click)="openNote(note)">
+                <div class="history-info" style="margin-left: 1.5rem;">
+                  <span class="history-title">{{ note.title || 'Untitled' }}</span>
+                </div>
+                <button class="history-menu-btn" (click)="toggleNoteMenu($event, note)" title="Options">
+                  <i class="pi pi-ellipsis-v"></i>
+                </button>
+              </a>
+            </div>
+            
+            <!-- Empty state for folder in sidebar -->
+            <ng-template #sidebarEmptyFolder>
+              <div class="sidebar-folder-empty">
+                <span>Folder is empty</span>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+        </ng-container>
+
+        <!-- UNASSIGNED/ROOT NOTES -->
+        <div class="sidebar-unassigned-header" *ngIf="getUserFolders().length > 0 && getUnassignedNotes().length > 0 && sidebarExpanded()">
+          <span>Notes</span>
+        </div>
+
+        <a *ngFor="let note of getUnassignedNotes()"
            class="history-item"
            [class.active]="getActiveNoteId() === note.id"
            [title]="note.title || 'Untitled'"
            (click)="openNote(note)">
-          <i class="pi pi-file"></i>
           <div class="history-info" *ngIf="sidebarExpanded()">
             <span class="history-title">{{ note.title || 'Untitled' }}</span>
-            <span class="history-preview">{{ getNotePreview(note.content) }}</span>
           </div>
-          <!-- Delete action -->
-          <button class="history-delete-btn"
+          <button class="history-menu-btn"
                   *ngIf="sidebarExpanded()"
-                  (click)="deleteNoteFromSidebar($event, note)"
-                  title="Delete note">
-            <i class="pi pi-trash"></i>
+                  (click)="toggleNoteMenu($event, note)"
+                  title="Options">
+            <i class="pi pi-ellipsis-v"></i>
           </button>
         </a>
 
-        <!-- Empty state in sidebar history -->
-        <div class="history-empty" *ngIf="notes().length === 0 && sidebarExpanded()">
+        <!-- Empty state in sidebar history if no notes exist anywhere -->
+        <div class="history-empty" *ngIf="allNotes().length === 0 && sidebarExpanded()">
           <span>No notes saved yet</span>
         </div>
       </div>
@@ -83,7 +147,7 @@
           
           <button class="popover-action archive-btn" (click)="openArchiveModal()">
             <i class="pi pi-archive"></i>
-            <span>Archived chats</span>
+            <span>Archived notes</span>
           </button>
 
           <button class="popover-action logout-btn" (click)="logout()">
@@ -123,7 +187,7 @@
         <i class="pi pi-search search-icon"></i>
         <input type="text"
                class="search-input-box"
-               placeholder="Search chats..."
+               placeholder="Search notes..."
                [ngModel]="searchQuery()"
                (ngModelChange)="searchQuery.set($event)"
                autofocus>
@@ -185,7 +249,7 @@
       <div class="archive-modal-header">
         <h3 class="archive-modal-title">
           <i class="pi pi-archive"></i>
-          <span>Archived Chats</span>
+          <span>Archived Notes</span>
         </h3>
         <button class="archive-modal-close" (click)="closeArchiveModal()" title="Close">
           <i class="pi pi-times"></i>
@@ -214,7 +278,7 @@
         <ng-template #emptyArchive>
           <div class="archive-empty">
             <i class="pi pi-inbox"></i>
-            <p>No archived chats found.</p>
+            <p>No archived notes found.</p>
           </div>
         </ng-template>
       </div>
@@ -235,7 +299,135 @@
       </div>
       <div class="confirm-dialog-footer">
         <button class="confirm-btn-cancel" (click)="cancelPermanentDelete()">Cancel</button>
-        <button class="confirm-btn-danger" (click)="confirmPermanentDelete()">Delete</button>
+        <button class="confirm-btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note Action Menu Popover -->
+  <p-popover #noteMenu>
+    <div class="note-options-dropdown" style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 220px; padding: 0.25rem;">
+
+      <button class="menu-option-btn" (click)="triggerMoveToFolder()" *ngIf="isNoteUncategorized(selectedMenuNote())">
+        <i class="pi pi-folder"></i>
+        <span style="flex-grow: 1; text-align: left;">Move to Folder...</span>
+      </button>
+
+      <button class="menu-option-btn" (click)="removeFromFolder()" *ngIf="!isNoteUncategorized(selectedMenuNote())">
+        <i class="pi pi-folder-minus"></i>
+        <span style="flex-grow: 1; text-align: left;">Remove from {{ getSelectedNoteFolderName() }}</span>
+      </button>
+
+      <button class="menu-option-btn danger" (click)="triggerDeleteFromMenu()" style="color: #ef4444;">
+        <i class="pi pi-trash"></i>
+        <span style="flex-grow: 1; text-align: left;">Archive Note</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- Move to Folder Picker Modal Overlay -->
+  <div class="confirm-dialog-backdrop" *ngIf="showMoveToFolderModal()" (click)="closeMoveToFolderModal()">
+    <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+      <div class="confirm-dialog-header">
+        <h3 class="confirm-dialog-title">Move to Folder</h3>
+      </div>
+      <div class="confirm-dialog-body" style="max-height: 45vh; overflow-y: auto;">
+        <p style="margin-bottom: 1rem; font-size: 0.875rem;">Select a folder to move <strong>"{{ selectedMenuNote()?.title || 'Untitled Note' }}"</strong> to:</p>
+        
+        <div class="folder-picker-list">
+          <!-- Unassigned option -->
+          <button class="folder-picker-option" 
+                  [class.active]="selectedMenuNote()?.folderId === '' || selectedMenuNote()?.folderId === '__uncategorized__'"
+                  (click)="moveNoteToFolder('')">
+            <i class="pi pi-inbox"></i>
+            <span>Unassigned (No Folder)</span>
+          </button>
+          
+          <!-- User folders -->
+          <button *ngFor="let folder of getUserFolders()"
+                  class="folder-picker-option"
+                  [class.active]="selectedMenuNote()?.folderId === folder.id"
+                  [style.--folder-accent]="folder.color"
+                  (click)="moveNoteToFolder(folder.id)">
+            <i [class]="folder.icon" [style.color]="folder.color"></i>
+            <span>{{ folder.name }}</span>
+          </button>
+        </div>
+      </div>
+      <div class="confirm-dialog-footer">
+        <button class="confirm-btn-cancel" (click)="closeMoveToFolderModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Folder Actions Context Menu Popover -->
+  <p-popover #folderMenu>
+    <div class="folder-options-dropdown" style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 220px; padding: 0.25rem;">
+      
+      <button class="menu-option-btn" (click)="triggerCreateNoteInFolder($event, selectedMenuFolder()!.id)">
+        <i class="pi pi-plus"></i>
+        <span style="flex-grow: 1; text-align: left;">Create Note inside Folder</span>
+      </button>
+
+      <button class="menu-option-btn" (click)="triggerRenameFolder()">
+        <i class="pi pi-pencil"></i>
+        <span style="flex-grow: 1; text-align: left;">Rename Folder...</span>
+      </button>
+      
+      <button class="menu-option-btn danger" (click)="triggerDeleteFolder()" style="color: #ef4444;">
+        <i class="pi pi-trash"></i>
+        <span style="flex-grow: 1; text-align: left;">Delete Folder</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- Rename Folder Dialog Overlay -->
+  <div class="confirm-dialog-backdrop" *ngIf="showRenameFolderDialog()" (click)="showRenameFolderDialog.set(false)">
+    <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+      <div class="confirm-dialog-header">
+        <h3 class="confirm-dialog-title">Rename Folder</h3>
+      </div>
+      <div class="confirm-dialog-body">
+        <div class="field" style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label class="field-label" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">New Folder Name</label>
+          <input pInputText
+                 [ngModel]="renameFolderTitle()"
+                 (ngModelChange)="renameFolderTitle.set($event)"
+                 placeholder="Enter folder name..."
+                 class="folder-name-input"
+                 style="width: 100%;"
+                 autocomplete="off">
+        </div>
+      </div>
+      <div class="confirm-dialog-footer">
+        <button class="confirm-btn-cancel" (click)="showRenameFolderDialog.set(false)">Cancel</button>
+        <button class="confirm-btn-primary save-btn" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;" [disabled]="!renameFolderTitle().trim()" (click)="saveRenameFolder()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Folder Dialog Overlay -->
+  <div class="confirm-dialog-backdrop" *ngIf="showCreateFolderDialog()" (click)="showCreateFolderDialog.set(false)">
+    <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+      <div class="confirm-dialog-header">
+        <h3 class="confirm-dialog-title">Create Folder</h3>
+      </div>
+      <div class="confirm-dialog-body">
+        <div class="field" style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label class="field-label" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Folder Name</label>
+          <input pInputText
+                 [ngModel]="createFolderTitle()"
+                 (ngModelChange)="createFolderTitle.set($event)"
+                 placeholder="Enter folder name..."
+                 class="folder-name-input"
+                 style="width: 100%;"
+                 autocomplete="off"
+                 (keyup.enter)="saveCreateFolder()">
+        </div>
+      </div>
+      <div class="confirm-dialog-footer">
+        <button class="confirm-btn-cancel" (click)="showCreateFolderDialog.set(false)">Cancel</button>
+        <button class="confirm-btn-primary save-btn" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;" [disabled]="!createFolderTitle().trim()" (click)="saveCreateFolder()">Create</button>
       </div>
     </div>
   </div>

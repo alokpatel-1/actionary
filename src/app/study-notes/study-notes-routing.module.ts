@@ -12,6 +12,7 @@ const routes: Routes = [
     component: StudyNotesComponent,
     children: [
       { path: 'create', component: NoteEditorComponent },
+      { path: 'folders', component: NoteFoldersComponent },
       { path: 'new', redirectTo: 'create', pathMatch: 'full' },
       { path: 'edit/:id', component: NoteEditorComponent },
       { path: '', redirectTo: 'create', pathMatch: 'full' }

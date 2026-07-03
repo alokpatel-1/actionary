@@ -308,14 +308,7 @@ $sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-overflow: ellipsis;
 }
 
-.history-preview {
-  font-size: 0.65rem;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 0.1rem;
-}
+
 
 .history-empty {
   font-size: 0.75rem;
@@ -323,6 +316,134 @@ $sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   padding: 1.5rem 0.5rem;
   font-style: italic;
+}
+
+/* ── Sidebar Folder Tree Styles ── */
+.sidebar-folder-node {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.15rem;
+}
+
+.sidebar-folder-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+
+  &:hover {
+    background: var(--color-hover);
+    color: var(--color-text-primary);
+
+    .sidebar-folder-actions {
+      opacity: 1;
+    }
+  }
+
+  &.active {
+    background: rgba(99, 102, 241, 0.05);
+    color: #6366F1;
+  }
+}
+
+
+
+.sidebar-folder-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.sidebar-folder-name {
+  font-size: 0.78125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+
+
+.sidebar-folder-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  opacity: 0;
+  transition: opacity 0.12s;
+  background: var(--color-bg-sidebar);
+  padding-left: 0.25rem;
+}
+
+.sidebar-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+
+  i { font-size: 0.65rem; }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--color-text-primary);
+  }
+}
+
+.sidebar-folder-children {
+  display: flex;
+  flex-direction: column;
+  margin-left: 0.65rem;
+  border-left: 1.5px solid var(--color-border-subtle);
+  padding-left: 0.4rem;
+  margin-top: 0.1rem;
+  margin-bottom: 0.2rem;
+  gap: 0.1rem;
+}
+
+.sidebar-nested-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sidebar-note-item {
+  padding: 0.35rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  gap: 0.4rem !important;
+
+  i {
+    font-size: 0.75rem !important;
+  }
+}
+
+.sidebar-folder-empty {
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 0.25rem 0.5rem;
+}
+
+.sidebar-unassigned-header {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0.75rem 0.5rem 0.35rem;
+  letter-spacing: 0.04em;
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: 0.5rem;
 }
 
 /* ── Sidebar Footer & Profile Action ── */
@@ -1178,5 +1299,167 @@ $sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 0;
     border-left: none;
     border-right: none;
+  }
+}
+
+/* ── Folders & Note Options Dialog Styles ── */
+.active-folder-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  margin: 0.25rem 0 0.5rem;
+  width: 100%;
+}
+
+.banner-text {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6366F1;
+  min-width: 0;
+
+  i { font-size: 0.85rem; }
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.clear-folder-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  transition: background 0.12s, color 0.12s;
+
+  i { font-size: 0.65rem; }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--color-text-primary);
+  }
+}
+
+/* History Options Menu Button (Three-dot) */
+.history-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+
+  i { font-size: 0.8rem; }
+
+  &:hover {
+    background: var(--color-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.history-item:hover .history-menu-btn {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .history-menu-btn { opacity: 1; }
+}
+
+/* Menu Option Buttons inside Popovers */
+.menu-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+
+  i {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  &:hover {
+    background: var(--color-hover);
+  }
+
+  &.danger {
+    color: #EF4444;
+
+    i { color: #EF4444; }
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.08);
+    }
+  }
+}
+
+/* Folder Picker List */
+.folder-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.folder-picker-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  width: 100%;
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: 10px;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+
+  i {
+    font-size: 1rem;
+    color: var(--folder-accent, var(--color-text-muted));
+  }
+
+  &:hover {
+    background: var(--color-hover);
+    border-color: var(--folder-accent, #6366F1);
+  }
+
+  &.active {
+    border-color: var(--folder-accent, #6366F1);
+    background: rgba(99, 102, 241, 0.06);
+    color: var(--folder-accent, #6366F1);
   }
 }

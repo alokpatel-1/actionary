@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { NoteIdbService } from './note-idb.service';
 import { NoteSyncService } from './note-sync.service';
@@ -16,6 +16,8 @@ export class NoteService {
   private auth = inject(Auth);
 
   private notesUpdated$ = new BehaviorSubject<void>(undefined);
+  activeFolderId = signal<string | null>(null);
+  expandedFolders = signal<Record<string, boolean>>({});
 
   triggerRefresh(): void {
     this.notesUpdated$.next();
@@ -83,6 +85,31 @@ export class NoteService {
     return this.updateNote(id, { isDeleted: true }).pipe(
       map(() => undefined)
     );
+  }
+
+  duplicateNote(id: string): Observable<Note> {
+    return from(this.idb.getNote(id)).pipe(
+      switchMap(existing => {
+        if (!existing) throw new Error('Note not found');
+        const duplicated: Note = {
+          ...existing,
+          id: uuidv4(),
+          title: existing.title ? `${existing.title} Copy` : 'Untitled Copy',
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          synced: false
+        };
+        return from(this.idb.addNote(duplicated)).pipe(
+          tap(() => this.syncService.tryAutoSync()),
+          tap(() => this.triggerRefresh()),
+          map(() => duplicated)
+        );
+      })
+    );
+  }
+
+  renameNote(id: string, newTitle: string): Observable<Note> {
+    return this.updateNote(id, { title: newTitle });
   }
 
   permanentlyDeleteNote(id: string): Observable<void> {
@@ -172,14 +199,25 @@ export class NoteService {
       throw new Error('Cannot delete a default folder');
     }
     return from(
-      this.idb.getNotesByFolder(id).then(async notes => {
-        for (const note of notes) {
-          note.folderId = DEFAULT_FOLDER.id;
-          note.updatedAt = Date.now();
-          await this.idb.addNote(note);
-        }
-        await this.idb.deleteFolder(id);
-      })
+      Promise.all([
+        this.idb.getNotesByFolder(id).then(async notes => {
+          for (const note of notes) {
+            note.folderId = DEFAULT_FOLDER.id;
+            note.updatedAt = Date.now();
+            await this.idb.addNote(note);
+          }
+        }),
+        this.idb.getAllFolders().then(async folders => {
+          const deletedFolder = folders.find(f => f.id === id);
+          const parentId = deletedFolder?.parentId;
+          for (const folder of folders) {
+            if (folder.parentId === id) {
+              folder.parentId = parentId;
+              await this.idb.putFolder(folder);
+            }
+          }
+        })
+      ]).then(() => this.idb.deleteFolder(id))
     );
   }
 

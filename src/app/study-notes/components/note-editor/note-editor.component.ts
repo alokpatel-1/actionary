@@ -106,7 +106,8 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
         this.noteId.set(null);
         this.title.set('');
         this.content.set('');
-        this.folderId.set(DEFAULT_FOLDER.id);
+        const activeFid = this.noteService.activeFolderId();
+        this.folderId.set(activeFid || DEFAULT_FOLDER.id);
         this.isPinned.set(false);
         this.isLayoutReady = false;
         this.cdr.detectChanges();
