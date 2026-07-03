@@ -1,12 +1,12 @@
 /* =========================================================
-   Note Editor — Maximum Writing Area
+   Note Editor — Medium-like Tiptap Editor
    ========================================================= */
 
 .editor-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 3rem);
   animation: slideIn 0.25s ease;
+  min-height: 100%;
 }
 
 @keyframes slideIn {
@@ -20,9 +20,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.25rem 0;
   margin-bottom: 0.75rem;
   flex-shrink: 0;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--color-bg-surface);
+  padding: 0.75rem 0 0.5rem 0;
+  margin-top: -1.5rem; /* Offsets main-content padding */
 }
 
 .bar-btn {
@@ -49,55 +55,47 @@
   gap: 0.5rem;
 }
 
-.folder-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border-subtle);
-  transition: border-color 0.15s;
-  &:hover { border-color: #6366F1; }
-}
-
-.folder-select {
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-  padding: 0;
-}
-
 .save-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  flex-shrink: 0;
-  &.saving { background: #F59E0B; animation: pulse 1s infinite; }
-  &.saved  { background: var(--color-success); }
+  &.saving { background: #F59E0B; animation: pulse 1s infinite alternate; }
+  &.saved { background: #10B981; }
 }
+
 .save-label {
-  font-size: 0.625rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--color-text-muted);
-  &.saved { color: var(--color-success); }
+  &.saved { color: #10B981; }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
 }
 
 .bar-right {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.edit-btn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.12s;
+  &:hover { background: var(--color-hover); transform: translateY(-1px); }
+  i { font-size: 0.75rem; }
 }
 
 .save-btn-pill {
@@ -126,253 +124,325 @@
   &:disabled { opacity: 0.6; cursor: default; transform: none; }
 }
 
+/* ── Centered Content Container for Medium-like view ── */
+.content-container {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 1rem;
+}
+
 /* ── Title ── */
-.note-title {
+.note-title, .note-title-preview {
   width: 100%;
   border: none;
   outline: none;
   background: transparent;
-  font-size: 1.75rem;
+  font-size: 2.5rem;
   font-weight: 800;
   color: var(--color-text-primary);
   font-family: inherit;
   letter-spacing: -0.025em;
   padding: 0;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
   flex-shrink: 0;
-
-  &::placeholder {
-    color: var(--color-text-muted);
-    font-weight: 600;
-  }
+  
+  /* Ensure long unbroken text doesn't overflow horizontally */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
-/* ── CKEditor Area — Fill All Space ── */
+.note-title {
+  text-overflow: ellipsis;
+}
+
+.note-title::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+/* ── Tiptap Editor Area ── */
 .editor-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+}
 
-  :host ::ng-deep {
-    .ck.ck-editor {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+.tiptap-editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
+}
+
+:host ::ng-deep {
+  .ProseMirror, .tiptap-content {
+    flex: 1;
+    min-height: 65vh;
+    outline: none;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--color-text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    /* Placeholder plugin styling */
+    p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: #adb5bd;
+      pointer-events: none;
+      height: 0;
     }
 
-    .ck.ck-editor__main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+    /* Paragraph spacing */
+    p { margin-bottom: 1.25em; margin-top: 0; }
 
-    .ck.ck-editor__editable_inline {
-      flex: 1;
-      min-height: 0;
-      border: 1px solid var(--color-border-subtle) !important;
-      border-radius: 10px !important;
-      padding: 1.25rem 1.5rem !important;
-      font-family: 'Roboto', sans-serif;
-      font-size: 1rem;
-      line-height: 1.8;
+    /* Headings */
+    h1, h2, h3 {
+      line-height: 1.2;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      font-weight: 700;
       color: var(--color-text-primary);
-      background: var(--color-bg-card);
-      transition: border-color 0.2s;
-      overflow-y: auto;
+    }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
 
-      &:focus,
-      &.ck-focused {
-        border-color: #6366F1 !important;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08) !important;
-      }
+    /* Blockquote */
+    blockquote {
+      border-left: 3px solid var(--color-border-subtle);
+      margin-left: 0;
+      padding-left: 1rem;
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
 
-      p { margin: 0.4em 0; }
-
-      h1, h2, h3, h4 {
-        color: var(--color-text-primary);
-        font-weight: 700;
-        margin-top: 1em; margin-bottom: 0.35em;
-      }
-      h1 { font-size: 1.75rem; }
-      h2 { font-size: 1.375rem; }
-      h3 { font-size: 1.125rem; }
-
-      blockquote {
-        border-left: 3px solid #6366F1;
-        padding-left: 1rem;
-        color: var(--color-text-secondary);
-        font-style: italic;
-        margin: 0.75em 0;
-      }
+    /* Code Blocks */
+    pre {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1.25rem 1.5rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
 
       code {
-        background: #F1F5F9;
-        padding: 0.15em 0.35em;
-        border-radius: 4px;
-        font-size: 0.875em;
-        font-family: 'Menlo', 'Monaco', monospace;
-        color: #6366F1;
-      }
-
-      pre {
-        background: #1E293B;
-        color: #E2E8F0;
-        padding: 1rem;
-        border-radius: 8px;
-        overflow-x: auto;
-        font-size: 0.8125rem;
-        code { background: transparent; color: inherit; padding: 0; }
-      }
-
-      ul, ol { padding-left: 1.5rem; }
-      .todo-list { list-style: none; padding-left: 0; }
-      a { color: #6366F1; }
-    }
-
-    .ck.ck-toolbar {
-      border: 1px solid var(--color-border-subtle) !important;
-      border-radius: 10px !important;
-      background: var(--color-bg-card) !important;
-      padding: 0.15rem !important;
-      margin-bottom: 0.35rem;
-
-      .ck-toolbar__separator { background: var(--color-border-subtle) !important; }
-
-      .ck-toolbar__items {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        scrollbar-width: none;
-        &::-webkit-scrollbar { display: none; }
+        color: inherit;
+        padding: 0;
+        background: none;
+        font-size: 0.85rem;
       }
     }
+    
+    /* Custom Code Block Wrapper */
+    .custom-code-block {
+      position: relative;
+      margin: 1.5rem 0;
+      
+      pre { margin: 0; }
+      
+      .copy-code-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        z-index: 10;
+        opacity: 0;
 
-    .ck.ck-button {
-      border-radius: 5px !important;
-      color: var(--color-text-secondary) !important;
-      min-width: 1.75rem;
-      min-height: 1.75rem;
+        i { font-size: 0.9rem; }
 
-      &:hover { background: var(--color-hover) !important; }
-      &.ck-on { background: #EEF2FF !important; color: #6366F1 !important; }
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          color: #fff;
+        }
+      }
+
+      &:hover .copy-code-btn {
+        opacity: 1;
+      }
+    }
+    
+    /* Inline Code */
+    code {
+      background: rgba(135, 131, 120, 0.15);
+      color: #EB5757;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    /* Images */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    
+    img.ProseMirror-selectednode {
+      outline: 3px solid #6366F1;
+    }
+
+    /* Horizontal Rule */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-border-subtle);
+      margin: 2rem 0;
+    }
+
+    /* Lists */
+    ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1.25em;
+      list-style-type: disc;
+    }
+    
+    ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.25em;
+      list-style-type: decimal;
+    }
+    
+    li p {
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
+    }
+
+    /* Task Lists */
+    ul[data-type="taskList"] {
+      list-style: none;
+      padding: 0;
+      li {
+        display: flex;
+        align-items: flex-start;
+        > label {
+          flex: 0 0 auto;
+          margin-right: 0.5rem;
+          user-select: none;
+          input { margin-top: 0.4rem; }
+        }
+        > div { flex: 1; }
+      }
     }
   }
 }
 
-.edit-btn-pill {
-  display: inline-flex;
+/* ── Tooltips / Menus Base (Bubble & Floating) ── */
+.bubble-menu, .floating-menu {
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-border-subtle);
-  background: var(--color-bg-card);
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.3rem 0.4rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  z-index: 100;
+  gap: 0.15rem;
 
-  i { font-size: 0.75rem; }
+  button, .plus-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    min-width: 30px;
+    height: 30px;
 
-  &:hover {
-    transform: translateY(-1px);
-    background: var(--color-hover);
-    color: var(--color-text-primary);
+    i { font-size: 0.9rem; }
+
+    &:hover { 
+      background: rgba(255, 255, 255, 0.15); 
+      color: #fff; 
+    }
+    &.is-active { 
+      background: rgba(99, 102, 241, 0.2); 
+      color: #818CF8; 
+    }
   }
-  &:active { transform: scale(0.97); }
+
+  .divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 0.25rem;
+  }
 }
 
-.note-title-preview {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  letter-spacing: -0.025em;
-  padding: 0;
-  margin: 0 0 0.75rem 0;
-  flex-shrink: 0;
+.floating-menu {
+  transform: translateY(-130%);
+  margin-top: -0.25rem;
+  z-index: 90;
 }
 
-.preview-area {
-  flex: 1;
-  min-height: 0;
-  padding: 0 0 1.25rem 0; /* Remove horizontal padding so it aligns with title, add bottom padding for scroll */
-  font-family: 'Roboto', sans-serif;
-  font-size: 1rem;
-  line-height: 1.8;
-  color: var(--color-text-primary);
-  background: transparent;
-  overflow-y: auto;
-
-  p { margin: 0.4em 0; }
-
-  h1, h2, h3, h4 {
-    color: var(--color-text-primary);
-    font-weight: 700;
-    margin-top: 1em; margin-bottom: 0.35em;
-  }
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.375rem; }
-  h3 { font-size: 1.125rem; }
-
-  blockquote {
-    border-left: 3px solid #6366F1;
-    padding-left: 1rem;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    margin: 0.75em 0;
-  }
-
-  code {
-    background: #F1F5F9;
-    padding: 0.15em 0.35em;
-    border-radius: 4px;
-    font-size: 0.875em;
-    font-family: 'Menlo', 'Monaco', monospace;
-    color: #6366F1;
-  }
-
-  pre {
-    background: #1E293B;
-    color: #E2E8F0;
-    padding: 1rem;
+/* ── Slash Commands Menu (Global styles for tippy) ── */
+:host ::ng-deep {
+  .slash-command-menu {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 8px;
-    overflow-x: auto;
-    font-size: 0.8125rem;
-    code { background: transparent; color: inherit; padding: 0; }
-  }
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    
+    .slash-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-align: left;
+      transition: background 0.1s;
+      font-family: inherit;
 
-  ul, ol { padding-left: 1.5rem; }
-  .todo-list { list-style: none; padding-left: 0; }
-  a { color: #6366F1; }
-  
-  .empty-preview {
-    color: var(--color-text-muted);
-    font-style: italic;
-  }
-}
+      i { font-size: 1rem; color: var(--color-text-muted); }
 
-/* ── Mobile ── */
-@media (max-width: 767px) {
-  .editor-page {
-    height: calc(100vh - 4.5rem);
-  }
+      &:hover, &.is-selected {
+        background: var(--color-hover);
+        i { color: #6366F1; }
+      }
 
-  .note-title, .note-title-preview {
-    font-size: 1.375rem;
-  }
-
-  .preview-area {
-    padding: 0 0 1rem 0;
-    font-size: 0.9375rem;
-  }
-
-  .editor-area :host ::ng-deep {
-    .ck.ck-editor__editable_inline {
-      padding: 1rem !important;
-      font-size: 0.9375rem;
+      &.empty {
+        color: var(--color-text-muted);
+        cursor: default;
+        &:hover { background: transparent; }
+      }
     }
   }
 }

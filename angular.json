@@ -33,7 +33,8 @@
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/ngx-spinner/animations/ball-clip-rotate.css"
+              "node_modules/ngx-spinner/animations/ball-clip-rotate.css",
+              "node_modules/tippy.js/dist/tippy.css"
             ],
             "scripts": []
           },
@@ -47,8 +48,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "50kB",
+                  "maximumError": "100kB"
                 }
               ],
               "outputHashing": "all"

@@ -26,32 +26,50 @@
     </div>
   </div>
 
-  <!-- Title Preview Mode -->
-  <h1 *ngIf="!isEditMode()" class="note-title-preview">{{ title() || 'Untitled Note' }}</h1>
+  <!-- Content Wrapper for Medium-like centered column -->
+  <div class="content-container">
+    <!-- Title Preview Mode -->
+    <h1 *ngIf="!isEditMode()" class="note-title-preview">{{ title() || 'Untitled Note' }}</h1>
 
-  <!-- Title Edit Mode -->
-  <input *ngIf="isEditMode()"
-         type="text"
-         class="note-title"
-         [value]="title()"
-         (input)="onTitleChange($any($event.target).value)"
-         placeholder="Note title…"
-         autocomplete="off"
-         spellcheck="true">
+    <!-- Title Edit Mode -->
+    <input *ngIf="isEditMode()"
+           type="text"
+           class="note-title"
+           [value]="title()"
+           (input)="onTitleChange($any($event.target).value)"
+           placeholder="Untitled Note"
+           autocomplete="off"
+           spellcheck="true"
+           maxlength="100">
 
-  <!-- Preview Area -->
-  <div class="preview-area" *ngIf="!isEditMode()">
-    <div *ngIf="content(); else emptyTemplate" [innerHTML]="content()"></div>
-    <ng-template #emptyTemplate>
-      <p class="empty-preview">No content yet.</p>
-    </ng-template>
-  </div>
+    <!-- Tiptap Editor Area -->
+    <div class="editor-area" *ngIf="editor" (click)="focusEditor($event)">
+      
+      <!-- Bubble Menu (Shown on highlight) -->
+      <div tiptapBubbleMenu [editor]="editor" class="bubble-menu" *ngIf="isEditMode()">
+        <button (click)="editor.chain().focus().toggleBold().run()" [class.is-active]="editor.isActive('bold')"><strong style="font-weight: 700;">B</strong></button>
+        <button (click)="editor.chain().focus().toggleItalic().run()" [class.is-active]="editor.isActive('italic')"><em style="font-style: italic;">I</em></button>
+        <button (click)="editor.chain().focus().toggleUnderline().run()" [class.is-active]="editor.isActive('underline')"><u style="text-decoration: underline;">U</u></button>
+        <div class="divider"></div>
+        <button (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" [class.is-active]="editor.isActive('heading', { level: 1 })">H1</button>
+        <button (click)="editor.chain().focus().toggleHeading({ level: 2 }).run()" [class.is-active]="editor.isActive('heading', { level: 2 })">H2</button>
+        <div class="divider"></div>
+        <button (click)="editor.chain().focus().toggleBlockquote().run()" [class.is-active]="editor.isActive('blockquote')"><i class="pi pi-comment"></i></button>
+        <button (click)="editor.chain().focus().toggleCode().run()" [class.is-active]="editor.isActive('code')"><i class="pi pi-code"></i></button>
+      </div>
 
-  <!-- CKEditor — Full Height -->
-  <div class="editor-area" *ngIf="isEditMode() && isLayoutReady">
-    <ckeditor [editor]="Editor"
-              [config]="editorConfig"
-              (change)="onEditorChange($event)">
-    </ckeditor>
+      <!-- Floating Menu (Shown on empty line) -->
+      <div tiptapFloatingMenu [editor]="editor" class="floating-menu" *ngIf="isEditMode()">
+        <button class="plus-btn" (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" title="Heading 1">H1</button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleBulletList().run()" title="Bullet List"><i class="pi pi-list"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleBlockquote().run()" title="Quote"><i class="pi pi-comment"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().setHorizontalRule().run()" title="Divider"><i class="pi pi-minus"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleCodeBlock().run()" title="Code Block"><i class="pi pi-code"></i></button>
+      </div>
+
+      <!-- Main Editor Content -->
+      <tiptap-editor [editor]="editor" class="tiptap-editor-wrapper" [class.preview-mode]="!isEditMode()"></tiptap-editor>
+
+    </div>
   </div>
 </div>

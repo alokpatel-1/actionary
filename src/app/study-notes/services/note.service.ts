@@ -4,7 +4,7 @@ import { NoteIdbService } from './note-idb.service';
 import { NoteSyncService } from './note-sync.service';
 import { Note, NoteCreate, NoteFolder, DEFAULT_FOLDER, DEFAULT_FOLDERS } from '../models/note.model';
 import { v4 as uuidv4 } from 'uuid';
-import { Observable, from, BehaviorSubject } from 'rxjs';
+import { Observable, from, BehaviorSubject, forkJoin, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
 @Injectable({
@@ -84,6 +84,17 @@ export class NoteService {
   deleteNote(id: string): Observable<void> {
     return this.updateNote(id, { isDeleted: true }).pipe(
       map(() => undefined)
+    );
+  }
+
+  bulkDeleteNotes(ids: string[]): Observable<void> {
+    return from(this.idb.getAllNotes()).pipe(
+      switchMap(notes => {
+        const notesToDelete = notes.filter(n => !n.isDeleted && ids.includes(n.id));
+        const updates = notesToDelete.map(n => this.updateNote(n.id, { isDeleted: true }));
+        return updates.length ? forkJoin(updates) : of(null);
+      }),
+      map(() => void 0)
     );
   }
 
