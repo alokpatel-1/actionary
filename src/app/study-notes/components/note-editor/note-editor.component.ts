@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject, signal, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../../services/note.service';
 import { Note, NoteFolder, DEFAULT_FOLDER } from '../../models/note.model';
@@ -84,6 +84,15 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
 
   editor!: Editor;
 
+  constructor() {
+    effect(() => {
+      const activeFid = this.noteService.activeFolderId();
+      if (this.isNew()) {
+        this.folderId.set(activeFid || DEFAULT_FOLDER.id);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.noteService.getFolders().subscribe(f => this.folders.set(f));
 
@@ -105,6 +114,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
           this.isLayoutReady = false;
           this.cdr.detectChanges();
           this.initEditor();
+          this.scrollToTop();
         });
       } else {
         this.isNew.set(true);
@@ -117,6 +127,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
         this.isPinned.set(false);
         this.cdr.detectChanges();
         this.initEditor();
+        this.scrollToTop();
       }
     });
 
@@ -129,39 +140,55 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   private initEditor(): void {
     if (this.editor) {
       this.editor.destroy();
+      (this.editor as any) = null;
+      this.cdr.detectChanges();
     }
     
-    this.editor = new Editor({
-      editable: this.isEditMode(),
-      content: this.content(),
-      extensions: [
-        StarterKit.configure({
-          heading: { levels: [1, 2, 3] },
-          codeBlock: false,
-        }),
-        CustomCodeBlock,
-        Underline,
-        Link.configure({ openOnClick: false }),
-        Image,
-        TiptapTable.configure({ resizable: true }),
-        TableRow,
-        TableCell,
-        TableHeader,
-        TaskList,
-        TaskItem.configure({ nested: true }),
-        Placeholder.configure({
-          placeholder: 'Start writing...',
-        }),
-        SlashCommands
-      ],
-      onUpdate: ({ editor }) => {
-        this.content.set(editor.getHTML());
-        this.autoSave$.next();
-      }
-    });
+    setTimeout(() => {
+      this.editor = new Editor({
+        editable: this.isEditMode(),
+        content: this.content(),
+        extensions: [
+          StarterKit.configure({
+            heading: { levels: [1, 2, 3] },
+            codeBlock: false,
+            link: false,
+            underline: false,
+          }),
+          CustomCodeBlock,
+          Underline,
+          Link.configure({ openOnClick: false }),
+          Image,
+          TiptapTable.configure({ resizable: true }),
+          TableRow,
+          TableCell,
+          TableHeader,
+          TaskList,
+          TaskItem.configure({ nested: true }),
+          Placeholder.configure({
+            placeholder: 'Start writing...',
+          }),
+          SlashCommands
+        ],
+        onUpdate: ({ editor }) => {
+          this.content.set(editor.getHTML());
+          this.autoSave$.next();
+        }
+      });
 
-    this.isLayoutReady = true;
-    this.cdr.detectChanges();
+      this.isLayoutReady = true;
+      this.cdr.detectChanges();
+    }, 0);
+  }
+
+  private scrollToTop(): void {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) {
+        mainContent.scrollTo({ top: 0, behavior: 'auto' });
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -224,7 +251,10 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
             this.isEditMode.set(false);
             this.editor?.setEditable(false);
           }
-          this.router.navigate(['/notes', note.id], { replaceUrl: true });
+          this.router.navigate(['/notes', 'edit', note.id], { replaceUrl: true });
+          if (manual) {
+            this.noteService.syncService.sync().subscribe();
+          }
         },
         error: () => this.saving.set(false)
       });
@@ -236,6 +266,9 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
           if (manual && this.isEditMode()) {
             this.isEditMode.set(false);
             this.editor?.setEditable(false);
+          }
+          if (manual) {
+            this.noteService.syncService.sync().subscribe();
           }
         },
         error: () => this.saving.set(false)

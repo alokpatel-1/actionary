@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ActionaryUtilService } from '../../../services/actionary-util.service';
 import { Router } from '@angular/router';
 import { FirebaseAuthService } from '../../../firebase/firebase-auth.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-sign-in',
@@ -20,6 +21,7 @@ export class SignInComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly firebaseAuthService = inject(FirebaseAuthService);
+  private readonly spinner = inject(NgxSpinnerService);
 
 
   ngOnInit() {
@@ -39,6 +41,7 @@ export class SignInComponent implements OnInit {
       return;
     };
 
+    this.spinner.show();
     const payload = this.loginForm.value; // Directly use the form values as the payload
     this.authService.loginUser(payload).subscribe({
       next: (response) => {
@@ -53,12 +56,14 @@ export class SignInComponent implements OnInit {
         sessionStorage.setItem('refreshToken', refreshToken);
 
         console.log('User logged in successfully:', user);
+        this.spinner.hide();
 
         // Redirect to new note after successful login
         this.router.navigate(['/notes/create']);
       },
       error: ({ error }) => {
         console.error('Login failed:', error.error);
+        this.spinner.hide();
         this.utilService.showError(error.error);
         // Handle login error (e.g., show an error message)
       },
@@ -75,27 +80,30 @@ export class SignInComponent implements OnInit {
       return;
     };
 
+    this.spinner.show();
     const { email, password } = this.loginForm.getRawValue();
     this.firebaseAuthService.signInWithFireBase(email, password).then(
-      (response) => {
-        const user = response._tokenResponse; // Assuming the user object is in the "user" array
-        const accessToken = user.idToken;
-        const refreshToken = user.refreshToken;
+      async (response) => {
+        const user = response.user;
+        const idToken = await user.getIdToken();
 
         // Save user data and tokens to sessionStorage
-        sessionStorage.setItem('user', JSON.stringify(user));
+        sessionStorage.setItem('user', JSON.stringify({ uid: user.uid, email: user.email, displayName: user.displayName }));
         sessionStorage.setItem('email', JSON.stringify(email));
-        sessionStorage.setItem('token', accessToken);
-        sessionStorage.setItem('displayName', user?.displayName);
-        sessionStorage.setItem('refreshToken', refreshToken);
-        sessionStorage.setItem('localId', user.localId);
+        sessionStorage.setItem('token', idToken);
+        sessionStorage.setItem('displayName', user.displayName ?? '');
+        sessionStorage.setItem('refreshToken', user.refreshToken ?? '');
+        sessionStorage.setItem('localId', user.uid);
 
+        this.firebaseAuthService.isUserLoggedIn.set(true);
+        this.spinner.hide();
         // Redirect to new note after successful login
         this.router.navigate(['/notes/create']);
       },
       (err) => {
         console.log('Login failed:', err);
-        this.utilService.showError(err?.message);
+        this.spinner.hide();
+        this.utilService.showError(err?.message ?? 'Login failed');
         // Handle login error (e.g., show an error message)
       },
     );

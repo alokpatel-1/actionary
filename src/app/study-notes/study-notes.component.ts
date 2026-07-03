@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal, computed, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, effect } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { NoteService } from './services/note.service';
 import { Note, NoteFolder, DEFAULT_FOLDERS } from './models/note.model';
 import { Popover } from 'primeng/popover';
 import { FirebaseAuthService } from '../firebase/firebase-auth.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-study-notes',
@@ -15,7 +17,24 @@ export class StudyNotesComponent implements OnInit {
   public noteService = inject(NoteService);
   private router = inject(Router);
   private firebaseAuthService = inject(FirebaseAuthService);
+  private spinner = inject(NgxSpinnerService);
+  showSyncSuccessToast = signal(false);
+  private toastTimeout: any;
 
+  constructor() {
+    effect(() => {
+      const status = this.noteService.syncService.syncStatus();
+      if (status === 'completed') {
+        this.showSyncSuccessToast.set(true);
+        if (this.toastTimeout) clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => {
+          this.showSyncSuccessToast.set(false);
+        }, 2500);
+      } else if (status === 'started' || status === 'failed') {
+        this.showSyncSuccessToast.set(false);
+      }
+    });
+  }
   sidebarExpanded = signal(true);
   sidebarMobileOpen = signal(false);
   isSidebarFoldersExpanded = signal(true);
@@ -33,8 +52,6 @@ export class StudyNotesComponent implements OnInit {
     this.closeMobileSidebar();
     const activeFid = this.noteService.activeFolderId();
     
-    // Check if we are already on the create route to avoid immediately creating a note
-    // if the user hasn't typed anything yet, or we can just instantly create it as requested.
     const newNote = {
       title: '',
       content: '',
@@ -43,13 +60,16 @@ export class StudyNotesComponent implements OnInit {
     };
     
     this.isCreatingNote.set(true);
+    this.spinner.show();
     this.noteService.addNote(newNote).subscribe({
       next: note => {
         this.isCreatingNote.set(false);
-        this.router.navigate(['/notes', note.id], { queryParams: { edit: 'true' } });
+        this.spinner.hide();
+        this.router.navigate(['/notes', 'edit', note.id], { queryParams: { edit: 'true' } });
       },
       error: () => {
         this.isCreatingNote.set(false);
+        this.spinner.hide();
       }
     });
   }
@@ -83,6 +103,8 @@ export class StudyNotesComponent implements OnInit {
 
   showArchiveModal = signal(false);
   archivedNotes = signal<Note[]>([]);
+  selectedArchivedNotes = signal<Set<string>>(new Set());
+  showBulkPermanentDeleteConfirm = signal(false);
   showPermanentDeleteConfirmModal = signal(false);
   noteToPermanentlyDelete = signal<Note | null>(null);
 
@@ -108,6 +130,10 @@ export class StudyNotesComponent implements OnInit {
     this.loadNotes();
     this.loadFolders();
     this.loadUserProfile();
+
+    // On startup: run a full visible sync to pull the latest from Firestore.
+    // This ensures cross-browser consistency immediately on page load.
+    this.noteService.syncService.sync().subscribe();
 
     // Subscribe to note refreshes
     this.noteService.getNotesRefreshObservable().subscribe(() => {
@@ -174,7 +200,29 @@ export class StudyNotesComponent implements OnInit {
     event.stopPropagation();
     event.preventDefault();
     this.noteService.activeFolderId.set(folderId);
-    this.router.navigate(['/notes', 'create']);
+    this.closeMobileSidebar();
+    
+    if (this.isCreatingNote()) return;
+    const newNote = {
+      title: '',
+      content: '',
+      folderId: folderId,
+      isPinned: false
+    };
+    
+    this.isCreatingNote.set(true);
+    this.spinner.show();
+    this.noteService.addNote(newNote).subscribe({
+      next: note => {
+        this.isCreatingNote.set(false);
+        this.spinner.hide();
+        this.router.navigate(['/notes', 'edit', note.id], { queryParams: { edit: 'true' } });
+      },
+      error: () => {
+        this.isCreatingNote.set(false);
+        this.spinner.hide();
+      }
+    });
   }
 
   triggerRenameFolder(): void {
@@ -191,9 +239,16 @@ export class StudyNotesComponent implements OnInit {
     const newName = this.renameFolderTitle().trim();
     if (!folder || !newName) return;
 
-    this.noteService.updateFolder({ ...folder, name: newName }).subscribe(() => {
-      this.loadFolders();
-      this.showRenameFolderDialog.set(false);
+    this.spinner.show();
+    this.noteService.updateFolder({ ...folder, name: newName }).subscribe({
+      next: () => {
+        this.loadFolders();
+        this.showRenameFolderDialog.set(false);
+        this.spinner.hide();
+      },
+      error: () => {
+        this.spinner.hide();
+      }
     });
   }
 
@@ -208,12 +263,17 @@ export class StudyNotesComponent implements OnInit {
 
     this.noteService.addFolder({
       name,
-      icon: 'pi-folder',
+      icon: '📁',
       color: '#6366F1',
       order: this.folders().length
-    }).subscribe(() => {
-      this.loadFolders();
-      this.showCreateFolderDialog.set(false);
+    }).subscribe({
+      next: () => {
+        this.loadFolders();
+        this.showCreateFolderDialog.set(false);
+      },
+      error: () => {
+        this.showCreateFolderDialog.set(false);
+      }
     });
   }
 
@@ -221,10 +281,17 @@ export class StudyNotesComponent implements OnInit {
     const folder = this.selectedMenuFolder();
     this.closeFolderMenu();
     if (folder) {
-      this.noteService.deleteFolder(folder.id).subscribe(() => {
-        this.selectedMenuFolder.set(null);
-        this.loadFolders();
-        this.loadNotes();
+      this.spinner.show();
+      this.noteService.deleteFolder(folder.id).subscribe({
+        next: () => {
+          this.selectedMenuFolder.set(null);
+          this.loadFolders();
+          this.loadNotes();
+          this.spinner.hide();
+        },
+        error: () => {
+          this.spinner.hide();
+        }
       });
     }
   }
@@ -239,7 +306,6 @@ export class StudyNotesComponent implements OnInit {
   }
 
   closeNoteMenu(): void {
-    this.selectedMenuNote.set(null);
     if (this.noteMenuPopover) {
       this.noteMenuPopover.hide();
     }
@@ -268,14 +334,17 @@ export class StudyNotesComponent implements OnInit {
     const note = this.selectedMenuNote();
     if (!note) return;
 
+    this.spinner.show();
     this.noteService.updateNote(note.id, { folderId }).subscribe({
       next: () => {
         this.closeMoveToFolderModal();
         this.noteService.triggerRefresh();
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error moving note to folder:', err);
         this.closeMoveToFolderModal();
+        this.spinner.hide();
       }
     });
   }
@@ -296,14 +365,19 @@ export class StudyNotesComponent implements OnInit {
     const note = this.selectedMenuNote();
     if (!note) return;
 
+    this.spinner.show();
     this.noteService.updateNote(note.id, { folderId: '__uncategorized__' }).subscribe({
       next: () => {
         this.closeNoteMenu();
         this.noteService.triggerRefresh();
+        this.selectedMenuNote.set(null);
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error removing note from folder:', err);
         this.closeNoteMenu();
+        this.selectedMenuNote.set(null);
+        this.spinner.hide();
       }
     });
   }
@@ -453,11 +527,13 @@ export class StudyNotesComponent implements OnInit {
     const note = this.noteToDelete();
     if (!note) return;
 
+    this.spinner.show();
     const isActive = this.getActiveNoteId() === note.id;
     this.noteService.deleteNote(note.id).subscribe({
       next: () => {
         this.showDeleteConfirmModal.set(false);
         this.noteToDelete.set(null);
+        this.spinner.hide();
         if (isActive) {
           this.router.navigate(['/notes', 'create']);
         }
@@ -466,6 +542,7 @@ export class StudyNotesComponent implements OnInit {
         console.error('Error deleting note from sidebar:', err);
         this.showDeleteConfirmModal.set(false);
         this.noteToDelete.set(null);
+        this.spinner.hide();
       }
     });
   }
@@ -512,6 +589,8 @@ export class StudyNotesComponent implements OnInit {
       next: () => {
         this.showBulkSelectionModal.set(false);
         this.selectedNotes.set(new Set());
+        this.noteService.triggerRefresh();
+        this.noteService.syncService.sync().subscribe();
         this.router.navigate(['/notes', 'create']);
       },
       error: (err) => {
@@ -521,6 +600,10 @@ export class StudyNotesComponent implements OnInit {
     });
   }
 
+  triggerManualSync(): void {
+    this.noteService.syncService.sync().subscribe();
+  }
+
   openArchiveModal(): void {
     this.showProfileMenu.set(false);
     this.loadArchivedNotes();
@@ -528,6 +611,7 @@ export class StudyNotesComponent implements OnInit {
   }
 
   closeArchiveModal(): void {
+    this.selectedArchivedNotes.set(new Set());
     this.showArchiveModal.set(false);
   }
 
@@ -538,12 +622,15 @@ export class StudyNotesComponent implements OnInit {
   }
 
   restoreNote(note: Note): void {
+    this.spinner.show();
     this.noteService.restoreNote(note.id).subscribe({
       next: () => {
         this.loadArchivedNotes();
+        this.spinner.hide();
       },
       error: (err) => {
         console.error('Error restoring note:', err);
+        this.spinner.hide();
       }
     });
   }
@@ -572,6 +659,80 @@ export class StudyNotesComponent implements OnInit {
         console.error('Error permanently deleting note:', err);
         this.showPermanentDeleteConfirmModal.set(false);
         this.noteToPermanentlyDelete.set(null);
+      }
+    });
+  }
+
+  toggleArchivedNoteSelection(noteId: string): void {
+    const current = new Set(this.selectedArchivedNotes());
+    if (current.has(noteId)) {
+      current.delete(noteId);
+    } else {
+      current.add(noteId);
+    }
+    this.selectedArchivedNotes.set(current);
+  }
+
+  isAllArchivedSelected(): boolean {
+    const archived = this.archivedNotes();
+    if (archived.length === 0) return false;
+    return archived.every(n => this.selectedArchivedNotes().has(n.id));
+  }
+
+  toggleSelectAllArchived(checked: boolean): void {
+    if (checked) {
+      const ids = this.archivedNotes().map(n => n.id);
+      this.selectedArchivedNotes.set(new Set(ids));
+    } else {
+      this.selectedArchivedNotes.set(new Set());
+    }
+  }
+
+  restoreSelectedArchivedNotes(): void {
+    const ids = Array.from(this.selectedArchivedNotes());
+    if (ids.length === 0) return;
+
+    const restoreObservables = ids.map(id => this.noteService.restoreNote(id));
+
+    forkJoin(restoreObservables).subscribe({
+      next: () => {
+        this.selectedArchivedNotes.set(new Set());
+        this.loadArchivedNotes();
+        this.noteService.triggerRefresh();
+        // Sync restored notes to Firestore
+        this.noteService.syncService.sync().subscribe();
+      },
+      error: (err) => {
+        console.error('Error bulk restoring archived notes:', err);
+      }
+    });
+  }
+
+  triggerBulkPermanentDelete(): void {
+    this.showBulkPermanentDeleteConfirm.set(true);
+  }
+
+  cancelBulkPermanentDelete(): void {
+    this.showBulkPermanentDeleteConfirm.set(false);
+  }
+
+  confirmBulkPermanentDelete(): void {
+    const ids = Array.from(this.selectedArchivedNotes());
+    if (ids.length === 0) return;
+
+    this.showBulkPermanentDeleteConfirm.set(false);
+
+    // Delete from local IDB first in parallel, then fire one Firestore sync
+    const deleteObservables = ids.map(id => this.noteService.permanentlyDeleteNote(id));
+
+    forkJoin(deleteObservables).subscribe({
+      next: () => {
+        this.selectedArchivedNotes.set(new Set());
+        this.loadArchivedNotes();
+        this.noteService.triggerRefresh();
+      },
+      error: (err) => {
+        console.error('Error bulk permanently deleting archived notes:', err);
       }
     });
   }

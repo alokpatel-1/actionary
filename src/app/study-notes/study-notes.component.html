@@ -14,13 +14,58 @@
   <aside class="sidebar" [class.mobile-open]="sidebarMobileOpen()">
     <!-- Sidebar Header -->
     <div class="sidebar-header">
+      <!-- Expanded Sidebar: brand, sync badges, and manual sync button -->
       <div class="sidebar-brand" *ngIf="sidebarExpanded()">
         <span class="brand-icon">📝</span>
         <span class="brand-text">Notes</span>
+        
+        <!-- Expanded Sync Indicator -->
+        <span class="sidebar-sync-badge syncing" *ngIf="noteService.syncService.syncStatus() === 'started'" title="Syncing with Firebase...">
+          <i class="pi pi-spin pi-spinner"></i>
+        </span>
+        <span class="sidebar-sync-badge synced" *ngIf="noteService.syncService.syncStatus() === 'completed'" title="Synced with Firebase">
+          <i class="pi pi-check-circle"></i>
+        </span>
+        <span class="sidebar-sync-badge failed" *ngIf="noteService.syncService.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.syncService.syncError()">
+          <i class="pi pi-exclamation-circle"></i>
+        </span>
+
+        <!-- Manual Sync Button (expanded) -->
+        <button class="manual-sync-btn"
+                (click)="triggerManualSync()"
+                [disabled]="noteService.syncService.syncStatus() === 'started'"
+                title="Sync now">
+          <i class="pi"
+             [class.pi-refresh]="noteService.syncService.syncStatus() !== 'started'"
+             [class.pi-spin]="noteService.syncService.syncStatus() === 'started'"
+             [class.pi-spinner]="noteService.syncService.syncStatus() === 'started'"></i>
+        </button>
       </div>
-      <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
-        <i class="pi" [ngClass]="sidebarExpanded() ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
-      </button>
+
+      <!-- Collapsed Sync Indicator -->
+      <div class="collapsed-sync-indicator" *ngIf="!sidebarExpanded()">
+        <span class="sync-dot syncing" *ngIf="noteService.syncService.syncStatus() === 'started'" title="Syncing with Firebase..."></span>
+        <span class="sync-dot synced" *ngIf="noteService.syncService.syncStatus() === 'completed'" title="Synced with Firebase"></span>
+        <span class="sync-dot failed" *ngIf="noteService.syncService.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.syncService.syncError()"></span>
+      </div>
+
+      <div class="sidebar-header-actions">
+        <!-- Manual Sync Button (collapsed) -->
+        <button class="manual-sync-btn collapsed"
+                *ngIf="!sidebarExpanded()"
+                (click)="triggerManualSync()"
+                [disabled]="noteService.syncService.syncStatus() === 'started'"
+                title="Sync now">
+          <i class="pi"
+             [class.pi-refresh]="noteService.syncService.syncStatus() !== 'started'"
+             [class.pi-spin]="noteService.syncService.syncStatus() === 'started'"
+             [class.pi-spinner]="noteService.syncService.syncStatus() === 'started'"></i>
+        </button>
+
+        <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
+          <i class="pi" [ngClass]="sidebarExpanded() ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Create Note Button -->
@@ -71,7 +116,9 @@
             <div class="sidebar-folder-row" 
                [class.active]="noteService.activeFolderId() === folder.id"
                (click)="toggleFolderExpand($event, folder.id)">
-            <i [class]="folder.icon" class="sidebar-folder-icon" [style.color]="folder.color"></i>
+            <span class="folder-icon-chip" [style.background]="folder.color + '22'" [style.color]="folder.color">
+              {{ folder.icon }}
+            </span>
             <span class="sidebar-folder-name" *ngIf="sidebarExpanded()">{{ folder.name }}</span>
             
             <!-- Folder hover options -->
@@ -321,9 +368,29 @@
       </div>
 
       <div class="archive-modal-body">
+        <!-- Select All / Bulk Bar -->
+        <div class="archive-bulk-header" *ngIf="archivedNotes().length > 0">
+          <label class="archive-select-all">
+            <input type="checkbox" [checked]="isAllArchivedSelected()" (change)="toggleSelectAllArchived($any($event.target).checked)">
+            <span>Select All</span>
+          </label>
+          <div class="archive-bulk-actions" *ngIf="selectedArchivedNotes().size > 0">
+            <span class="bulk-selected-count">{{ selectedArchivedNotes().size }} selected</span>
+            <button class="bulk-action-btn restore" (click)="restoreSelectedArchivedNotes()">
+              <i class="pi pi-refresh"></i>
+              <span>Restore</span>
+            </button>
+            <button class="bulk-action-btn delete" (click)="triggerBulkPermanentDelete()">
+              <i class="pi pi-trash"></i>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
         <div class="archive-list" *ngIf="archivedNotes().length > 0; else emptyArchive">
           <div class="archive-item" *ngFor="let note of archivedNotes()">
             <div class="archive-item-info">
+              <input type="checkbox" class="archive-item-checkbox" [checked]="selectedArchivedNotes().has(note.id)" (change)="toggleArchivedNoteSelection(note.id)">
               <i class="pi pi-comment"></i>
               <span class="archive-item-title">{{ note.title || 'Untitled Note' }}</span>
             </div>
@@ -368,11 +435,30 @@
     </div>
   </div>
 
+  <!-- Custom Bulk Permanent Delete Confirmation Dialog Modal Overlay -->
+  <div class="confirm-dialog-backdrop" *ngIf="showBulkPermanentDeleteConfirm()" (click)="cancelBulkPermanentDelete()">
+    <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+      <div class="confirm-dialog-header">
+        <div class="confirm-warning-icon">
+          <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <h3 class="confirm-dialog-title">Delete permanently</h3>
+      </div>
+      <div class="confirm-dialog-body">
+        <p>Are you sure you want to permanently delete the <strong>{{ selectedArchivedNotes().size }}</strong> selected notes? This action is permanent and cannot be undone.</p>
+      </div>
+      <div class="confirm-dialog-footer">
+        <button class="confirm-btn-cancel" (click)="cancelBulkPermanentDelete()">Cancel</button>
+        <button class="confirm-btn-danger" (click)="confirmBulkPermanentDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Note Action Menu Popover -->
   <p-popover #noteMenu>
     <div class="note-options-dropdown" style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 220px; padding: 0.25rem;">
 
-      <button class="menu-option-btn" (click)="triggerMoveToFolder()" *ngIf="isNoteUncategorized(selectedMenuNote())">
+      <button class="menu-option-btn" (click)="triggerMoveToFolder()">
         <i class="pi pi-folder"></i>
         <span style="flex-grow: 1; text-align: left;">Move to Folder...</span>
       </button>
@@ -413,7 +499,7 @@
                   [class.active]="selectedMenuNote()?.folderId === folder.id"
                   [style.--folder-accent]="folder.color"
                   (click)="moveNoteToFolder(folder.id)">
-            <i [class]="folder.icon" [style.color]="folder.color"></i>
+            <span class="folder-emoji-icon">{{ folder.icon }}</span>
             <span>{{ folder.name }}</span>
           </button>
         </div>
@@ -495,6 +581,40 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Glassmorphic Sync Status Toast -->
+  <div class="floating-sync-card" [class.active]="noteService.syncService.syncStatus() === 'started' || showSyncSuccessToast()">
+    <div class="sync-card-content">
+      <!-- Loader for syncing state -->
+      <div class="sync-icon-wrapper" *ngIf="noteService.syncService.syncStatus() === 'started'">
+        <div class="sync-spinner-ring"></div>
+      </div>
+      <!-- Success check for completed state -->
+      <div class="sync-icon-wrapper success" *ngIf="noteService.syncService.syncStatus() === 'completed'">
+        <i class="pi pi-check"></i>
+      </div>
+      <!-- Failure check for failed state -->
+      <div class="sync-icon-wrapper failed" *ngIf="noteService.syncService.syncStatus() === 'failed'">
+        <i class="pi pi-times"></i>
+      </div>
+
+      <div class="sync-text-group">
+        <span class="sync-title">
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'started'">Syncing...</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'completed'">Notes Synced</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'failed'">Sync Failed</ng-container>
+        </span>
+        <span class="sync-subtitle">
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'started'">Saving changes to Firebase</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'completed'">All changes are up to date</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'failed'">{{ noteService.syncService.syncError() || 'Check connection' }}</ng-container>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Screen Sync Blocking Backdrop -->
+  <div class="sync-backdrop" [class.active]="noteService.syncService.syncStatus() === 'started'"></div>
 
   <p-confirmDialog></p-confirmDialog>
 </div>
