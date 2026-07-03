@@ -9,6 +9,7 @@ import { NoteListComponent } from './components/note-list/note-list.component';
 import { NoteEditorComponent } from './components/note-editor/note-editor.component';
 import { NoteFoldersComponent } from './components/note-folders/note-folders.component';
 import { NoteSearchComponent } from './components/note-search/note-search.component';
+import { ConfirmationService } from 'primeng/api';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,9 @@ import { NoteSearchComponent } from './components/note-search/note-search.compon
     TiptapEditorDirective,
     TiptapBubbleMenuDirective,
     TiptapFloatingMenuDirective
+  ],
+  providers: [
+    ConfirmationService
   ]
 })
 export class StudyNotesModule { }

@@ -26,6 +26,24 @@ export class StudyNotesComponent implements OnInit {
     this.isSidebarFoldersExpanded.set(!this.isSidebarFoldersExpanded());
   }
 
+  createNewNote(): void {
+    this.closeMobileSidebar();
+    const activeFid = this.noteService.activeFolderId();
+    
+    // Check if we are already on the create route to avoid immediately creating a note
+    // if the user hasn't typed anything yet, or we can just instantly create it as requested.
+    const newNote = {
+      title: '',
+      content: '',
+      folderId: activeFid || '__uncategorized__',
+      isPinned: false
+    };
+    
+    this.noteService.addNote(newNote).subscribe(note => {
+      this.router.navigate(['/notes', note.id], { queryParams: { edit: 'true' } });
+    });
+  }
+
   allNotes = signal<Note[]>([]);
   folders = signal<NoteFolder[]>([]);
 
@@ -49,6 +67,9 @@ export class StudyNotesComponent implements OnInit {
 
   showDeleteConfirmModal = signal(false);
   noteToDelete = signal<Note | null>(null);
+
+  showBulkSelectionModal = signal(false);
+  selectedNotes = signal<Set<string>>(new Set());
 
   showArchiveModal = signal(false);
   archivedNotes = signal<Note[]>([]);
@@ -284,6 +305,23 @@ export class StudyNotesComponent implements OnInit {
     return folder ? folder.name : '';
   }
 
+  getDisplayTitle(note: Note): string {
+    if (note.title && note.title.trim() !== '') return note.title;
+    
+    if (note.content && note.content.trim() !== '') {
+      const div = document.createElement('div');
+      div.innerHTML = note.content;
+      const text = div.textContent || div.innerText || '';
+      const trimmed = text.trim();
+      
+      if (trimmed) {
+        return trimmed.length > 25 ? trimmed.substring(0, 25) + '...' : trimmed;
+      }
+    }
+    
+    return 'Untitled Note';
+  }
+
   clearActiveFolder(): void {
     this.noteService.activeFolderId.set(null);
   }
@@ -418,6 +456,57 @@ export class StudyNotesComponent implements OnInit {
         console.error('Error deleting note from sidebar:', err);
         this.showDeleteConfirmModal.set(false);
         this.noteToDelete.set(null);
+      }
+    });
+  }
+
+  triggerBulkDelete(): void {
+    this.showProfileMenu.set(false);
+    this.selectedNotes.set(new Set());
+    this.showBulkSelectionModal.set(true);
+  }
+
+  closeBulkSelectionModal(): void {
+    this.showBulkSelectionModal.set(false);
+    this.selectedNotes.set(new Set());
+  }
+
+  toggleNoteSelection(noteId: string): void {
+    const current = new Set(this.selectedNotes());
+    if (current.has(noteId)) {
+      current.delete(noteId);
+    } else {
+      current.add(noteId);
+    }
+    this.selectedNotes.set(current);
+  }
+
+  toggleSelectAll(): void {
+    const current = new Set(this.selectedNotes());
+    const all = this.allNotes();
+    if (current.size === all.length) {
+      this.selectedNotes.set(new Set()); // Deselect all
+    } else {
+      this.selectedNotes.set(new Set(all.map(n => n.id))); // Select all
+    }
+  }
+
+  confirmBulkDelete(): void {
+    const ids = Array.from(this.selectedNotes());
+    if (ids.length === 0) {
+      this.showBulkSelectionModal.set(false);
+      return;
+    }
+
+    this.noteService.bulkDeleteNotes(ids).subscribe({
+      next: () => {
+        this.showBulkSelectionModal.set(false);
+        this.selectedNotes.set(new Set());
+        this.router.navigate(['/notes', 'create']);
+      },
+      error: (err) => {
+        console.error('Error clearing notes:', err);
+        this.showBulkSelectionModal.set(false);
       }
     });
   }

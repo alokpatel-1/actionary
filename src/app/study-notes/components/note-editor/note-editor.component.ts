@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../../services/note.service';
 import { Note, NoteFolder, DEFAULT_FOLDER } from '../../models/note.model';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { ConfirmationService } from 'primeng/api';
 
 import { Editor } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -16,6 +17,42 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { TaskList } from '@tiptap/extension-task-list';
 import { TaskItem } from '@tiptap/extension-task-item';
 import { Placeholder } from '@tiptap/extension-placeholder';
+import { CodeBlock } from '@tiptap/extension-code-block';
+
+const CustomCodeBlock = CodeBlock.extend({
+  addNodeView() {
+    return ({ node, getPos, editor }) => {
+      const wrapper = document.createElement('div');
+      wrapper.classList.add('custom-code-block');
+
+      const btn = document.createElement('button');
+      btn.classList.add('copy-code-btn');
+      btn.innerHTML = '<i class="pi pi-copy"></i>';
+      btn.title = 'Copy code';
+      
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(node.textContent);
+        btn.innerHTML = '<i class="pi pi-check" style="color: #4ade80;"></i>';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="pi pi-copy"></i>';
+        }, 2000);
+      });
+
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+
+      pre.appendChild(code);
+      wrapper.appendChild(btn);
+      wrapper.appendChild(pre);
+
+      return {
+        dom: wrapper,
+        contentDOM: code,
+      };
+    };
+  }
+});
+
 import { SlashCommands } from './slash-commands';
 
 @Component({
@@ -29,6 +66,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private noteService = inject(NoteService);
   private cdr = inject(ChangeDetectorRef);
+  private confirmationService = inject(ConfirmationService);
   private destroy$ = new Subject<void>();
   private autoSave$ = new Subject<void>();
 
@@ -54,7 +92,8 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
       if (id) {
         if (this.noteId() === id) return;
         this.isNew.set(false);
-        this.isEditMode.set(false);
+        const editQuery = this.route.snapshot.queryParamMap.get('edit');
+        this.isEditMode.set(editQuery === 'true');
         this.noteId.set(id);
         this.noteService.getNote(id).subscribe(note => {
           if (note) {
@@ -76,7 +115,6 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
         const activeFid = this.noteService.activeFolderId();
         this.folderId.set(activeFid || DEFAULT_FOLDER.id);
         this.isPinned.set(false);
-        this.isLayoutReady = false;
         this.cdr.detectChanges();
         this.initEditor();
       }
@@ -94,11 +132,14 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
     }
     
     this.editor = new Editor({
+      editable: this.isEditMode(),
       content: this.content(),
       extensions: [
         StarterKit.configure({
           heading: { levels: [1, 2, 3] },
+          codeBlock: false,
         }),
+        CustomCodeBlock,
         Underline,
         Link.configure({ openOnClick: false }),
         Image,
@@ -147,10 +188,9 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   }
 
   enableEditMode(): void {
-    this.isLayoutReady = false;
     this.isEditMode.set(true);
-    this.cdr.detectChanges();
-    this.initEditor();
+    this.editor?.setEditable(true);
+    setTimeout(() => this.editor?.commands.focus(), 0);
   }
 
   save(manual = false): void {
@@ -171,6 +211,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
           this.saving.set(false);
           if (manual && this.isEditMode()) {
             this.isEditMode.set(false);
+            this.editor?.setEditable(false);
           }
           this.router.navigate(['/notes', note.id], { replaceUrl: true });
         },
@@ -183,6 +224,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
           this.saving.set(false);
           if (manual && this.isEditMode()) {
             this.isEditMode.set(false);
+            this.editor?.setEditable(false);
           }
         },
         error: () => this.saving.set(false)
@@ -191,14 +233,21 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   }
 
   deleteNote(): void {
-    if (confirm('Are you sure you want to delete this note?')) {
-      if (this.isNew()) {
-        this.router.navigate(['/notes']);
-      } else {
-        this.noteService.deleteNote(this.noteId()!).subscribe(() => {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete this note?',
+      header: 'Delete Note',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        if (this.isNew()) {
           this.router.navigate(['/notes']);
-        });
+        } else {
+          this.noteService.deleteNote(this.noteId()!).subscribe(() => {
+            this.router.navigate(['/notes']);
+          });
+        }
       }
-    }
+    });
   }
 }

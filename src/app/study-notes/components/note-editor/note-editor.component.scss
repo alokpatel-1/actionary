@@ -5,8 +5,8 @@
 .editor-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 3rem);
   animation: slideIn 0.25s ease;
+  min-height: 100%;
 }
 
 @keyframes slideIn {
@@ -150,6 +150,15 @@
   margin-bottom: 0.5rem;
   margin-top: 1rem;
   flex-shrink: 0;
+  
+  /* Ensure long unbroken text doesn't overflow horizontally */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.note-title {
+  text-overflow: ellipsis;
 }
 
 .note-title::placeholder {
@@ -162,20 +171,17 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
 .tiptap-editor-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;
   padding-bottom: 2rem;
 }
 
 :host ::ng-deep {
-  .ProseMirror {
+  .ProseMirror, .tiptap-content {
     flex: 1;
     outline: none;
     font-size: 1.125rem;
@@ -216,18 +222,64 @@
       font-style: italic;
     }
 
-    /* Code Block */
+    /* Code Blocks */
     pre {
       background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 1rem;
+      color: #e0e0e0;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1.25rem 1.5rem;
       border-radius: 8px;
       overflow-x: auto;
-      font-family: 'Fira Code', monospace;
+      margin: 1.5rem 0;
       font-size: 0.9rem;
-      code { color: inherit; padding: 0; background: none; border-radius: 0; }
-    }
+      line-height: 1.5;
 
+      code {
+        color: inherit;
+        padding: 0;
+        background: none;
+        font-size: 0.85rem;
+      }
+    }
+    
+    /* Custom Code Block Wrapper */
+    .custom-code-block {
+      position: relative;
+      margin: 1.5rem 0;
+      
+      pre { margin: 0; }
+      
+      .copy-code-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        z-index: 10;
+        opacity: 0;
+
+        i { font-size: 0.9rem; }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          color: #fff;
+        }
+      }
+
+      &:hover .copy-code-btn {
+        opacity: 1;
+      }
+    }
+    
     /* Inline Code */
     code {
       background: rgba(135, 131, 120, 0.15);
@@ -258,9 +310,21 @@
     }
 
     /* Lists */
-    ul, ol {
+    ul {
       padding-left: 1.5rem;
       margin-bottom: 1.25em;
+      list-style-type: disc;
+    }
+    
+    ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1.25em;
+      list-style-type: decimal;
+    }
+    
+    li p {
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
     }
 
     /* Task Lists */
@@ -282,69 +346,61 @@
   }
 }
 
-/* ── Bubble Menu ── */
-.bubble-menu {
+/* ── Tooltips / Menus Base (Bubble & Floating) ── */
+.bubble-menu, .floating-menu {
   display: flex;
-  background: #1e1e1e;
-  padding: 0.2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  align-items: center;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.3rem 0.4rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0,0,0,0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
   z-index: 100;
-  
-  button {
+  gap: 0.15rem;
+
+  button, .plus-btn {
     background: transparent;
     border: none;
-    color: #fff;
-    padding: 0.4rem 0.6rem;
-    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.85rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    min-width: 30px;
+    height: 30px;
 
-    &:hover { background: rgba(255, 255, 255, 0.1); }
-    &.is-active { background: rgba(255, 255, 255, 0.2); color: #6366F1; }
+    i { font-size: 0.9rem; }
+
+    &:hover { 
+      background: rgba(255, 255, 255, 0.15); 
+      color: #fff; 
+    }
+    &.is-active { 
+      background: rgba(99, 102, 241, 0.2); 
+      color: #818CF8; 
+    }
   }
 
   .divider {
     width: 1px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 0.2rem 0.4rem;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 0.25rem;
   }
 }
 
-/* ── Floating Menu (+) ── */
 .floating-menu {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  transform: translateY(-130%);
+  margin-top: -0.25rem;
   z-index: 90;
-
-  .plus-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid var(--color-border-subtle);
-    background: var(--color-bg-surface);
-    color: var(--color-text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.75rem;
-    transition: all 0.2s;
-    font-weight: bold;
-
-    &:hover {
-      background: var(--color-hover);
-      color: var(--color-text-primary);
-      border-color: var(--color-text-muted);
-    }
-  }
 }
 
 /* ── Slash Commands Menu (Global styles for tippy) ── */

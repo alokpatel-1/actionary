@@ -24,7 +24,7 @@
     </div>
 
     <!-- Create Note Button -->
-    <a routerLink="/notes/create" class="create-btn" (click)="closeMobileSidebar()">
+    <a (click)="createNewNote()" class="create-btn" style="cursor: pointer;">
       <i class="pi pi-plus"></i>
       <span class="nav-text" *ngIf="sidebarExpanded()">New Note</span>
     </a>
@@ -37,26 +37,31 @@
         <i class="pi pi-search"></i>
         <span class="nav-text" *ngIf="sidebarExpanded()">Search notes</span>
       </button>
+      
+      <button class="nav-item" *ngIf="sidebarExpanded()" routerLink="/notes/folders" style="width: 100%; border: none; background: transparent; cursor: pointer; text-align: left; padding-right: 0.5rem;">
+        <i class="pi pi-folder"></i>
+        <span class="nav-text" style="flex: 1;">Folders</span>
+        
+        <i *ngIf="getUserFolders().length > 0" class="pi" 
+           [class.pi-chevron-down]="isSidebarFoldersExpanded()"
+           [class.pi-chevron-right]="!isSidebarFoldersExpanded()"
+           (click)="$event.stopPropagation(); toggleSidebarFolders($event)" 
+           style="font-size: 0.75rem; padding: 0.35rem; border-radius: 4px; transition: background 0.2s; margin-right: 0.2rem;"
+           title="Toggle Folders"
+           onmouseover="this.style.background='var(--color-hover)'"
+           onmouseout="this.style.background='transparent'"></i>
+
+        <i class="pi pi-plus" 
+           (click)="$event.stopPropagation(); triggerCreateFolder()" 
+           title="New Folder" 
+           style="font-size: 0.75rem; padding: 0.35rem; border-radius: 4px; transition: background 0.2s;"
+           onmouseover="this.style.background='var(--color-hover)'"
+           onmouseout="this.style.background='transparent'"></i>
+      </button>
     </div>
 
     <!-- Notes History List (Chat history style, collapsible tree explorer) -->
     <div class="sidebar-notes-history">
-      <div class="history-header-row" *ngIf="sidebarExpanded()" style="display: flex; justify-content: space-between; align-items: center; padding-right: 0.5rem;">
-        <span class="history-label" routerLink="/notes/folders" style="margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-          Folders 
-          <i class="pi" 
-             [class.pi-chevron-down]="isSidebarFoldersExpanded()"
-             [class.pi-chevron-right]="!isSidebarFoldersExpanded()"
-             (click)="toggleSidebarFolders($event)" 
-             style="font-size: 0.7rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s;"
-             title="Toggle Folders"
-             onmouseover="this.style.background='var(--color-hover)'"
-             onmouseout="this.style.background='transparent'"></i>
-        </span>
-        <button class="add-folder-btn" (click)="triggerCreateFolder()" title="New Folder" style="background: none; border: none; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; padding: 0.2rem; border-radius: 4px;">
-          <i class="pi pi-plus" style="font-size: 0.75rem;"></i>
-        </button>
-      </div>
       
       <div class="history-list">
         <!-- COLLAPSIBLE FOLDERS TREE -->
@@ -86,10 +91,10 @@
               <a *ngFor="let note of getNotesForFolder(folder.id)"
                  class="history-item sidebar-note-item"
                  [class.active]="getActiveNoteId() === note.id"
-                 [title]="note.title || 'Untitled'"
+                 [title]="getDisplayTitle(note)"
                  (click)="openNote(note)">
-                <div class="history-info" style="margin-left: 1.5rem;">
-                  <span class="history-title">{{ note.title || 'Untitled' }}</span>
+                <div class="history-info">
+                  <span class="history-title">{{ getDisplayTitle(note) }}</span>
                 </div>
                 <button class="history-menu-btn" (click)="toggleNoteMenu($event, note)" title="Options">
                   <i class="pi pi-ellipsis-v"></i>
@@ -108,17 +113,17 @@
         </ng-container>
 
         <!-- UNASSIGNED/ROOT NOTES -->
-        <div class="sidebar-unassigned-header" *ngIf="getUserFolders().length > 0 && getUnassignedNotes().length > 0 && sidebarExpanded()">
+        <div class="sidebar-unassigned-header" *ngIf="getUnassignedNotes().length > 0 && sidebarExpanded()">
           <span>Notes</span>
         </div>
 
         <a *ngFor="let note of getUnassignedNotes()"
            class="history-item"
            [class.active]="getActiveNoteId() === note.id"
-           [title]="note.title || 'Untitled'"
+           [title]="getDisplayTitle(note)"
            (click)="openNote(note)">
           <div class="history-info" *ngIf="sidebarExpanded()">
-            <span class="history-title">{{ note.title || 'Untitled' }}</span>
+            <span class="history-title">{{ getDisplayTitle(note) }}</span>
           </div>
           <button class="history-menu-btn"
                   *ngIf="sidebarExpanded()"
@@ -146,8 +151,13 @@
           </div>
           
           <button class="popover-action archive-btn" (click)="openArchiveModal()">
-            <i class="pi pi-archive"></i>
+            <i class="pi pi-inbox"></i>
             <span>Archived notes</span>
+          </button>
+
+          <button class="popover-action select-btn" (click)="triggerBulkDelete()">
+            <i class="pi pi-check-square"></i>
+            <span>Bulk delete</span>
           </button>
 
           <button class="popover-action logout-btn" (click)="logout()">
@@ -225,6 +235,7 @@
   </div>
 
   <!-- Custom Delete Confirmation Dialog Modal Overlay (Soft Delete / Archive) -->
+  <!-- Custom Delete Confirmation Dialog Modal Overlay (Soft Delete / Archive) -->
   <div class="confirm-dialog-backdrop" *ngIf="showDeleteConfirmModal()" (click)="cancelDelete()">
     <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
       <div class="confirm-dialog-header">
@@ -243,12 +254,65 @@
     </div>
   </div>
 
+  <!-- Bulk Selection Modal -->
+  <div class="archive-modal-backdrop" *ngIf="showBulkSelectionModal()" (click)="closeBulkSelectionModal()">
+    <div class="archive-modal-card" (click)="$event.stopPropagation()">
+      <div class="archive-modal-header">
+        <h3 class="archive-modal-title">
+          <i class="pi pi-check-square"></i>
+          <span>Select Notes to Delete</span>
+        </h3>
+        <button class="archive-modal-close" (click)="closeBulkSelectionModal()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="bulk-select-header-actions">
+        <button (click)="toggleSelectAll()" class="btn-select-all">
+          <i class="pi" [ngClass]="selectedNotes().size === allNotes().length && allNotes().length > 0 ? 'pi-times' : 'pi-check-circle'"></i>
+          {{ selectedNotes().size === allNotes().length && allNotes().length > 0 ? 'Deselect All' : 'Select All' }}
+        </button>
+      </div>
+
+      <div class="bulk-select-list" *ngIf="allNotes().length > 0; else emptySelection">
+        <div class="bulk-select-item" 
+             *ngFor="let note of allNotes()" 
+             (click)="toggleNoteSelection(note.id)"
+             [class.selected]="selectedNotes().has(note.id)">
+          <div class="note-checkbox" [class.checked]="selectedNotes().has(note.id)">
+            <i class="pi" [ngClass]="selectedNotes().has(note.id) ? 'pi-check' : ''"></i>
+          </div>
+          <span class="bulk-select-title">
+            {{ note.title || 'Untitled Note' }}
+          </span>
+        </div>
+      </div>
+
+      <ng-template #emptySelection>
+        <div class="archive-empty">
+          <i class="pi pi-inbox"></i>
+          <p>No active notes available.</p>
+        </div>
+      </ng-template>
+      
+      <div class="archive-modal-footer">
+        <button class="confirm-btn-cancel" (click)="closeBulkSelectionModal()">Cancel</button>
+        <button class="bulk-delete-btn" 
+                [disabled]="selectedNotes().size === 0" 
+                (click)="confirmBulkDelete()">
+          <i class="pi pi-trash" *ngIf="selectedNotes().size > 0"></i>
+          Delete Selected {{ selectedNotes().size > 0 ? '(' + selectedNotes().size + ')' : '' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Custom Archived Chats Modal Overlay -->
   <div class="archive-modal-backdrop" *ngIf="showArchiveModal()" (click)="closeArchiveModal()">
     <div class="archive-modal-card" (click)="$event.stopPropagation()">
       <div class="archive-modal-header">
         <h3 class="archive-modal-title">
-          <i class="pi pi-archive"></i>
+          <i class="pi pi-inbox"></i>
           <span>Archived Notes</span>
         </h3>
         <button class="archive-modal-close" (click)="closeArchiveModal()" title="Close">
@@ -299,7 +363,7 @@
       </div>
       <div class="confirm-dialog-footer">
         <button class="confirm-btn-cancel" (click)="cancelPermanentDelete()">Cancel</button>
-        <button class="confirm-btn-danger" (click)="confirmDelete()">Delete</button>
+        <button class="confirm-btn-danger" (click)="confirmPermanentDelete()">Delete</button>
       </div>
     </div>
   </div>
@@ -431,4 +495,6 @@
       </div>
     </div>
   </div>
+
+  <p-confirmDialog></p-confirmDialog>
 </div>
