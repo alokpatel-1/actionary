@@ -54,8 +54,8 @@ export class SignInComponent implements OnInit {
 
         console.log('User logged in successfully:', user);
 
-        // Redirect to expense list after successful login
-        this.router.navigate(['/expenses/list']);
+        // Redirect to new note after successful login
+        this.router.navigate(['/notes/create']);
       },
       error: ({ error }) => {
         console.error('Login failed:', error.error);
@@ -90,8 +90,8 @@ export class SignInComponent implements OnInit {
         sessionStorage.setItem('refreshToken', refreshToken);
         sessionStorage.setItem('localId', user.localId);
 
-        // Redirect to expense list after successful login
-        this.router.navigate(['/expenses/list']);
+        // Redirect to new note after successful login
+        this.router.navigate(['/notes/create']);
       },
       (err) => {
         console.log('Login failed:', err);

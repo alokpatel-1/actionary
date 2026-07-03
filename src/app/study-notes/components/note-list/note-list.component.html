@@ -1,0 +1,96 @@
+<div class="note-list-page">
+  <!-- Compact Header Row -->
+  <div class="list-header">
+    <h1 class="list-title">My Notes</h1>
+    <div class="header-right">
+      <span class="sync-badge syncing" *ngIf="syncService.syncStatus() === 'started'">
+        <i class="pi pi-spin pi-spinner"></i> Syncing
+      </span>
+      <span class="sync-badge synced" *ngIf="syncService.syncStatus() === 'completed'">
+        <i class="pi pi-check-circle"></i> Synced
+      </span>
+      <span class="note-count" *ngIf="hasNotes()">{{ notes().length }} notes</span>
+    </div>
+  </div>
+
+  <!-- Folder Filter Pills -->
+  <div class="folder-pills">
+    <button class="pill"
+            [class.active]="selectedFolderId() === null"
+            (click)="selectFolder(null)">
+      All
+    </button>
+    <button *ngFor="let folder of folders()"
+            class="pill"
+            [class.active]="selectedFolderId() === folder.id"
+            [style.--pill-color]="folder.color"
+            (click)="selectFolder(folder.id)">
+      <i [class]="folder.icon" style="font-size: 0.7rem"></i>
+      {{ folder.name }}
+    </button>
+  </div>
+
+  <!-- Loading Skeletons -->
+  <div class="note-grid" *ngIf="loading()">
+    <div class="note-card skeleton" *ngFor="let s of [1,2,3,4,5,6]">
+      <div class="skel title"></div>
+      <div class="skel body"></div>
+      <div class="skel body short"></div>
+      <div class="skel meta"></div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty" *ngIf="!loading() && !hasNotes()">
+    <div class="empty-icon"><i class="pi pi-file-edit"></i></div>
+    <h3>No notes yet</h3>
+    <p>Create your first note from the sidebar</p>
+  </div>
+
+  <!-- Pinned Notes -->
+  <div class="section" *ngIf="!loading() && pinnedNotes().length > 0">
+    <span class="section-label"><i class="pi pi-thumbtack"></i> Pinned</span>
+    <div class="note-grid">
+      <div class="note-card pinned"
+           *ngFor="let note of pinnedNotes()"
+           (click)="openNote(note)"
+           [style.--accent]="getFolderColor(note.folderId)">
+        <div class="accent-bar"></div>
+        <div class="card-top">
+          <h3 class="card-title">{{ note.title || 'Untitled' }}</h3>
+          <button class="pin-btn active" (click)="togglePin($event, note)"><i class="pi pi-thumbtack"></i></button>
+        </div>
+        <p class="card-preview">{{ getPreview(note.content) }}</p>
+        <div class="card-bottom">
+          <span class="folder-tag" [style.color]="getFolderColor(note.folderId)">{{ getFolderName(note.folderId) }}</span>
+          <span class="card-date">{{ formatDate(note.updatedAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Notes -->
+  <div class="section" *ngIf="!loading() && unpinnedNotes().length > 0">
+    <span class="section-label" *ngIf="pinnedNotes().length > 0"><i class="pi pi-clock"></i> Recent</span>
+    <div class="note-grid">
+      <div class="note-card"
+           *ngFor="let note of unpinnedNotes()"
+           (click)="openNote(note)"
+           [style.--accent]="getFolderColor(note.folderId)">
+        <div class="accent-bar"></div>
+        <div class="card-top">
+          <h3 class="card-title">{{ note.title || 'Untitled' }}</h3>
+          <div class="card-actions">
+            <button class="pin-btn" (click)="togglePin($event, note)"><i class="pi pi-thumbtack"></i></button>
+            <button class="del-btn" (click)="deleteNote($event, note)"><i class="pi pi-trash"></i></button>
+          </div>
+        </div>
+        <p class="card-preview">{{ getPreview(note.content) }}</p>
+        <div class="card-bottom">
+          <span class="folder-tag" [style.color]="getFolderColor(note.folderId)">{{ getFolderName(note.folderId) }}</span>
+          <span class="card-date">{{ formatDate(note.updatedAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

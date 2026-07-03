@@ -1,0 +1,258 @@
+<div class="folders-page">
+  <div class="page-header" style="flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 class="page-title">Folders</h1>
+      <p class="page-subtitle">Manage and organize your notes</p>
+    </div>
+    
+    <div class="header-actions" style="display: flex; gap: 1rem; align-items: center; flex: 1; justify-content: flex-end;">
+      <div style="position: relative; flex: 1; max-width: 300px; display: flex; align-items: center;">
+        <i class="pi pi-search" style="position: absolute; left: 0.75rem; color: var(--color-text-muted, #9ca3af); font-size: 0.875rem; pointer-events: none;"></i>
+        <input type="text" pInputText placeholder="Search folders or notes..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" style="width: 100%; padding-left: 2.25rem; padding-top: 0.5rem; padding-bottom: 0.5rem; border-radius: 8px;">
+      </div>
+      <button pButton label="New Folder" icon="pi pi-plus" class="p-button-sm add-folder-btn" (click)="openCreateDialog()"></button>
+    </div>
+  </div>
+
+  <!-- Folder Explorer Tree -->
+  <div class="folder-tree-container">
+    <div class="folder-tree">
+      <div class="folder-node" *ngFor="let folder of filteredFolders()" [style.--folder-accent]="folder.color">
+        <!-- Folder Row Header -->
+        <div class="folder-header-row" (click)="openFolder(folder)">
+          <button class="expand-btn" (click)="toggleFolderExpand($event, folder.id)">
+            <i class="pi" [ngClass]="isExpanded(folder.id) ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+          </button>
+          
+          <div class="folder-title-wrap">
+            <i [class]="folder.icon" class="folder-icon" [style.color]="folder.color"></i>
+            <span class="folder-name">{{ folder.name }}</span>
+            <span class="folder-count">({{ getNoteCount(folder.id) }})</span>
+          </div>
+
+          <button class="node-menu-btn" (click)="openFolderMenu($event, folder)" title="Folder Options">
+            <i class="pi pi-ellipsis-h"></i>
+          </button>
+        </div>
+
+        <!-- Nested Note List (Children) -->
+        <div class="folder-children" *ngIf="isExpanded(folder.id) || searchQuery()">
+          <div class="note-list" *ngIf="filteredNotesForFolder(folder.id).length > 0; else emptyFolder">
+            <div class="note-node-row" *ngFor="let note of filteredNotesForFolder(folder.id)" (click)="openNote(note)">
+              <i class="pi pi-file note-icon"></i>
+              <span class="note-title">{{ note.title || 'Untitled Note' }}</span>
+              
+              <button class="node-menu-btn" (click)="openNoteMenu($event, note)" title="Note Options">
+                <i class="pi pi-ellipsis-h"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Empty State within Folder -->
+          <ng-template #emptyFolder>
+            <div class="folder-empty-state">
+              <span class="empty-text">No notes yet.</span>
+              <button class="create-note-inline-btn" (click)="triggerCreateNoteInFolderDirect($event, folder.id)">
+                <i class="pi pi-plus"></i>
+                <span>Create Note</span>
+              </button>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Empty State if no custom folders exist or search yields no results -->
+      <div class="tree-empty-state" *ngIf="filteredFolders().length === 0">
+        <i class="pi pi-folder-open"></i>
+        <p *ngIf="folders().length === 0">No folders created yet. Click "New Folder" to get started.</p>
+        <p *ngIf="folders().length > 0 && searchQuery()">No results found for "{{ searchQuery() }}"</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Create/Edit Folder Dialog Overlay -->
+<div class="confirm-dialog-backdrop" *ngIf="showDialog()" (click)="showDialog.set(false)">
+  <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-header">
+      <h3 class="confirm-dialog-title">{{ isNewFolder() ? 'New Folder' : 'Edit Folder' }}</h3>
+    </div>
+    
+    <div class="confirm-dialog-body" style="padding-top: 0.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+      <!-- Name -->
+      <div class="field" style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label class="field-label" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Folder Name</label>
+        <input pInputText
+               [ngModel]="folderName()"
+               (ngModelChange)="folderName.set($event)"
+               placeholder="e.g. Mathematics"
+               class="folder-name-input"
+               style="width: 100%;"
+               autocomplete="off">
+      </div>
+
+      <!-- Color Picker -->
+      <div class="field" style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label class="field-label" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Color</label>
+        <div class="color-grid" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button *ngFor="let color of FOLDER_COLORS"
+                  class="color-swatch"
+                  [style.background]="color"
+                  [class.selected]="folderColor() === color"
+                  (click)="folderColor.set(color)">
+            <i class="pi pi-check" *ngIf="folderColor() === color"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Icon Picker -->
+      <div class="field" style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label class="field-label" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Icon</label>
+        <div class="icon-grid" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button *ngFor="let icon of FOLDER_ICONS"
+                  class="icon-option"
+                  [class.selected]="folderIcon() === icon"
+                  [style.--sel-color]="folderColor()"
+                  (click)="folderIcon.set(icon)">
+            <i [class]="icon"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="confirm-dialog-footer" style="margin-top: 1.5rem;">
+      <button class="confirm-btn-cancel" (click)="showDialog.set(false)">Cancel</button>
+      <button class="confirm-btn-primary save-btn" 
+              style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;" 
+              [disabled]="!folderName().trim()"
+              (click)="saveFolder()">
+        {{ isNewFolder() ? 'Create' : 'Save' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Folder Actions Context Menu Dialog Overlay -->
+<div class="confirm-dialog-backdrop" *ngIf="showFolderMenuModal()" (click)="closeFolderMenu()">
+  <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-header">
+      <h3 class="confirm-dialog-title">Folder Options</h3>
+    </div>
+    <div class="confirm-dialog-body" style="padding-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <p style="margin-bottom: 0.75rem; font-weight: 500; font-size: 0.875rem;">Options for <strong>"{{ activeFolder()?.name }}"</strong>:</p>
+      
+      <button class="menu-option-btn" (click)="triggerCreateNoteInFolder()">
+        <i class="pi pi-plus"></i>
+        <span>Create Note inside Folder</span>
+      </button>
+
+      <button class="menu-option-btn" (click)="triggerRenameFolder()">
+        <i class="pi pi-pencil"></i>
+        <span>Rename Folder...</span>
+      </button>
+      
+      <button class="menu-option-btn danger" (click)="triggerDeleteFolder()">
+        <i class="pi pi-trash"></i>
+        <span>Delete Folder</span>
+      </button>
+    </div>
+    <div class="confirm-dialog-footer" style="margin-top: 1rem;">
+      <button class="confirm-btn-cancel" (click)="closeFolderMenu()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Actions Context Menu Dialog Overlay -->
+<div class="confirm-dialog-backdrop" *ngIf="showNoteMenuModal()" (click)="closeNoteMenu()">
+  <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-header">
+      <h3 class="confirm-dialog-title">Note Options</h3>
+    </div>
+    <div class="confirm-dialog-body" style="padding-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <p style="margin-bottom: 0.75rem; font-weight: 500; font-size: 0.875rem;">Options for <strong>"{{ activeNote()?.title || 'Untitled Note' }}"</strong>:</p>
+      
+      <button class="menu-option-btn" (click)="triggerRenameNote()">
+        <i class="pi pi-pencil"></i>
+        <span>Rename Note...</span>
+      </button>
+
+      <button class="menu-option-btn" (click)="triggerMoveNote()">
+        <i class="pi pi-folder"></i>
+        <span>Move to Folder...</span>
+      </button>
+
+      <button class="menu-option-btn" (click)="triggerDuplicateNote()">
+        <i class="pi pi-copy"></i>
+        <span>Duplicate Note</span>
+      </button>
+      
+      <button class="menu-option-btn danger" (click)="triggerDeleteNote()">
+        <i class="pi pi-trash"></i>
+        <span>Archive Note</span>
+      </button>
+    </div>
+    <div class="confirm-dialog-footer" style="margin-top: 1rem;">
+      <button class="confirm-btn-cancel" (click)="closeNoteMenu()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Note Dialog Overlay -->
+<div class="confirm-dialog-backdrop" *ngIf="showRenameNoteDialog()" (click)="showRenameNoteDialog.set(false)">
+  <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-header">
+      <h3 class="confirm-dialog-title">Rename Note</h3>
+    </div>
+    <div class="confirm-dialog-body">
+      <div class="field" style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label class="field-label" style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">New Note Title</label>
+        <input pInputText
+               [ngModel]="renameNoteTitle()"
+               (ngModelChange)="renameNoteTitle.set($event)"
+               placeholder="Enter note title..."
+               class="folder-name-input"
+               style="width: 100%;"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="confirm-dialog-footer">
+      <button class="confirm-btn-cancel" (click)="showRenameNoteDialog.set(false)">Cancel</button>
+      <button class="confirm-btn-primary save-btn" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600;" [disabled]="!renameNoteTitle().trim()" (click)="saveRenameNote()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Move Note to Folder Dialog Overlay -->
+<div class="confirm-dialog-backdrop" *ngIf="showMoveNoteDialog()" (click)="showMoveNoteDialog.set(false)">
+  <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-header">
+      <h3 class="confirm-dialog-title">Move Note</h3>
+    </div>
+    <div class="confirm-dialog-body" style="max-height: 45vh; overflow-y: auto;">
+      <p style="margin-bottom: 1rem; font-size: 0.875rem;">Select a folder to move <strong>"{{ activeNote()?.title || 'Untitled Note' }}"</strong> to:</p>
+      
+      <div class="folder-picker-list">
+        <!-- Unassigned option -->
+        <button class="folder-picker-option" 
+                [class.active]="activeNote()?.folderId === '' || activeNote()?.folderId === '__uncategorized__'"
+                (click)="moveNoteToFolder('')">
+          <i class="pi pi-inbox"></i>
+          <span>Unassigned (No Folder)</span>
+        </button>
+        
+        <!-- User folders -->
+        <button *ngFor="let folder of folders()"
+                class="folder-picker-option"
+                [class.active]="activeNote()?.folderId === folder.id"
+                [style.--folder-accent]="folder.color"
+                (click)="moveNoteToFolder(folder.id)">
+          <i [class]="folder.icon" [style.color]="folder.color"></i>
+          <span>{{ folder.name }}</span>
+        </button>
+      </div>
+    </div>
+    <div class="confirm-dialog-footer">
+      <button class="confirm-btn-cancel" (click)="showMoveNoteDialog.set(false)">Cancel</button>
+    </div>
+  </div>
+</div>

@@ -3,13 +3,13 @@ import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { AccordionModule } from "primeng/accordion";
+import { Accordion, AccordionPanel, AccordionHeader, AccordionContent, AccordionModule } from "primeng/accordion";
 import { AutoComplete } from "primeng/autocomplete";
 import { AutoFocusModule } from "primeng/autofocus";
 import { AvatarModule } from "primeng/avatar";
 import { BadgeModule } from "primeng/badge";
 import { BreadcrumbModule } from "primeng/breadcrumb";
-import { ButtonModule } from "primeng/button";
+import { Button, ButtonDirective, ButtonModule } from "primeng/button";
 import { CalendarModule } from "primeng/calendar";
 import { CardModule } from "primeng/card";
 import { Carousel } from "primeng/carousel";
@@ -34,7 +34,7 @@ import { InputSwitchModule } from "primeng/inputswitch";
 import { InputTextModule } from "primeng/inputtext";
 import { Listbox } from "primeng/listbox";
 import { MegaMenuModule } from "primeng/megamenu";
-import { MenuModule } from "primeng/menu";
+import { Menu, MenuModule } from "primeng/menu";
 import { MenubarModule } from "primeng/menubar";
 import { Message } from "primeng/message";
 import { MessagesModule } from "primeng/messages";
@@ -82,10 +82,16 @@ import { CKEditorModule } from "@ckeditor/ckeditor5-angular";
 
 const modules = [
   AvatarModule,
+  Accordion,
+  AccordionPanel,
+  AccordionHeader,
+  AccordionContent,
   AccordionModule,
   AutoComplete,
   BadgeModule,
   BreadcrumbModule,
+  Button,
+  ButtonDirective,
   ButtonModule,
   CalendarModule,
   DatePicker,
@@ -110,6 +116,7 @@ const modules = [
   InputOtp,
   Listbox,
   MegaMenuModule,
+  Menu,
   MenuModule,
   MenubarModule,
   Message,

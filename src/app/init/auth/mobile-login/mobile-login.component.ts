@@ -90,7 +90,7 @@ export class MobileLoginComponent implements OnInit {
         sessionStorage.setItem('localId', user.uid);
         this.firebaseAuthService.isUserLoggedIn.set(true);
         this.loading.set(false);
-        this.router.navigate(['/expenses/list']);
+        this.router.navigate(['/notes/create']);
       },
       (err: { message?: string }) => {
         this.loading.set(false);

@@ -2,10 +2,12 @@ import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskService } from '../../../services/task.service';
 import { ActionaryUtilService } from '../../../services/actionary-util.service';
+import { ImportsModule } from '../../../imports';
 
 @Component({
   selector: 'app-create-task',
-  standalone: false,
+  standalone: true,
+  imports: [ImportsModule],
   templateUrl: './create-task.component.html',
   styleUrl: './create-task.component.scss'
 })
@@ -54,7 +56,7 @@ export class CreateTaskComponent {
     ];
   }
 
-  addSubTask(event: MouseEvent, parent: Task) {
+  addSubTask(event: any, parent: Task) {
     event?.stopPropagation();
 
     const subTask = new SubTask();
