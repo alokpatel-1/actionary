@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StudyNotesRoutingModule } from './study-notes-routing.module';
 import { ImportsModule } from '../imports';
+import { TiptapEditorDirective, TiptapBubbleMenuDirective, TiptapFloatingMenuDirective } from 'ngx-tiptap';
 import { StudyNotesComponent } from './study-notes.component';
 import { NoteListComponent } from './components/note-list/note-list.component';
 import { NoteEditorComponent } from './components/note-editor/note-editor.component';
@@ -21,7 +22,10 @@ import { NoteSearchComponent } from './components/note-search/note-search.compon
     CommonModule,
     RouterModule,
     StudyNotesRoutingModule,
-    ImportsModule
+    ImportsModule,
+    TiptapEditorDirective,
+    TiptapBubbleMenuDirective,
+    TiptapFloatingMenuDirective
   ]
 })
 export class StudyNotesModule { }
