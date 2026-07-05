@@ -75,6 +75,9 @@ export class NoteService {
       content: data.content || '',
       folderId: data.folderId || DEFAULT_FOLDER.id,
       isPinned: data.isPinned || false,
+      tags: (data as any).tags || [],
+      status: (data as any).status || 'draft',
+      versions: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
       synced: false,
@@ -91,13 +94,20 @@ export class NoteService {
     return from(this.idb.getNote(id)).pipe(
       switchMap(existing => {
         if (!existing) throw new Error('Note not found');
+
+        // Append current content to version history before overwriting
+        const existingVersions = existing.versions || [];
+        const newVersionEntry = { content: existing.content, savedAt: existing.updatedAt };
+        const versions = [newVersionEntry, ...existingVersions].slice(0, 5);
+
         const updated: Note = {
           ...existing,
           ...changes,
           id: existing.id,
           updatedAt: Date.now(),
           synced: false,
-          userId: existing.userId
+          userId: existing.userId,
+          versions
         };
         return from(this.idb.addNote(updated)).pipe(
           tap(() => this.syncService.tryAutoSync()),

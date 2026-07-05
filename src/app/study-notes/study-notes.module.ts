@@ -1,3 +1,4 @@
+// Trigger recompile
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -11,6 +12,7 @@ import { NoteFoldersComponent } from './components/note-folders/note-folders.com
 import { NoteSearchComponent } from './components/note-search/note-search.component';
 import { ConfirmationService } from 'primeng/api';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { LibraryNavbarComponent } from '../notes-library/components/library-navbar/library-navbar.component';
 
 class MockSpinnerService {
   show(): Promise<any> { return Promise.resolve(); }
@@ -33,7 +35,8 @@ class MockSpinnerService {
     TiptapEditorDirective,
     TiptapBubbleMenuDirective,
     TiptapFloatingMenuDirective,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    LibraryNavbarComponent
   ],
   providers: [
     ConfirmationService,

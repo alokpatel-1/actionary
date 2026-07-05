@@ -2,47 +2,103 @@
   <app-library-navbar 
     [showSearch]="true" 
     [searchQuery]="searchQuery()" 
-    (searchChange)="searchQuery.set($event)">
+    (searchChange)="onSearch($event)">
   </app-library-navbar>
 
   <!-- Content -->
   <main class="library-content">
-    <div class="empty-state" *ngIf="groupedNotes().length === 0">
+    <!-- Controls Bar: Sort + Folder filter -->
+    <div class="controls-bar">
+      <!-- Sort Toggle -->
+      <div class="sort-group">
+        <button class="sort-btn" [class.active]="sortOrder() === 'created'" (click)="setSortOrder('created')">
+          <i class="pi pi-clock"></i> Newest
+        </button>
+        <button class="sort-btn" [class.active]="sortOrder() === 'edited'" (click)="setSortOrder('edited')">
+          <i class="pi pi-pencil"></i> Last Edited
+        </button>
+        <button class="sort-btn" [class.active]="sortOrder() === 'az'" (click)="setSortOrder('az')">
+          <i class="pi pi-sort-alpha-down"></i> A–Z
+        </button>
+      </div>
+
+      <!-- Folder Filter (right side) -->
+      <div class="folder-filter-group" *ngIf="folders().length > 0">
+        <button class="folder-filter-btn" 
+                [class.active]="filterFolderId() === null"
+                (click)="selectFolder(null)">
+          <i class="pi pi-folder" style="color: #64748B;"></i> All
+        </button>
+        <button class="folder-filter-btn"
+                *ngFor="let folder of folders()"
+                [class.active]="filterFolderId() === folder.id"
+                (click)="selectFolder(folder.id)">
+          <i [class]="getPrimeIcon(folder.icon)" [style.color]="folder.color"></i>
+          {{ folder.name }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Tag Filter Chips -->
+    <div class="tag-filter-row" *ngIf="allTags().length > 0">
+      <span class="tag-filter-label">Tags:</span>
+      <button class="tag-filter-chip"
+              *ngFor="let tag of allTags()"
+              [class.active]="selectedTag() === tag"
+              (click)="selectTag(tag)">
+        #{{ tag }}
+      </button>
+    </div>
+
+    <!-- Recent Searches -->
+    <div class="recent-searches" *ngIf="showRecentSearches() && recentSearches().length > 0">
+      <div class="recent-searches-header">
+        <span class="recent-label">Recent searches</span>
+        <button class="recent-clear" (click)="clearRecentSearches()">Clear</button>
+      </div>
+      <div class="recent-terms">
+        <button class="recent-term" *ngFor="let term of recentSearches()" (click)="useRecentSearch(term)">
+          <i class="pi pi-history"></i>
+          {{ term }}
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredNotes().length === 0">
       <i class="pi pi-file-o empty-icon"></i>
       <h3>No notes found</h3>
       <p>Try adjusting your search or write a new note in the editor.</p>
     </div>
 
-    <!-- Folders Iteration -->
-    <div class="folder-group" *ngFor="let group of groupedNotes()">
-      <!-- Folder Header -->
-      <div class="folder-header">
-        <span class="folder-emoji" *ngIf="group.folder">{{ group.folder.icon }}</span>
-        <span class="folder-emoji" *ngIf="!group.folder">📁</span>
-        <h2 class="folder-title">{{ group.folder ? group.folder.name : 'Uncategorized' }}</h2>
-        <span class="note-count">{{ group.notes.length }} notes</span>
-      </div>
-
-      <!-- Notes Grid / List -->
-      <div class="notes-list">
-        <article class="note-card" *ngFor="let note of group.notes" (click)="openNote(note.id)">
-          <div class="note-card-content">
-            <h3 class="note-title">{{ note.title || 'Untitled Note' }}</h3>
-            <p class="note-preview">{{ getPreview(note.content) }}</p>
-            
-            <div class="note-meta">
-              <span class="meta-item date">
-                <i class="pi pi-clock"></i>
-                Updated {{ note.updatedAt | date:'mediumDate' }}
-              </span>
-              <span class="meta-dot">&middot;</span>
-              <span class="meta-item read-time">
-                {{ getReadingTime(note.content) }} min read
-              </span>
-            </div>
+    <!-- Notes Grid -->
+    <div class="notes-list" *ngIf="filteredNotes().length > 0">
+      <article class="note-card" *ngFor="let note of filteredNotes()" (click)="openNote(note.id)">
+        <div class="note-card-content">
+          <h3 class="note-title" [innerHTML]="highlight(note.title || 'Untitled Note', searchQuery())"></h3>
+          <p class="note-preview" [innerHTML]="highlight(getPreview(note.content), searchQuery())"></p>
+          
+          <!-- Tag chips -->
+          <div class="card-tags" *ngIf="note.tags && note.tags.length > 0">
+            <span class="card-tag" *ngFor="let tag of note.tags">#{{ tag }}</span>
           </div>
-        </article>
-      </div>
+
+          <div class="note-meta">
+            <span class="meta-item folder" style="opacity: 0.85;">
+              <i [class]="getPrimeIcon(getFolderIcon(note.folderId))" [style.color]="getFolderColor(note.folderId)"></i>
+              <span style="font-weight: 500;">{{ getFolderName(note.folderId) }}</span>
+            </span>
+            <span class="meta-dot">&middot;</span>
+            <span class="meta-item date">
+              <i class="pi pi-clock"></i>
+              Created {{ note.createdAt | date:'mediumDate' }}
+            </span>
+            <span class="meta-dot">&middot;</span>
+            <span class="meta-item read-time">
+              {{ getReadingTime(note.content) }} min read
+            </span>
+          </div>
+        </div>
+      </article>
     </div>
   </main>
 </div>

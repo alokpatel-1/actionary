@@ -1,41 +1,74 @@
-<div class="reader-container">
+<div class="reader-container" [class.focus-mode]="focusMode()">
+  <!-- Reading Progress Bar -->
+  <div class="read-progress-bar" [style.width.%]="scrollProgress()"></div>
+
   <app-library-navbar 
     [showSearch]="true"
     [noteIdToEdit]="note()?.id"
     (searchChange)="onSearchChange($event)">
   </app-library-navbar>
 
-  <!-- Article View -->
-  <main class="reader-main" *ngIf="note()">
-    <article class="reader-article">
-      <!-- Article Header -->
-      <header class="article-header">
-        <div class="article-meta">
-          <span class="folder-badge" *ngIf="folder()">
-            <span class="folder-icon">{{ folder()?.icon }}</span> {{ folder()?.name }}
-          </span>
-          <span class="folder-badge" *ngIf="!folder()">
-            <span class="folder-icon">📁</span> Uncategorized
-          </span>
-        </div>
+  <!-- Reader Layout: article + TOC sidebar -->
+  <div class="reader-layout" *ngIf="note()">
+    <!-- Article View -->
+    <main class="reader-main">
+      <article class="reader-article">
+        <!-- Article Header -->
+        <header class="article-header">
+          <h1 class="article-title">{{ note()?.title || 'Untitled Note' }}</h1>
 
-        <h1 class="article-title">{{ note()?.title || 'Untitled Note' }}</h1>
-
-        <div class="article-author-row">
-          <div class="article-author-info">
-            <span class="date">Updated {{ note()?.updatedAt | date:'mediumDate' }}</span>
-            <span class="dot">&middot;</span>
-            <span class="read-time">{{ readingTime() }} min read</span>
+          <div class="article-author-row">
+            <div class="article-author-info">
+              <span class="date">Updated {{ note()?.updatedAt | date:'mediumDate' }}</span>
+              <span class="dot">&middot;</span>
+              <span class="read-time">{{ readingTime() }} min read</span>
+            </div>
+            <div class="article-actions">
+              <!-- Focus Mode -->
+              <button class="action-btn" (click)="toggleFocusMode()" [title]="focusMode() ? 'Exit Focus Mode' : 'Focus Mode'">
+                <i class="pi" [ngClass]="focusMode() ? 'pi-window-maximize' : 'pi-expand'"></i>
+              </button>
+              <!-- Print -->
+              <button class="action-btn" (click)="printNote()" title="Print / Export PDF">
+                <i class="pi pi-print"></i>
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
 
-      <!-- Article Content (Read-Only HTML) -->
-      <div class="article-content" [innerHTML]="safeContent()"></div>
-    </article>
-  </main>
+          <!-- Read position indicator -->
+          <p class="read-position" *ngIf="showReadPosition()">
+            <i class="pi pi-chart-bar" style="font-size:0.75rem"></i>
+            {{ scrollProgress() }}% through
+            <span *ngIf="minutesLeft() > 0"> &middot; ~{{ minutesLeft() }} min left</span>
+            <span *ngIf="minutesLeft() === 0"> &middot; Almost done!</span>
+          </p>
+        </header>
+
+        <!-- Article Content (Read-Only HTML) -->
+        <div class="article-content" [innerHTML]="safeContent()"></div>
+      </article>
+    </main>
+
+    <!-- Table of Contents Sidebar -->
+    <nav class="toc-sidebar" *ngIf="tocItems().length > 0">
+      <p class="toc-heading">Contents</p>
+      <ul class="toc-list">
+        <li *ngFor="let item of tocItems()"
+            class="toc-item"
+            [class.toc-h3]="item.level === 3"
+            [class.toc-active]="activeSection() === item.id">
+          <a (click)="scrollToSection(item.id)" class="toc-link">{{ item.text }}</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 
   <div class="loading-state" *ngIf="!note()">
     <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #bdbdbd;"></i>
   </div>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" *ngIf="showBackToTop()" (click)="scrollToTop()" title="Back to top">
+    <i class="pi pi-arrow-up"></i>
+  </button>
 </div>

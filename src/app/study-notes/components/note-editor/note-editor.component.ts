@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject, signal, effect, HostListener } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject, signal, computed, effect, HostListener, ViewChild, TemplateRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../../services/note.service';
 import { Note, NoteFolder, DEFAULT_FOLDER } from '../../models/note.model';
-import { Subject, debounceTime, takeUntil } from 'rxjs';
+import { Subject, debounceTime, takeUntil, switchMap, of, map, tap } from 'rxjs';
 import { ConfirmationService } from 'primeng/api';
+import { NOTE_TEMPLATES, NoteTemplate } from './note-templates';
 
 import { Editor } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -18,6 +19,8 @@ import { TaskList } from '@tiptap/extension-task-list';
 import { TaskItem } from '@tiptap/extension-task-item';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import { CodeBlock } from '@tiptap/extension-code-block';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
 
 const CustomCodeBlock = CodeBlock.extend({
   addNodeView() {
@@ -62,7 +65,10 @@ import { StudyNotesComponent } from '../../study-notes.component';
   templateUrl: './note-editor.component.html',
   styleUrl: './note-editor.component.scss'
 })
-export class NoteEditorComponent implements OnInit, OnDestroy {
+export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('editorStatus', { static: true }) editorStatusTpl!: TemplateRef<any>;
+  @ViewChild('editorActions', { static: true }) editorActionsTpl!: TemplateRef<any>;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   public noteService = inject(NoteService);
@@ -71,8 +77,9 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   private confirmationService = inject(ConfirmationService);
   private destroy$ = new Subject<void>();
   private autoSave$ = new Subject<void>();
-
-  showProfileMenu = signal(false);
+  private editorInitGen = 0;
+  private noteSession = 0;
+  private autoSaveSession = 0;
 
   noteId = signal<string | null>(null);
   title = signal('');
@@ -86,7 +93,45 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   isLayoutReady = false;
   lastSaved = signal<number | null>(null);
 
+  // Word / char count
+  wordCount = signal(0);
+  charCount = signal(0);
+  readingTime = computed(() => Math.max(1, Math.ceil(this.wordCount() / 200)));
+
+
+  // Templates
+  readonly templates = NOTE_TEMPLATES;
+  showTemplates = computed(() => this.isNew() && this.isEditMode() && !this.content());
+
+  // Tags
+  tags = signal<string[]>([]);
+  tagInput = signal('');
+
+  // Status
+  status = signal<'draft' | 'published'>('draft');
+
+  // Version history
+  showVersionPanel = signal(false);
+  versions = signal<{ content: string; savedAt: number }[]>([]);
+
   editor!: Editor;
+
+  readonly textColors: { label: string; color: string | null }[] = [
+    { label: 'Default', color: null },
+    { label: 'Black', color: '#111827' },
+    { label: 'Gray', color: '#6b7280' },
+    { label: 'Red', color: '#dc2626' },
+    { label: 'Orange', color: '#ea580c' },
+    { label: 'Amber', color: '#d97706' },
+    { label: 'Yellow', color: '#ca8a04' },
+    { label: 'Green', color: '#16a34a' },
+    { label: 'Teal', color: '#0d9488' },
+    { label: 'Blue', color: '#2563eb' },
+    { label: 'Indigo', color: '#4f46e5' },
+    { label: 'Purple', color: '#9333ea' },
+    { label: 'Pink', color: '#db2777' },
+    { label: 'Rose', color: '#e11d48' },
+  ];
 
   constructor() {
     effect(() => {
@@ -97,73 +142,200 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  @HostListener('document:click', ['$event'])
-  onClick(event: Event) {
-    if (this.showProfileMenu()) {
-      this.showProfileMenu.set(false);
+
+  applyTemplate(template: NoteTemplate): void {
+    if (!this.editor) return;
+    this.editor.commands.setContent(template.content);
+    this.content.set(template.content);
+    this.updateWordCount();
+    setTimeout(() => this.editor.commands.focus('end'), 50);
+  }
+
+  addTag(): void {
+    const tag = this.tagInput().trim().toLowerCase();
+    if (!tag) return;
+    const current = this.tags();
+    if (!current.includes(tag)) {
+      this.tags.set([...current, tag]);
+    }
+    this.tagInput.set('');
+    this.autoSaveSession = this.noteSession;
+    this.autoSave$.next();
+  }
+
+  removeTag(tag: string): void {
+    this.tags.set(this.tags().filter(t => t !== tag));
+    this.autoSaveSession = this.noteSession;
+    this.autoSave$.next();
+  }
+
+  onTagKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addTag();
     }
   }
 
-  toggleProfileMenu(event: Event) {
-    event.stopPropagation();
-    this.showProfileMenu.update(v => !v);
+  toggleStatus(): void {
+    this.status.set(this.status() === 'draft' ? 'published' : 'draft');
+    this.autoSaveSession = this.noteSession;
+    this.autoSave$.next();
+  }
+
+  openVersionPanel(): void {
+    // Load versions from current note
+    const noteId = this.noteId();
+    if (!noteId) return;
+    this.noteService.getNote(noteId).pipe(
+      (obs) => obs
+    ).subscribe(note => {
+      if (note) {
+        this.versions.set(note.versions || []);
+        this.showVersionPanel.set(true);
+      }
+    });
+  }
+
+  restoreVersion(version: { content: string; savedAt: number }): void {
+    if (!this.editor) return;
+    this.editor.commands.setContent(version.content);
+    this.content.set(version.content);
+    this.showVersionPanel.set(false);
+    this.autoSaveSession = this.noteSession;
+    this.autoSave$.next();
+  }
+
+  private updateWordCount(): void {
+    if (!this.editor) return;
+    const text = this.editor.getText();
+    const trimmed = text.trim();
+    this.charCount.set(trimmed.length);
+    this.wordCount.set(trimmed ? trimmed.split(/\s+/).length : 0);
   }
 
   ngOnInit(): void {
     this.noteService.getFolders().subscribe(f => this.folders.set(f));
 
-    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        if (this.noteId() === id) return;
-        this.isNew.set(false);
-        const editQuery = this.route.snapshot.queryParamMap.get('edit');
-        this.isEditMode.set(editQuery === 'true');
-        this.noteId.set(id);
-        this.noteService.getNote(id).subscribe(note => {
-          if (note) {
-            this.title.set(note.title);
-            this.content.set(note.content);
-            this.folderId.set(note.folderId);
-            this.isPinned.set(note.isPinned);
-          }
-          this.isLayoutReady = false;
-          this.cdr.detectChanges();
-          this.initEditor();
-          this.scrollToTop();
-        });
-      } else {
-        this.isNew.set(true);
-        this.isEditMode.set(true);
-        this.noteId.set(null);
-        this.title.set('');
-        this.content.set('');
-        const activeFid = this.noteService.activeFolderId();
-        this.folderId.set(activeFid || DEFAULT_FOLDER.id);
-        this.isPinned.set(false);
-        this.cdr.detectChanges();
-        this.initEditor();
-        this.scrollToTop();
-      }
-    });
+    this.route.paramMap.pipe(
+      tap(() => {
+        if (this.noteSession > 0) {
+          this.saveBeforeLeave();
+        }
+        this.noteSession++;
+      }),
+      switchMap(params => {
+        const id = params.get('id');
+        if (id) {
+          return this.noteService.getNote(id).pipe(
+            map(note => ({
+              id,
+              note,
+              edit: this.route.snapshot.queryParamMap.get('edit') === 'true'
+            }))
+          );
+        }
+        return of({ id: null as string | null, note: undefined as Note | undefined, edit: true });
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(data => this.applyLoadedNote(data));
 
     this.autoSave$.pipe(
       debounceTime(1500),
       takeUntil(this.destroy$)
-    ).subscribe(() => this.save());
+    ).subscribe(() => {
+      if (this.autoSaveSession === this.noteSession) {
+        this.save();
+      }
+    });
+  }
+
+  ngAfterViewInit() {
+    this.studyNotes.editorStatusTemplate.set(this.editorStatusTpl);
+    this.studyNotes.editorActionsTemplate.set(this.editorActionsTpl);
+    this.cdr.detectChanges();
+  }
+
+  private saveBeforeLeave(): void {
+    if (this.saving() || this.isNew() || !this.noteId()) return;
+
+    this.syncContentFromEditor();
+    const id = this.noteId()!;
+    this.noteService.updateNote(id, {
+      title: this.title() || 'Untitled Note',
+      content: this.content(),
+      folderId: this.folderId(),
+      isPinned: this.isPinned()
+    }).subscribe();
+  }
+
+  private applyLoadedNote(data: {
+    id: string | null;
+    note: Note | undefined;
+    edit: boolean;
+  }): void {
+    this.saving.set(false);
+    this.lastSaved.set(null);
+
+    const { id, note, edit } = data;
+    if (id) {
+      this.isNew.set(false);
+      this.isEditMode.set(edit);
+      this.noteId.set(id);
+      if (note) {
+        this.title.set(note.title);
+        this.content.set(note.content);
+        this.folderId.set(note.folderId);
+        this.isPinned.set(note.isPinned);
+        this.tags.set(note.tags || []);
+        this.status.set(note.status || 'draft');
+      } else {
+        this.title.set('');
+        this.content.set('');
+        this.folderId.set(DEFAULT_FOLDER.id);
+        this.isPinned.set(false);
+        this.tags.set([]);
+        this.status.set('draft');
+      }
+      this.isLayoutReady = false;
+      this.cdr.detectChanges();
+      this.initEditor();
+      this.scrollToTop();
+    } else {
+      this.isNew.set(true);
+      this.isEditMode.set(true);
+      this.noteId.set(null);
+      this.title.set('');
+      this.content.set('');
+      const activeFid = this.noteService.activeFolderId();
+      this.folderId.set(activeFid || DEFAULT_FOLDER.id);
+      this.isPinned.set(false);
+      this.tags.set([]);
+      this.status.set('draft');
+      this.cdr.detectChanges();
+      this.initEditor();
+      this.scrollToTop();
+    }
   }
 
   private initEditor(): void {
+    const gen = ++this.editorInitGen;
+
     if (this.editor) {
       this.editor.destroy();
       (this.editor as any) = null;
+      this.isLayoutReady = false;
       this.cdr.detectChanges();
     }
-    
+
+    const content = this.content();
+    const editable = this.isEditMode();
+
     setTimeout(() => {
+      if (gen !== this.editorInitGen) return;
+
       this.editor = new Editor({
-        editable: this.isEditMode(),
-        content: this.content(),
+        editable,
+        content,
         extensions: [
           StarterKit.configure({
             heading: { levels: [1, 2, 3] },
@@ -173,6 +345,8 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
           }),
           CustomCodeBlock,
           Underline,
+          TextStyle,
+          Color.configure({ types: ['textStyle'] }),
           Link.configure({ openOnClick: false }),
           Image,
           TiptapTable.configure({ resizable: true }),
@@ -187,8 +361,14 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
           SlashCommands
         ],
         onUpdate: ({ editor }) => {
+          if (!this.isEditMode()) return;
           this.content.set(editor.getHTML());
+          this.autoSaveSession = this.noteSession;
           this.autoSave$.next();
+          this.updateWordCount();
+        },
+        onCreate: () => {
+          this.updateWordCount();
         }
       });
 
@@ -208,6 +388,9 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.studyNotes.editorStatusTemplate.set(null);
+    this.studyNotes.editorActionsTemplate.set(null);
+    this.editorInitGen++;
     if (this.editor) {
       this.editor.destroy();
     }
@@ -217,16 +400,19 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
 
   onTitleChange(value: string): void {
     this.title.set(value);
+    this.autoSaveSession = this.noteSession;
     this.autoSave$.next();
   }
 
   onFolderChange(folderId: string): void {
     this.folderId.set(folderId);
+    this.autoSaveSession = this.noteSession;
     this.autoSave$.next();
   }
 
   onPinToggle(): void {
     this.isPinned.set(!this.isPinned());
+    this.autoSaveSession = this.noteSession;
     this.autoSave$.next();
   }
 
@@ -246,48 +432,98 @@ export class NoteEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  setTextColor(color: string | null): void {
+    if (!this.editor) return;
+    if (!color) {
+      this.removeTextColor();
+      return;
+    }
+    this.editor.chain().focus().setColor(color).run();
+  }
+
+  isTextColorActive(color?: string | null): boolean {
+    if (!this.editor) return false;
+    const current = this.editor.getAttributes('textStyle')['color'] as string | undefined;
+    if (color === null) {
+      return !current;
+    }
+    if (color) {
+      return current === color;
+    }
+    return !!current;
+  }
+
+  removeTextColor(): void {
+    if (!this.editor) return;
+    this.editor.chain().focus().unsetColor().unsetMark('textStyle').run();
+  }
+
+  /** Keep mousedown from clearing the text selection before color commands run. */
+  keepEditorSelection(event: Event): void {
+    event.preventDefault();
+  }
+
+  private syncContentFromEditor(): void {
+    if (this.editor && !this.editor.isDestroyed) {
+      this.content.set(this.editor.getHTML());
+    }
+  }
+
   save(manual = false): void {
-    if (this.saving()) return;
+    this.syncContentFromEditor();
+
+    if (this.saving() && !manual) return;
+
+    const saveNoteId = this.noteId();
+    const wasNew = this.isNew();
+
     this.saving.set(true);
     const data = {
       title: this.title() || 'Untitled Note',
       content: this.content(),
       folderId: this.folderId(),
-      isPinned: this.isPinned()
+      isPinned: this.isPinned(),
+      tags: this.tags(),
+      status: this.status()
     };
 
-    if (this.isNew()) {
+    const finishSave = () => {
+      this.lastSaved.set(Date.now());
+      this.saving.set(false);
+      if (manual && this.isEditMode()) {
+        this.isEditMode.set(false);
+        this.editor?.setEditable(false);
+      }
+    };
+
+    if (wasNew) {
       this.noteService.addNote(data as any).subscribe({
         next: note => {
           this.noteId.set(note.id);
           this.isNew.set(false);
-          this.lastSaved.set(Date.now());
-          this.saving.set(false);
-          if (manual && this.isEditMode()) {
-            this.isEditMode.set(false);
-            this.editor?.setEditable(false);
-          }
-          this.router.navigate(['/notes', 'edit', note.id], { replaceUrl: true });
-          if (manual) {
-            this.noteService.syncService.sync().subscribe();
-          }
+          finishSave();
+          this.noteSession++;
+          this.router.navigate(['/notes', 'edit', note.id], { replaceUrl: true, queryParams: { edit: 'true' } });
         },
-        error: () => this.saving.set(false)
+        error: (err) => {
+          console.error('[Note Save]', err);
+          this.saving.set(false);
+        }
       });
     } else {
-      this.noteService.updateNote(this.noteId()!, data as any).subscribe({
+      if (!saveNoteId) {
+        this.saving.set(false);
+        return;
+      }
+      this.noteService.updateNote(saveNoteId, data as any).subscribe({
         next: () => {
-          this.lastSaved.set(Date.now());
-          this.saving.set(false);
-          if (manual && this.isEditMode()) {
-            this.isEditMode.set(false);
-            this.editor?.setEditable(false);
-          }
-          if (manual) {
-            this.noteService.syncService.sync().subscribe();
-          }
+          if (this.noteId() !== saveNoteId) return;
+          finishSave();
         },
-        error: () => this.saving.set(false)
+        error: (err) => {
+          console.error('[Note Save]', err);
+          this.saving.set(false);
+        }
       });
     }
   }

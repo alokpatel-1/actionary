@@ -1,3 +1,4 @@
+// Trigger recompile
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,13 +10,13 @@ import { LibraryNavbarComponent } from './components/library-navbar/library-navb
 @NgModule({
   declarations: [
     NotesLibraryComponent,
-    NoteReaderComponent,
-    LibraryNavbarComponent
+    NoteReaderComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
-    NotesLibraryRoutingModule
+    NotesLibraryRoutingModule,
+    LibraryNavbarComponent
   ]
 })
 export class NotesLibraryModule { }

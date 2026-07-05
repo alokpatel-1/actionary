@@ -9,6 +9,9 @@ export interface Note {
   synced: boolean;
   userId?: string;
   isDeleted?: boolean;
+  tags?: string[];           // free-form tags
+  status?: 'draft' | 'published'; // note status
+  versions?: { content: string; savedAt: number }[]; // last 5 auto-saves
 }
 
 export type NoteCreate = Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'synced'>;
