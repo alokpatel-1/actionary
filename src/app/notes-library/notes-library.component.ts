@@ -5,6 +5,8 @@ import { NoteService } from '../study-notes/services/note.service';
 import { NoteIdbService } from '../study-notes/services/note-idb.service';
 import { Note, NoteFolder, QuickThought } from '../study-notes/models/note.model';
 import { v4 as uuidv4 } from 'uuid';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 type SortOrder = 'created' | 'edited' | 'az';
 
@@ -18,6 +20,7 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   private noteService = inject(NoteService);
   private idbService = inject(NoteIdbService);
   private router = inject(Router);
+  private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
 
@@ -30,6 +33,8 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   editingThought = signal<QuickThought | null>(null);
   isEditingThoughtMode = signal(false);
   thoughtEditText = signal('');
+  thoughtsView = signal<'list' | 'create'>('list');
+  newLibraryThoughtText = signal('');
 
   searchQuery = signal('');
   sortOrder = signal<SortOrder>('created');
@@ -167,16 +172,29 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
       this.folders.set(f);
     });
 
-    this.idbService.getAllNotes().then(notes => {
-      this.notes.set(notes.filter(n => !n.isDeleted));
-    });
+    this.loadNotes();
 
     this.idbService.getAllThoughts().then(thoughts => {
       this.thoughts.set(thoughts);
     });
+
+    this.noteService.getNotesRefreshObservable().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadNotes();
+    });
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadNotes(): void {
+    this.idbService.getAllNotes().then(notes => {
+      this.notes.set(notes.filter(n => !n.isDeleted));
+    });
+  }
 
   getWordCount(text: string): number {
     if (!text) return 0;
@@ -197,6 +215,27 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
     this.editingThought.set(thought);
     this.thoughtEditText.set(thought.text);
     this.isEditingThoughtMode.set(false);
+  }
+
+  openNewThoughtCreate(): void {
+    this.newLibraryThoughtText.set('');
+    this.thoughtsView.set('create');
+  }
+
+  saveLibraryThought(): void {
+    const text = this.newLibraryThoughtText().trim();
+    if (!text) return;
+
+    const newThought: QuickThought = {
+      id: uuidv4(),
+      text,
+      createdAt: Date.now()
+    };
+    this.idbService.putThought(newThought).then(() => {
+      this.newLibraryThoughtText.set('');
+      this.thoughtsView.set('list');
+      this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+    });
   }
 
   saveThoughtEdit(): void {
