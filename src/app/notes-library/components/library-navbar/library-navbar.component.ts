@@ -44,9 +44,9 @@ import { forkJoin, from } from 'rxjs';
         <ng-content select="[editor-actions]"></ng-content>
 
         <!-- Direct switch buttons inside the top bar -->
-        <button class="nav-switch-btn" *ngIf="isInEditor()" (click)="goToLibraryView()" title="Read content (Library)">
+        <button class="nav-switch-btn" *ngIf="isInEditor()" (click)="goToLibraryView()" title="Read content (Read Mode)">
           <i class="pi pi-book"></i>
-          <span>Library</span>
+          <span>Read Mode</span>
         </button>
         <button class="nav-switch-btn" *ngIf="!isInEditor()" (click)="goToEditorView()" title="Write notes (Editor)">
           <i class="pi pi-file-edit"></i>
