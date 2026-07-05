@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, effect, TemplateRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NoteService } from './services/note.service';
@@ -20,6 +20,9 @@ export class StudyNotesComponent implements OnInit {
   private spinner = inject(NgxSpinnerService);
   showSyncSuccessToast = signal(false);
   private toastTimeout: any;
+
+  editorStatusTemplate = signal<TemplateRef<any> | null>(null);
+  editorActionsTemplate = signal<TemplateRef<any> | null>(null);
 
   constructor() {
     effect(() => {
@@ -129,9 +132,8 @@ export class StudyNotesComponent implements OnInit {
     this.loadFolders();
     this.loadUserProfile();
 
-    // On startup: run a full visible sync to pull the latest from Firestore.
-    // This ensures cross-browser consistency immediately on page load.
-    this.noteService.syncService.sync().subscribe();
+    // On startup: pull latest from Firestore in the background (no blocking loader).
+    this.noteService.syncService.scheduleBackgroundSync();
 
     // Subscribe to note refreshes
     this.noteService.getNotesRefreshObservable().subscribe(() => {
@@ -471,7 +473,11 @@ export class StudyNotesComponent implements OnInit {
   }
 
   toggleSidebar(): void {
-    this.sidebarExpanded.set(!this.sidebarExpanded());
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      this.sidebarMobileOpen.set(!this.sidebarMobileOpen());
+    } else {
+      this.sidebarExpanded.set(!this.sidebarExpanded());
+    }
   }
 
   toggleMobileSidebar(): void {

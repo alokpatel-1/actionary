@@ -1,8 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NoteService } from '../study-notes/services/note.service';
 import { NoteIdbService } from '../study-notes/services/note-idb.service';
 import { Note, NoteFolder } from '../study-notes/models/note.model';
+
+type SortOrder = 'created' | 'edited' | 'az';
 
 @Component({
   selector: 'app-notes-library',
@@ -10,75 +13,123 @@ import { Note, NoteFolder } from '../study-notes/models/note.model';
   styleUrls: ['./notes-library.component.scss'],
   standalone: false
 })
-export class NotesLibraryComponent implements OnInit {
+export class NotesLibraryComponent implements OnInit, OnDestroy {
   private noteService = inject(NoteService);
   private idbService = inject(NoteIdbService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private sanitizer = inject(DomSanitizer);
 
   folders = signal<NoteFolder[]>([]);
   notes = signal<Note[]>([]);
   searchQuery = signal('');
+  sortOrder = signal<SortOrder>('created');
+  selectedTag = signal<string | null>(null);
+  filterFolderId = signal<string | null>(null);
 
-  // Grouped notes
-  groupedNotes = computed(() => {
-    const allNotes = this.notes();
-    const query = this.searchQuery().toLowerCase();
-    
-    // Filter notes
-    const filteredNotes = allNotes.filter(note => {
-      if (!query) return true;
-      const titleMatch = (note.title || '').toLowerCase().includes(query);
-      const contentMatch = (note.content || '').toLowerCase().includes(query);
-      // We will add folder match in the grouping phase or here
-      return titleMatch || contentMatch;
-    });
+  // Recent searches
+  recentSearches = signal<string[]>(this.loadRecentSearches());
+  showRecentSearches = signal(false);
 
-    const groups: { folder: NoteFolder | null, notes: Note[] }[] = [];
-    const foldersMap = new Map(this.folders().map(f => [f.id, f]));
-
-    // Grouping
-    const folderGroups = new Map<string, Note[]>();
-    filteredNotes.forEach(note => {
-      const folderId = note.folderId || '__no_folder__';
-      if (!folderGroups.has(folderId)) {
-        folderGroups.set(folderId, []);
-      }
-      folderGroups.get(folderId)!.push(note);
-    });
-
-    // Convert to array format
-    folderGroups.forEach((folderNotes, folderId) => {
-      // Sort notes by updated date (newest first)
-      folderNotes.sort((a, b) => b.updatedAt - a.updatedAt);
-      
-      if (folderId === '__no_folder__' || !foldersMap.has(folderId)) {
-        groups.push({ folder: null, notes: folderNotes });
-      } else {
-        groups.push({ folder: foldersMap.get(folderId)!, notes: folderNotes });
-      }
-    });
-
-    // Sort groups: Folders first (alphabetically), then No Folder
-    groups.sort((a, b) => {
-      if (a.folder && b.folder) return a.folder.name.localeCompare(b.folder.name);
-      if (a.folder) return -1;
-      if (b.folder) return 1;
-      return 0;
-    });
-
-    // Filter by folder name if search query exists and didn't match note title/content
-    if (query) {
-      return groups.filter(g => {
-        const folderMatch = g.folder && g.folder.name.toLowerCase().includes(query);
-        return folderMatch || g.notes.length > 0;
-      });
-    }
-
-    return groups;
+  // All unique tags from notes
+  allTags = computed(() => {
+    const tags = new Set<string>();
+    this.notes().forEach(note => (note.tags || []).forEach(t => tags.add(t)));
+    return Array.from(tags).sort();
   });
 
+  filteredNotes = computed(() => {
+    const allNotes = this.notes();
+    const query = this.searchQuery().toLowerCase().trim();
+    const tag = this.selectedTag();
+    const folderId = this.filterFolderId();
+
+    let filtered = allNotes.filter(note => {
+      // Search filter
+      const titleMatch = (note.title || '').toLowerCase().includes(query);
+      const contentMatch = (note.content || '').toLowerCase().includes(query);
+      const folderName = this.getFolderName(note.folderId).toLowerCase();
+      const folderMatch = folderName.includes(query);
+      const tagMatch = !query || (note.tags || []).some(t => t.includes(query));
+      if (query && !titleMatch && !contentMatch && !folderMatch && !tagMatch) return false;
+
+      // Tag filter
+      if (tag && !(note.tags || []).includes(tag)) return false;
+
+      // Folder filter
+      if (folderId && note.folderId !== folderId) return false;
+
+      return true;
+    });
+
+    // Sort
+    const order = this.sortOrder();
+    if (order === 'created') {
+      filtered = filtered.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (order === 'edited') {
+      filtered = filtered.sort((a, b) => b.updatedAt - a.updatedAt);
+    } else if (order === 'az') {
+      filtered = filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    }
+
+    return filtered;
+  });
+
+  readonly folderMap = computed(() => {
+    const m = new Map<string, NoteFolder>();
+    this.folders().forEach(f => m.set(f.id, f));
+    return m;
+  });
+
+  getFolderName(folderId: string): string {
+    if (!folderId || folderId === '__uncategorized__') return 'General';
+    return this.folderMap().get(folderId)?.name ?? 'General';
+  }
+
+  getFolderIcon(folderId: string): string {
+    if (!folderId || folderId === '__uncategorized__') return '📁';
+    return this.folderMap().get(folderId)?.icon ?? '📁';
+  }
+
+  getFolderColor(folderId: string): string {
+    if (!folderId || folderId === '__uncategorized__') return '#64748B'; // Slate/Grey default
+    return this.folderMap().get(folderId)?.color ?? '#64748B';
+  }
+
+  getPrimeIcon(icon: string): string {
+    if (!icon) return 'pi pi-folder';
+    if (icon.startsWith('pi ')) return icon;
+    
+    const emojiMap: Record<string, string> = {
+      '📁': 'pi pi-folder',
+      '📂': 'pi pi-folder-open',
+      '📚': 'pi pi-book',
+      '📖': 'pi pi-book',
+      '📝': 'pi pi-file',
+      '⭐': 'pi pi-star',
+      '❤️': 'pi pi-heart',
+      '⚡': 'pi pi-bolt',
+      '💻': 'pi pi-desktop',
+      '🎨': 'pi pi-palette',
+      '🔬': 'pi pi-info-circle',
+      '🧮': 'pi pi-calculator',
+      '🌍': 'pi pi-globe',
+      '🚀': 'pi pi-send',
+      '🎯': 'pi pi-compass',
+      '💡': 'pi pi-lightbulb',
+      '🔒': 'pi pi-lock',
+      '🎵': 'pi pi-volume-up',
+      '🏆': 'pi pi-bookmark',
+      '🌿': 'pi pi-image',
+    };
+    return emojiMap[icon] ?? 'pi pi-folder';
+  }
+
   ngOnInit(): void {
+    // Apply dark mode preference
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('scribe-theme') === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+    }
     this.route.queryParams.subscribe(params => {
       if (params['q']) {
         this.searchQuery.set(params['q']);
@@ -88,16 +139,16 @@ export class NotesLibraryComponent implements OnInit {
     this.noteService.getFolders().subscribe(f => {
       this.folders.set(f);
     });
-    
-    // We should get all notes. Wait, `NoteService` has `getNotes()` ? Let's check NoteService.
+
     this.idbService.getAllNotes().then(notes => {
       this.notes.set(notes.filter(n => !n.isDeleted));
     });
   }
 
+  ngOnDestroy(): void {}
+
   getPreview(html: string): string {
     if (!html) return 'No content';
-    // Simple HTML strip
     const text = html.replace(/<[^>]*>?/gm, ' ');
     return text.length > 150 ? text.substring(0, 150) + '...' : text;
   }
@@ -105,10 +156,90 @@ export class NotesLibraryComponent implements OnInit {
   getReadingTime(html: string): number {
     const text = html.replace(/<[^>]*>?/gm, ' ');
     const wordCount = text.trim().split(/\s+/).length;
-    return Math.max(1, Math.ceil(wordCount / 200)); // 200 words per min
+    return Math.max(1, Math.ceil(wordCount / 200));
   }
 
   openNote(id: string): void {
     this.router.navigate(['/library/read', id]);
+  }
+
+  setSortOrder(order: SortOrder): void {
+    this.sortOrder.set(order);
+  }
+
+  selectTag(tag: string | null): void {
+    this.selectedTag.set(this.selectedTag() === tag ? null : tag);
+  }
+
+  selectFolder(folderId: string | null): void {
+    this.filterFolderId.set(this.filterFolderId() === folderId ? null : folderId);
+  }
+
+  // Phase 4: Search highlighting
+  highlight(text: string, query: string): SafeHtml {
+    if (!query || !text) return this.sanitizer.bypassSecurityTrustHtml(this.escapeHtml(text));
+    const escaped = this.escapeHtml(text);
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const highlighted = escaped.replace(
+      new RegExp(`(${escapedQuery})`, 'gi'),
+      '<mark>$1</mark>'
+    );
+    return this.sanitizer.bypassSecurityTrustHtml(highlighted);
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Phase 4: Recent searches
+  onSearch(query: string): void {
+    this.searchQuery.set(query);
+    if (query.trim()) {
+      this.pushRecentSearch(query.trim());
+      this.showRecentSearches.set(false);
+    }
+  }
+
+  onSearchFocus(): void {
+    this.showRecentSearches.set(true);
+  }
+
+  onSearchBlur(): void {
+    // Delay to allow click on recent item
+    setTimeout(() => this.showRecentSearches.set(false), 200);
+  }
+
+  useRecentSearch(term: string): void {
+    this.searchQuery.set(term);
+    this.showRecentSearches.set(false);
+  }
+
+  clearRecentSearches(): void {
+    this.recentSearches.set([]);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('scribe-recent-searches');
+    }
+  }
+
+  private pushRecentSearch(term: string): void {
+    const current = this.recentSearches().filter(t => t !== term);
+    const updated = [term, ...current].slice(0, 5);
+    this.recentSearches.set(updated);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('scribe-recent-searches', JSON.stringify(updated));
+    }
+  }
+
+  private loadRecentSearches(): string[] {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      return JSON.parse(localStorage.getItem('scribe-recent-searches') || '[]');
+    } catch {
+      return [];
+    }
   }
 }

@@ -1,13 +1,18 @@
-<div class="editor-page">
-  <!-- Minimal top bar: back + save status + actions -->
-  <div class="editor-bar">
+  <!-- Templates to be dynamically projected into the full screen top navbar -->
+  <ng-template #editorStatus>
     <div class="bar-center">
       <span class="save-dot saving" *ngIf="saving()"></span>
       <span class="save-label" *ngIf="saving()">Saving…</span>
       <span class="save-dot saved" *ngIf="!saving() && lastSaved()"></span>
       <span class="save-label saved" *ngIf="!saving() && lastSaved()">Saved</span>
+      <!-- Word count stats -->
+      <span class="word-count-stat" *ngIf="wordCount() > 0">
+        {{ wordCount() }} words · {{ charCount() }} chars · {{ readingTime() }} min read
+      </span>
     </div>
+  </ng-template>
 
+  <ng-template #editorActions>
     <div class="bar-right">
       <!-- Sync Status Group -->
       <div class="editor-sync-group">
@@ -41,35 +46,39 @@
       </button>
       <button class="bar-btn" *ngIf="!isNew()" (click)="goToReadMode()" title="Read Mode">
         <i class="pi pi-book"></i>
+        <span>Read Mode</span>
       </button>
-
-      <!-- Profile Avatar Dropdown -->
-      <div class="avatar-circle-wrapper" (click)="toggleProfileMenu($event)">
-        <div class="avatar-circle">
-          {{ studyNotes.getUserInitials() }}
-        </div>
-        
-        <div class="profile-dropdown" *ngIf="showProfileMenu()">
-          <div class="popover-user-details" style="padding: 0.75rem 1rem; border-bottom: 1px solid #eaeaea; margin-bottom: 0;">
-            <div style="font-weight: 600; font-size: 0.9rem; color: #292929;">{{ studyNotes.userName() }}</div>
-            <div style="font-size: 0.75rem; color: #757575;">{{ studyNotes.userEmail() }}</div>
-          </div>
-          <div class="dropdown-item" routerLink="/library">
-            <i class="pi pi-book"></i> Read content
-          </div>
-          <div class="dropdown-item" (click)="$event.stopPropagation(); studyNotes.openArchiveModal()">
-            <i class="pi pi-inbox"></i> Archived notes
-          </div>
-          <div class="dropdown-item logout" (click)="$event.stopPropagation(); studyNotes.logout()">
-            <i class="pi pi-sign-out"></i> Log out
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+  </ng-template>
 
+<div class="editor-page">
   <!-- Content Wrapper for Medium-like centered column -->
   <div class="content-container">
+
+    <!-- Tags & Status Row (edit mode only) -->
+    <div class="meta-row" *ngIf="isEditMode() && tags().length > 0 || isEditMode()">
+      <!-- Tags -->
+      <div class="tags-row">
+        <span class="tag-chip" *ngFor="let tag of tags()">
+          #{{ tag }}
+          <button class="tag-remove" (click)="removeTag(tag)" title="Remove tag">&times;</button>
+        </span>
+        <input class="tag-input"
+               type="text"
+               placeholder="Add tag…"
+               [value]="tagInput()"
+               (input)="tagInput.set($any($event.target).value)"
+               (keydown)="onTagKeydown($event)"
+               (blur)="addTag()"
+               maxlength="30">
+      </div>
+    </div>
+
+    <!-- Tags display row (read/preview mode) -->
+    <div class="meta-row read-meta-row" *ngIf="!isEditMode() && tags().length > 0">
+      <span class="tag-chip read-tag" *ngFor="let tag of tags()">#{{ tag }}</span>
+    </div>
+
     <!-- Title Preview Mode -->
     <h1 *ngIf="!isEditMode()" class="note-title-preview">{{ title() || 'Untitled Note' }}</h1>
 
@@ -93,6 +102,23 @@
         <button (click)="editor.chain().focus().toggleItalic().run()" [class.is-active]="editor.isActive('italic')"><em style="font-style: italic;">I</em></button>
         <button (click)="editor.chain().focus().toggleUnderline().run()" [class.is-active]="editor.isActive('underline')"><u style="text-decoration: underline;">U</u></button>
         <div class="divider"></div>
+        <div class="text-color-group" title="Text color">
+          <div class="text-color-swatches">
+            <button *ngFor="let c of textColors"
+                    type="button"
+                    class="swatch text-color-swatch"
+                    [class.default-swatch]="c.color === null"
+                    [style.color]="c.color || null"
+                    [class.is-active]="isTextColorActive(c.color)"
+                    (mousedown)="keepEditorSelection($event)"
+                    (click)="setTextColor(c.color)"
+                    [title]="c.label">
+              <span *ngIf="c.color === null" class="default-swatch-label">Aa</span>
+              <span *ngIf="c.color !== null">A</span>
+            </button>
+          </div>
+        </div>
+        <div class="divider"></div>
         <button (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" [class.is-active]="editor.isActive('heading', { level: 1 })">H1</button>
         <button (click)="editor.chain().focus().toggleHeading({ level: 2 }).run()" [class.is-active]="editor.isActive('heading', { level: 2 })">H2</button>
         <div class="divider"></div>
@@ -102,11 +128,13 @@
 
       <!-- Floating Menu (Shown on empty line) -->
       <div tiptapFloatingMenu [editor]="editor" class="floating-menu" *ngIf="isEditMode()">
-        <button class="plus-btn" (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" title="Heading 1">H1</button>
-        <button class="plus-btn" (click)="editor.chain().focus().toggleBulletList().run()" title="Bullet List"><i class="pi pi-list"></i></button>
-        <button class="plus-btn" (click)="editor.chain().focus().toggleBlockquote().run()" title="Quote"><i class="pi pi-comment"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" title="Heading 1 (Ctrl+Alt+1)">H1</button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleBulletList().run()" title="Bullet List (Ctrl+Shift+8)"><i class="pi pi-list"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleBlockquote().run()" title="Blockquote (Ctrl+Shift+B)"><i class="pi pi-comment"></i></button>
         <button class="plus-btn" (click)="editor.chain().focus().setHorizontalRule().run()" title="Divider"><i class="pi pi-minus"></i></button>
-        <button class="plus-btn" (click)="editor.chain().focus().toggleCodeBlock().run()" title="Code Block"><i class="pi pi-code"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleCodeBlock().run()" title="Code Block (Ctrl+Alt+C)"><i class="pi pi-code"></i></button>
+        <button type="button" class="plus-btn" (mousedown)="keepEditorSelection($event)" (click)="setTextColor(textColors[3].color)" title="Text color"><span class="color-icon" [style.color]="textColors[3].color">A</span></button>
+        <button type="button" class="plus-btn" (mousedown)="keepEditorSelection($event)" (click)="setTextColor(null)" title="Default text color"><span class="color-icon default-color-icon">Aa</span></button>
       </div>
 
       <!-- Main Editor Content -->
@@ -115,3 +143,5 @@
     </div>
   </div>
 </div>
+
+

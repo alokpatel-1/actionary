@@ -1,6 +1,6 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, Injector, inject, runInInjectionContext, signal } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, collection, doc, setDoc, deleteDoc, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, doc, setDoc, deleteDoc, getDocs, CollectionReference, DocumentData } from '@angular/fire/firestore';
 import { NoteIdbService } from './note-idb.service';
 import { Note, NoteFolder, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
 import { Observable, from, of } from 'rxjs';
@@ -13,6 +13,7 @@ export class NoteSyncService {
   private idb = inject(NoteIdbService);
   private auth = inject(Auth);
   private firestore = inject(Firestore);
+  private injector = inject(Injector);
 
   readonly isOnline = signal(typeof navigator !== 'undefined' ? navigator.onLine : true);
   readonly syncStatus = signal<'idle' | 'started' | 'completed' | 'failed'>('idle');
@@ -50,6 +51,10 @@ export class NoteSyncService {
     return collection(this.firestore, `users/${uid}/studyFolders`);
   }
 
+  scheduleBackgroundSync(): void {
+    this.tryAutoSync();
+  }
+
   /**
    * Schedules a debounced background sync.
    * Multiple rapid calls (e.g., from addNote/updateNote/togglePin) collapse into one sync.
@@ -75,16 +80,17 @@ export class NoteSyncService {
     this.isSyncing = true;
     return from(this.performSync()).pipe(
       map(() => {
-        this.isSyncing = false;
         this.lastSyncTimestamp.set(Date.now());
-        // Trigger completed so UI refreshes data, but only briefly
         this.syncStatus.set('completed');
         return { success: true };
       }),
       catchError(err => {
-        this.isSyncing = false;
         console.error('[Notes Sync]', err);
         return of({ success: false });
+      }),
+      map(result => {
+        this.isSyncing = false;
+        return result;
       })
     );
   }
@@ -113,31 +119,49 @@ export class NoteSyncService {
 
     return from(syncWithMinDuration).pipe(
       map(() => {
-        this.isSyncing = false;
         this.syncStatus.set('completed');
         this.lastSyncTimestamp.set(Date.now());
         return { success: true };
       }),
       catchError(err => {
-        this.isSyncing = false;
         this.syncStatus.set('failed');
         this.syncError.set(err?.message || 'Sync failed');
         return of({ success: false });
+      }),
+      map(result => {
+        this.isSyncing = false;
+        return result;
       })
     );
   }
 
-  private async performSync(): Promise<void> {
-    const col = this.notesCollection;
-    const foldCol = this.foldersCollection;
-    if (!col) return;
+  private firebaseCall<T>(fn: () => T): T {
+    return runInInjectionContext(this.injector, fn);
+  }
+
+  private firebaseAwait<T>(fn: () => Promise<T>): Promise<T> {
+    return this.firebaseCall(fn);
+  }
+
+  private performSync(): Promise<void> {
+    const col = this.firebaseCall(() => this.notesCollection);
+    const foldCol = this.firebaseCall(() => this.foldersCollection);
+    if (!col) return Promise.resolve();
+
+    return this.performSyncWithCollections(col, foldCol);
+  }
+
+  private async performSyncWithCollections(
+    col: CollectionReference<DocumentData>,
+    foldCol: CollectionReference<DocumentData> | null
+  ): Promise<void> {
 
     // ══════════════════════════════════════════
     // STEP 1: Fetch current remote state FIRST
     // ══════════════════════════════════════════
     const [noteSnapshot, foldSnapshot] = await Promise.all([
-      getDocs(col),
-      foldCol ? getDocs(foldCol) : Promise.resolve(null)
+      this.firebaseAwait(() => getDocs(col)),
+      foldCol ? this.firebaseAwait(() => getDocs(foldCol)) : Promise.resolve(null)
     ]);
 
     const remoteNotes = noteSnapshot.docs.map(d => d.data() as Omit<Note, 'synced'>);
@@ -183,9 +207,7 @@ export class NoteSyncService {
       for (const folder of activeFolders) {
         if (!systemIds.has(folder.id)) {
           const { synced: _s, ...folderData } = folder as any;
-          const docRef = doc(foldCol, folder.id);
-          await setDoc(docRef, folderData, { merge: true });
-          // Mark as synced in local IDB
+          await this.firebaseAwait(() => setDoc(doc(foldCol, folder.id), folderData, { merge: true }));
           await this.idb.putFolder({ ...folder, synced: true });
         }
       }
@@ -205,11 +227,11 @@ export class NoteSyncService {
         continue;
       }
 
-      const docRef = doc(col, note.id);
       const { synced, ...data } = note;
-      await setDoc(docRef, data, { merge: true });
+      await this.firebaseAwait(() => setDoc(doc(col, note.id), data, { merge: true }));
       note.synced = true;
       await this.idb.addNote(note);
+      remoteNoteIds.add(note.id);
     }
 
     // ══════════════════════════════════════════
@@ -230,7 +252,9 @@ export class NoteSyncService {
     // ══════════════════════════════════════════
     for (const remote of remoteNotes) {
       const local = await this.idb.getNote(remote.id);
-      if (!local || remote.updatedAt > local.updatedAt) {
+      if (!local) {
+        await this.idb.addNote({ ...remote, synced: true } as Note);
+      } else if (local.synced !== false && remote.updatedAt > local.updatedAt) {
         await this.idb.addNote({ ...remote, synced: true } as Note);
       }
     }
@@ -240,15 +264,17 @@ export class NoteSyncService {
    * Immediately deletes a note from Firestore. Shows the sync loader.
    */
   deleteRemote(noteId: string): Observable<void> {
-    const col = this.notesCollection;
-    if (!col || !this.isOnline()) return of(undefined);
+    if (!this.isOnline() || !this.uid) return of(undefined);
 
     this.syncStatus.set('started');
     this.syncError.set(null);
 
-    const docRef = doc(col, noteId);
     const deletePromise = Promise.all([
-      deleteDoc(docRef),
+      this.firebaseAwait(async () => {
+        const col = this.notesCollection;
+        if (!col) return;
+        await deleteDoc(doc(col, noteId));
+      }),
       new Promise(resolve => setTimeout(resolve, 800))
     ]);
 
@@ -269,15 +295,17 @@ export class NoteSyncService {
    * Immediately deletes a folder from Firestore. Shows the sync loader.
    */
   deleteRemoteFolder(folderId: string): Observable<void> {
-    const col = this.foldersCollection;
-    if (!col || !this.isOnline()) return of(undefined);
+    if (!this.isOnline() || !this.uid) return of(undefined);
 
     this.syncStatus.set('started');
     this.syncError.set(null);
 
-    const docRef = doc(col, folderId);
     const deletePromise = Promise.all([
-      deleteDoc(docRef),
+      this.firebaseAwait(async () => {
+        const col = this.foldersCollection;
+        if (!col) return;
+        await deleteDoc(doc(col, folderId));
+      }),
       new Promise(resolve => setTimeout(resolve, 800))
     ]);
 

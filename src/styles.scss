@@ -56,6 +56,72 @@ body {
   }
 }
 
+/* ── Global Dark Mode ── */
+/* Applied when the editor sets data-theme="dark" on document.body */
+[data-theme="dark"] {
+  --color-bg: #0f0f0f;
+  --color-bg-surface: #0f0f0f;
+  --color-bg-elevated: #1a1a1a;
+  --color-text-primary: #e8e8e8;
+  --color-text-secondary: #b0b0b0;
+  --color-text-muted: #888;
+  --color-border-subtle: #222;
+  --color-hover: rgba(255,255,255,0.06);
+  --color-error: #f87171;
+  --color-error-soft: rgba(248,113,113,0.1);
+
+  /* Library pages */
+  .library-container {
+    background-color: #0f0f0f !important;
+    color: #e0e0e0 !important;
+  }
+
+  .library-content {
+    background: #0f0f0f;
+  }
+
+  .note-card {
+    border-bottom-color: #222 !important;
+    &:hover .note-title { color: #a5b4fc !important; }
+  }
+
+  .note-title  { color: #e8e8e8 !important; }
+  .note-preview { color: #9ca3af !important; }
+  .note-meta   { color: #6b7280 !important; }
+
+  .sort-group  { background: #222 !important; }
+  .sort-btn    { color: #6b7280 !important; &.active { background: #333 !important; color: #a5b4fc !important; } }
+
+  .folder-filter-btn {
+    background: #1a1a1a !important;
+    border-color: #333 !important;
+    color: #9ca3af !important;
+    &.active { background: rgba(99,102,241,0.15) !important; border-color: #6366f1 !important; color: #a5b4fc !important; }
+  }
+
+  .tag-filter-chip {
+    border-color: rgba(99,102,241,0.3) !important;
+    &.active { background: #6366f1 !important; color: #fff !important; }
+  }
+
+  .recent-searches {
+    background: #1a1a1a !important;
+    border-color: #333 !important;
+  }
+
+  /* Library navbar */
+  app-library-navbar {
+    background: #111 !important;
+    border-bottom-color: #222 !important;
+  }
+
+  mark {
+    background: rgba(250, 204, 21, 0.2) !important;
+    color: #fef08a !important;
+  }
+}
+
+
 .ck-content {
   font-family: 'Lato';
   line-height: 1.6;

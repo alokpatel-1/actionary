@@ -1,31 +1,28 @@
 <div class="notes-shell" [class.sidebar-expanded]="sidebarExpanded()" [class.sidebar-collapsed]="!sidebarExpanded()">
 
-  <!-- Mobile Hamburger -->
-  <button class="mobile-menu-btn" (click)="toggleMobileSidebar()">
-    <i class="pi pi-bars"></i>
-  </button>
-
-  <!-- Mobile Overlay -->
-  <div class="mobile-overlay"
-       [class.visible]="sidebarMobileOpen()"
-       (click)="closeMobileSidebar()"></div>
-
-  <!-- Sidebar -->
-  <aside class="sidebar" [class.mobile-open]="sidebarMobileOpen()">
-    <!-- Sidebar Header -->
-    <div class="sidebar-header">
-      <!-- Expanded Sidebar: brand -->
-      <div class="sidebar-brand" *ngIf="sidebarExpanded()">
-        <span class="brand-icon">📝</span>
-        <span class="brand-text">Scribe</span>
-      </div>
-
-      <div class="sidebar-header-actions">
-        <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
-          <i class="pi" [ngClass]="sidebarExpanded() ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
-        </button>
-      </div>
+  <!-- Full Screen Top Navbar -->
+  <app-library-navbar
+    [showSearch]="false"
+    [showBrand]="true"
+    [showToggle]="true"
+    (toggleSidebar)="toggleSidebar()">
+    <!-- Project center editor status & actions templates -->
+    <div class="bar-center" editor-status>
+      <ng-container *ngTemplateOutlet="editorStatusTemplate()"></ng-container>
+      <ng-container *ngTemplateOutlet="editorActionsTemplate()"></ng-container>
     </div>
+  </app-library-navbar>
+
+  <div class="shell-body">
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay"
+         [class.visible]="sidebarMobileOpen()"
+         (click)="closeMobileSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" [class.mobile-open]="sidebarMobileOpen()">
+      <!-- No sidebar-header here! Starts directly with the creation actions -->
 
     <!-- Create Note Button -->
     <button (click)="createNewNote()" class="create-btn" style="cursor: pointer; border: none; font-family: inherit;" [disabled]="isCreatingNote()" [style.opacity]="isCreatingNote() ? '0.7' : '1'">
@@ -156,6 +153,7 @@
       <router-outlet></router-outlet>
     </div>
   </main>
+</div>
 
   <!-- ChatGPT Style Search Modal Overlay -->
   <div class="search-modal-backdrop" *ngIf="showSearchModal()" (click)="closeSearchModal()">

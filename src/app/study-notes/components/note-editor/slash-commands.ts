@@ -60,6 +60,22 @@ export const getSuggestionItems = ({ query }: { query: string }): CommandItem[] 
       },
     },
     {
+      title: 'Text Color',
+      icon: 'pi pi-palette',
+      command: ({ editor, range }) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .insertContent({
+            type: 'text',
+            marks: [{ type: 'textStyle', attrs: { color: '#dc2626' } }],
+            text: 'important text',
+          })
+          .run();
+      },
+    },
+    {
       title: 'Code Block',
       icon: 'pi pi-code',
       command: ({ editor, range }) => {
