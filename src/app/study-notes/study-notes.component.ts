@@ -2,10 +2,12 @@ import { Component, OnInit, inject, signal, computed, ViewChild, effect, Templat
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NoteService } from './services/note.service';
-import { Note, NoteFolder, DEFAULT_FOLDERS } from './models/note.model';
+import { NoteIdbService } from './services/note-idb.service';
+import { Note, NoteFolder, DEFAULT_FOLDERS, QuickThought } from './models/note.model';
 import { Popover } from 'primeng/popover';
 import { FirebaseAuthService } from '../firebase/firebase-auth.service';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-study-notes',
@@ -15,6 +17,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 })
 export class StudyNotesComponent implements OnInit {
   public noteService = inject(NoteService);
+  private idb = inject(NoteIdbService);
   private router = inject(Router);
   private firebaseAuthService = inject(FirebaseAuthService);
   private spinner = inject(NgxSpinnerService);
@@ -41,6 +44,76 @@ export class StudyNotesComponent implements OnInit {
   sidebarExpanded = signal(true);
   sidebarMobileOpen = signal(false);
   isSidebarFoldersExpanded = signal(true);
+
+  // Quick Thoughts signals & methods
+  showQuickThoughts = signal(false);
+  quickThoughtsList = signal<QuickThought[]>([]);
+  newThoughtText = signal('');
+  quickThoughtsView = signal<'create' | 'list'>('create');
+  editingThoughtId = signal<string | null>(null);
+
+  loadQuickThoughts(): void {
+    this.idb.getAllThoughts().then(list => {
+      this.quickThoughtsList.set(list);
+    });
+  }
+
+  saveQuickThought(): void {
+    const text = this.newThoughtText().trim();
+    if (!text) return;
+
+    const id = this.editingThoughtId();
+    if (id) {
+      // Edit existing thought
+      const updated: QuickThought = {
+        id,
+        text,
+        createdAt: Date.now()
+      };
+      this.idb.putThought(updated).then(() => {
+        this.newThoughtText.set('');
+        this.editingThoughtId.set(null);
+        this.quickThoughtsView.set('list');
+        this.loadQuickThoughts();
+      });
+    } else {
+      // Create new thought
+      const newThought: QuickThought = {
+        id: uuidv4(),
+        text,
+        createdAt: Date.now()
+      };
+      this.idb.putThought(newThought).then(() => {
+        this.newThoughtText.set('');
+        this.quickThoughtsView.set('list'); // transition to list to show their new thought!
+        this.loadQuickThoughts();
+      });
+    }
+  }
+
+  deleteQuickThought(id: string): void {
+    this.idb.deleteThought(id).then(() => {
+      this.loadQuickThoughts();
+      // If we are currently editing the deleted thought, clear the edit state
+      if (this.editingThoughtId() === id) {
+        this.editingThoughtId.set(null);
+        this.newThoughtText.set('');
+        this.quickThoughtsView.set('list');
+      }
+    });
+  }
+
+  editQuickThought(thought: QuickThought): void {
+    this.editingThoughtId.set(thought.id);
+    this.newThoughtText.set(thought.text);
+    this.quickThoughtsView.set('create');
+  }
+
+  cancelEdit(): void {
+    this.editingThoughtId.set(null);
+    this.newThoughtText.set('');
+    this.quickThoughtsView.set('list');
+  }
 
   toggleSidebarFolders(event: Event) {
     event.stopPropagation();
@@ -131,6 +204,7 @@ export class StudyNotesComponent implements OnInit {
     this.loadNotes();
     this.loadFolders();
     this.loadUserProfile();
+    this.loadQuickThoughts();
 
     // On startup: pull latest from Firestore in the background (no blocking loader).
     this.noteService.syncService.scheduleBackgroundSync();

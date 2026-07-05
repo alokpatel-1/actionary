@@ -3,7 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NoteService } from '../study-notes/services/note.service';
 import { NoteIdbService } from '../study-notes/services/note-idb.service';
-import { Note, NoteFolder } from '../study-notes/models/note.model';
+import { Note, NoteFolder, QuickThought } from '../study-notes/models/note.model';
+import { v4 as uuidv4 } from 'uuid';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 type SortOrder = 'created' | 'edited' | 'az';
 
@@ -17,11 +20,22 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   private noteService = inject(NoteService);
   private idbService = inject(NoteIdbService);
   private router = inject(Router);
+  private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
 
   folders = signal<NoteFolder[]>([]);
   notes = signal<Note[]>([]);
+  thoughts = signal<QuickThought[]>([]);
+  
+  // Tab switcher
+  activeTab = signal<'notes' | 'thoughts'>('notes');
+  editingThought = signal<QuickThought | null>(null);
+  isEditingThoughtMode = signal(false);
+  thoughtEditText = signal('');
+  thoughtsView = signal<'list' | 'create'>('list');
+  newLibraryThoughtText = signal('');
+
   searchQuery = signal('');
   sortOrder = signal<SortOrder>('created');
   selectedTag = signal<string | null>(null);
@@ -30,6 +44,11 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   // Recent searches
   recentSearches = signal<string[]>(this.loadRecentSearches());
   showRecentSearches = signal(false);
+
+  // Filter out system folders from filter sidebar
+  visibleFolders = computed(() => {
+    return this.folders().filter(f => f.id !== '__uncategorized__' && f.id !== '__quick_notes__');
+  });
 
   // All unique tags from notes
   allTags = computed(() => {
@@ -72,6 +91,19 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
       filtered = filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
     }
 
+    return filtered;
+  });
+
+  filteredThoughts = computed(() => {
+    const allThoughts = this.thoughts();
+    const query = this.searchQuery().toLowerCase().trim();
+
+    let filtered = allThoughts.filter(t => {
+      const match = (t.text || '').toLowerCase().includes(query);
+      return !query || match;
+    });
+
+    filtered = filtered.sort((a, b) => b.createdAt - a.createdAt);
     return filtered;
   });
 
@@ -140,12 +172,108 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
       this.folders.set(f);
     });
 
+    this.loadNotes();
+
+    this.idbService.getAllThoughts().then(thoughts => {
+      this.thoughts.set(thoughts);
+    });
+
+    this.noteService.getNotesRefreshObservable().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadNotes();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadNotes(): void {
     this.idbService.getAllNotes().then(notes => {
       this.notes.set(notes.filter(n => !n.isDeleted));
     });
   }
 
-  ngOnDestroy(): void {}
+  getWordCount(text: string): number {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).length;
+  }
+
+  openNewThoughtSheet(): void {
+    this.editingThought.set({
+      id: '',
+      text: '',
+      createdAt: 0
+    });
+    this.thoughtEditText.set('');
+    this.isEditingThoughtMode.set(true);
+  }
+
+  openThoughtEdit(thought: QuickThought): void {
+    this.editingThought.set(thought);
+    this.thoughtEditText.set(thought.text);
+    this.isEditingThoughtMode.set(false);
+  }
+
+  openNewThoughtCreate(): void {
+    this.newLibraryThoughtText.set('');
+    this.thoughtsView.set('create');
+  }
+
+  saveLibraryThought(): void {
+    const text = this.newLibraryThoughtText().trim();
+    if (!text) return;
+
+    const newThought: QuickThought = {
+      id: uuidv4(),
+      text,
+      createdAt: Date.now()
+    };
+    this.idbService.putThought(newThought).then(() => {
+      this.newLibraryThoughtText.set('');
+      this.thoughtsView.set('list');
+      this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+    });
+  }
+
+  saveThoughtEdit(): void {
+    const t = this.editingThought();
+    const text = this.thoughtEditText().trim();
+    if (!t || !text) return;
+
+    if (!t.id) {
+      // Create new thought
+      const newThought: QuickThought = {
+        id: uuidv4(),
+        text,
+        createdAt: Date.now()
+      };
+      this.idbService.putThought(newThought).then(() => {
+        this.editingThought.set(null);
+        this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+      });
+    } else {
+      // Update existing thought
+      const updated: QuickThought = {
+        ...t,
+        text
+      };
+      this.idbService.putThought(updated).then(() => {
+        this.editingThought.set(null);
+        this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+      });
+    }
+  }
+
+  deleteThought(id: string): void {
+    if (!id) return;
+    this.idbService.deleteThought(id).then(() => {
+      this.editingThought.set(null);
+      this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+    });
+  }
 
   getPreview(html: string): string {
     if (!html) return 'No content';

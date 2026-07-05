@@ -44,8 +44,20 @@
           </p>
         </header>
 
-        <!-- Article Content (Read-Only HTML) -->
-        <div class="article-content" [innerHTML]="safeContent()"></div>
+        <!-- Article Content (Read-Only HTML blocks with line comments) -->
+        <div class="article-content">
+          <div *ngFor="let block of blocks()" class="reader-block-wrapper">
+            <div class="reader-block-content" [innerHTML]="block.safeHtml"></div>
+            <div class="reader-block-actions" [class.has-comments]="getCommentCount(block.index) > 0">
+              <button class="block-comment-btn" (click)="openComments(block.index)" title="Add or view comments">
+                <i class="pi pi-comment"></i>
+                <span class="comment-badge" *ngIf="getCommentCount(block.index) > 0">
+                  {{ getCommentCount(block.index) }}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
       </article>
     </main>
 
@@ -71,4 +83,65 @@
   <button class="back-to-top" *ngIf="showBackToTop()" (click)="scrollToTop()" title="Back to top">
     <i class="pi pi-arrow-up"></i>
   </button>
+
+  <!-- Floating Highlight Menu -->
+  <div class="highlight-toolbar" 
+       *ngIf="showHighlightMenu()" 
+       [style.left.px]="highlightMenuX()" 
+       [style.top.px]="highlightMenuY()">
+    <button class="hl-btn hl-yellow-trigger" (click)="applyHighlight('yellow')" title="Highlight Yellow"></button>
+    <button class="hl-btn hl-green-trigger" (click)="applyHighlight('green')" title="Highlight Green"></button>
+    <button class="hl-btn hl-pink-trigger" (click)="applyHighlight('pink')" title="Highlight Pink"></button>
+    <button class="hl-btn hl-blue-trigger" (click)="applyHighlight('blue')" title="Highlight Blue"></button>
+    <div class="hl-divider"></div>
+    <button class="hl-clear-btn" (click)="clearHighlight()" title="Remove Highlight">
+      <i class="pi pi-trash"></i>
+    </button>
+  </div>
+
+  <!-- Comments Drawer Overlay -->
+  <div class="drawer-overlay" *ngIf="showCommentDrawer()" (click)="showCommentDrawer.set(false)"></div>
+  <div class="comments-drawer" [class.open]="showCommentDrawer()">
+    <div class="drawer-header">
+      <h3>Line Comments</h3>
+      <button class="close-btn" (click)="showCommentDrawer.set(false)" title="Close">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    
+    <div class="drawer-content">
+      <div class="comments-list" *ngIf="commentsForActiveBlock().length > 0">
+        <div class="comment-item" *ngFor="let comment of commentsForActiveBlock()">
+          <div class="comment-meta">
+            <span class="comment-author">{{ comment.userName }}</span>
+            <div class="comment-meta-right" style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="comment-time">{{ comment.createdAt | date:'shortTime' }}</span>
+              <button class="comment-delete-btn" (click)="deleteComment(comment.id)" title="Delete comment">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </div>
+          <p class="comment-text">{{ comment.text }}</p>
+        </div>
+      </div>
+      
+      <div class="comments-empty" *ngIf="commentsForActiveBlock().length === 0">
+        <i class="pi pi-comments" style="font-size: 2.5rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;"></i>
+        <p>No comments on this block yet. Start the conversation!</p>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <textarea 
+        class="comment-input" 
+        placeholder="Add a comment..." 
+        [ngModel]="newCommentText()" 
+        (ngModelChange)="newCommentText.set($event)"
+        (keydown.enter)="$event.preventDefault(); addComment()">
+      </textarea>
+      <button class="send-comment-btn" (click)="addComment()" [disabled]="!newCommentText().trim()">
+        <i class="pi pi-send"></i>
+      </button>
+    </div>
+  </div>
 </div>

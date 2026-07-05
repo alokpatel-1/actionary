@@ -259,6 +259,8 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.saving() || this.isNew() || !this.noteId()) return;
 
     this.syncContentFromEditor();
+    if (this.isBlankNote()) return;
+
     const id = this.noteId()!;
     this.noteService.updateNote(id, {
       title: this.title() || 'Untitled Note',
@@ -469,10 +471,27 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private isBlankNote(): boolean {
+    const titleVal = (this.title() || '').trim();
+    const contentVal = (this.content() || '').trim();
+    // Strip HTML tags to see if there is actual content text
+    const textContent = contentVal.replace(/<[^>]*>?/gm, ' ').trim();
+
+    const isTitleBlank = !titleVal || titleVal.toLowerCase() === 'untitled note';
+    const isContentBlank = !textContent || textContent === 'no content';
+
+    return isTitleBlank && isContentBlank;
+  }
+
   save(manual = false): void {
     this.syncContentFromEditor();
 
     if (this.saving() && !manual) return;
+
+    if (this.isBlankNote()) {
+      this.saving.set(false);
+      return;
+    }
 
     const saveNoteId = this.noteId();
     const wasNew = this.isNew();

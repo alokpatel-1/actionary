@@ -5,8 +5,10 @@ import {
   NOTE_DB_NAME,
   NOTE_STORE_NAME,
   FOLDER_STORE_NAME,
+  THOUGHT_STORE_NAME,
   NOTE_DB_VERSION,
-  DEFAULT_FOLDERS
+  DEFAULT_FOLDERS,
+  QuickThought
 } from '../models/note.model';
 
 @Injectable({
@@ -25,7 +27,9 @@ export class NoteIdbService {
         req.onerror = () => reject(req.error);
         req.onsuccess = () => {
           const db = req.result;
-          if (!db.objectStoreNames.contains(NOTE_STORE_NAME) || !db.objectStoreNames.contains(FOLDER_STORE_NAME)) {
+          if (!db.objectStoreNames.contains(NOTE_STORE_NAME) || 
+              !db.objectStoreNames.contains(FOLDER_STORE_NAME) || 
+              !db.objectStoreNames.contains(THOUGHT_STORE_NAME)) {
             console.warn('Inconsistent database stores detected. Recreating database...');
             db.close();
             const deleteReq = indexedDB.deleteDatabase(NOTE_DB_NAME);
@@ -72,6 +76,10 @@ export class NoteIdbService {
     if (!db.objectStoreNames.contains(FOLDER_STORE_NAME)) {
       const folderStore = db.createObjectStore(FOLDER_STORE_NAME, { keyPath: 'id' });
       folderStore.createIndex('order', 'order', { unique: false });
+    }
+    if (!db.objectStoreNames.contains(THOUGHT_STORE_NAME)) {
+      const thoughtStore = db.createObjectStore(THOUGHT_STORE_NAME, { keyPath: 'id' });
+      thoughtStore.createIndex('createdAt', 'createdAt', { unique: false });
     }
   }
 
@@ -200,6 +208,45 @@ export class NoteIdbService {
   async getNoteCountByFolder(folderId: string): Promise<number> {
     const notes = await this.getNotesByFolder(folderId);
     return notes.length;
+  }
+
+  // ── Quick Thoughts CRUD ──
+
+  private async getThoughtStore(mode: IDBTransactionMode = 'readonly'): Promise<IDBObjectStore> {
+    const db = await this.openDb();
+    const tx = db.transaction(THOUGHT_STORE_NAME, mode);
+    return tx.objectStore(THOUGHT_STORE_NAME);
+  }
+
+  async putThought(thought: QuickThought): Promise<void> {
+    const store = await this.getThoughtStore('readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.put(thought);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async getAllThoughts(): Promise<QuickThought[]> {
+    const store = await this.getThoughtStore();
+    return new Promise((resolve, reject) => {
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const list = req.result as QuickThought[];
+        list.sort((a, b) => b.createdAt - a.createdAt);
+        resolve(list);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async deleteThought(id: string): Promise<void> {
+    const store = await this.getThoughtStore('readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
   }
 
   close(): void {
