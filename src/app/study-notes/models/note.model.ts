@@ -12,6 +12,21 @@ export interface Note {
   tags?: string[];           // free-form tags
   status?: 'draft' | 'published'; // note status
   versions?: { content: string; savedAt: number }[]; // last 5 auto-saves
+  comments?: NoteComment[];  // line/block comments
+}
+
+export interface NoteComment {
+  id: string;
+  blockIndex: number;
+  text: string;
+  userName: string;
+  createdAt: number;
+}
+
+export interface QuickThought {
+  id: string;
+  text: string;
+  createdAt: number;
 }
 
 export type NoteCreate = Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'synced'>;
@@ -31,7 +46,8 @@ export interface NoteFolder {
 export const NOTE_DB_NAME = 'StudyNotesDB';
 export const NOTE_STORE_NAME = 'notes';
 export const FOLDER_STORE_NAME = 'folders';
-export const NOTE_DB_VERSION = 3;
+export const THOUGHT_STORE_NAME = 'quick_thoughts';
+export const NOTE_DB_VERSION = 4;
 
 /** Default folder — cannot be deleted */
 export const DEFAULT_FOLDER: NoteFolder = {

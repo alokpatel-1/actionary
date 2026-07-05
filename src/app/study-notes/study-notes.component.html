@@ -484,5 +484,96 @@
   <!-- Full Screen Sync Blocking Backdrop -->
   <div class="sync-backdrop" [class.active]="noteService.syncService.syncStatus() === 'started'"></div>
 
+  <!-- Quick Thoughts Floating Action Button -->
+  <button class="quick-thoughts-trigger" (click)="showQuickThoughts.set(true)" title="Quick Thoughts">
+    <i class="pi pi-lightbulb"></i>
+  </button>
+
+  <!-- Quick Thoughts Drawer & Overlay -->
+  <div class="qt-overlay" *ngIf="showQuickThoughts()" (click)="showQuickThoughts.set(false)"></div>
+  <div class="quick-thoughts-drawer" [class.open]="showQuickThoughts()">
+    <!-- Header -->
+    <div class="qt-header">
+      <div class="qt-title-group" *ngIf="quickThoughtsView() === 'create'">
+        <i class="pi pi-lightbulb qt-bulb-icon"></i>
+        <h3>{{ editingThoughtId() ? 'Edit Thought' : 'Write Thought' }}</h3>
+      </div>
+      <div class="qt-title-group" *ngIf="quickThoughtsView() === 'list'">
+        <i class="pi pi-history qt-bulb-icon" style="color: #6366f1;"></i>
+        <h3>Past Reflections</h3>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <!-- Header view toggles -->
+        <button class="qt-icon-toggle-btn" 
+                *ngIf="quickThoughtsView() === 'create'" 
+                (click)="quickThoughtsView.set('list')" 
+                title="View Past Reflections">
+          <i class="pi pi-history"></i>
+        </button>
+        <button class="qt-icon-toggle-btn" 
+                *ngIf="quickThoughtsView() === 'list'" 
+                (click)="quickThoughtsView.set('create'); editingThoughtId.set(null); newThoughtText.set('')" 
+                title="Write New Thought">
+          <i class="pi pi-plus"></i>
+        </button>
+        
+        <button class="qt-close-btn" (click)="showQuickThoughts.set(false)" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Create/Edit View Body -->
+    <div class="qt-body-content" *ngIf="quickThoughtsView() === 'create'">
+      <div class="qt-input-section">
+        <textarea 
+          class="qt-textarea" 
+          placeholder="What's on your mind? Type a thought here..." 
+          [ngModel]="newThoughtText()" 
+          (ngModelChange)="newThoughtText.set($event)"
+          (keydown.enter)="$event.preventDefault(); saveQuickThought()">
+        </textarea>
+      </div>
+      
+      <div class="qt-actions-row-footer">
+        <button class="qt-footer-btn delete-btn" *ngIf="editingThoughtId()" (click)="deleteQuickThought(editingThoughtId()!)">
+          <i class="pi pi-trash"></i> Delete
+        </button>
+        <button class="qt-footer-btn cancel-btn" *ngIf="editingThoughtId()" (click)="cancelEdit()">
+          Cancel
+        </button>
+        <div style="flex: 1;" *ngIf="!editingThoughtId()"></div>
+        <button class="qt-footer-btn save-btn" (click)="saveQuickThought()" [disabled]="!newThoughtText().trim()">
+          {{ editingThoughtId() ? 'Save Changes' : 'Save Thought' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- List View Body -->
+    <div class="qt-body-content" *ngIf="quickThoughtsView() === 'list'" style="overflow-y: auto; flex: 1;">
+      <div class="qt-feed-section">
+        <div class="qt-list" *ngIf="quickThoughtsList().length > 0">
+          <div class="qt-item" *ngFor="let thought of quickThoughtsList()" (click)="editQuickThought(thought)" style="cursor: pointer;">
+            <div class="qt-item-body">
+              <p class="qt-text">{{ thought.text }}</p>
+              <span class="qt-time">{{ thought.createdAt | date:'MMM d, y · h:mm a' }}</span>
+            </div>
+            <button class="qt-delete-btn" 
+                    (click)="$event.stopPropagation(); deleteQuickThought(thought.id)" 
+                    title="Delete thought">
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="qt-empty" *ngIf="quickThoughtsList().length === 0">
+          <i class="pi pi-inbox"></i>
+          <p>No thoughts saved yet. Dump your mind here!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <p-confirmDialog></p-confirmDialog>
 </div>
