@@ -10,6 +10,12 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
 import { NoteFoldersComponent } from './components/note-folders/note-folders.component';
 import { NoteSearchComponent } from './components/note-search/note-search.component';
 import { ConfirmationService } from 'primeng/api';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+
+class MockSpinnerService {
+  show(): Promise<any> { return Promise.resolve(); }
+  hide(): Promise<any> { return Promise.resolve(); }
+}
 
 @NgModule({
   declarations: [
@@ -26,10 +32,12 @@ import { ConfirmationService } from 'primeng/api';
     ImportsModule,
     TiptapEditorDirective,
     TiptapBubbleMenuDirective,
-    TiptapFloatingMenuDirective
+    TiptapFloatingMenuDirective,
+    NgxSpinnerModule
   ],
   providers: [
-    ConfirmationService
+    ConfirmationService,
+    { provide: NgxSpinnerService, useClass: MockSpinnerService }
   ]
 })
 export class StudyNotesModule { }

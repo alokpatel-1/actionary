@@ -5,6 +5,7 @@ import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/fo
 import { AuthService } from '../../../services/auth.service';
 import { ActionaryUtilService } from '../../../services/actionary-util.service';
 import { FirebaseAuthService } from '../../../firebase/firebase-auth.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
     selector: 'app-sign-up',
@@ -20,6 +21,7 @@ export class SignUpComponent implements OnInit {
     private readonly utilService = inject(ActionaryUtilService);
     private readonly firebaseService = inject(FirebaseAuthService);
     private readonly router = inject(Router);
+    private readonly spinner = inject(NgxSpinnerService);
 
     showpassword = signal(true);
 
@@ -49,12 +51,15 @@ export class SignUpComponent implements OnInit {
             return;
         }
 
+        this.spinner.show();
         const payload = this.createApiPayload(this.signupForm.value);
         this.authService.registerUser(payload).subscribe({
             next: (response) => {
+                this.spinner.hide();
                 this.utilService.showSuccess('User registered successfully!');
             },
             error: ({ error }) => {
+                this.spinner.hide();
                 this.utilService.showError(error.error);
             },
         });
@@ -81,16 +86,18 @@ export class SignUpComponent implements OnInit {
             return;
         }
 
+        this.spinner.show();
         const { fullName, email, password } = this.signupForm?.getRawValue();
         this.firebaseService.createUser(email, fullName, password).subscribe({
             next: (response) => {
                 console.log('@ response', response);
-
+                this.spinner.hide();
                 this.utilService.showSuccess('User registered successfully!');
                 this.router.navigate(['home/login']);
             },
             error: ({ error }) => {
-                this.utilService.showError(error.error);
+                this.spinner.hide();
+                this.utilService.showError(error?.message || 'Registration failed');
             },
         })
     }

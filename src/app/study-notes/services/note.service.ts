@@ -1,8 +1,8 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, effect } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { NoteIdbService } from './note-idb.service';
 import { NoteSyncService } from './note-sync.service';
-import { Note, NoteCreate, NoteFolder, DEFAULT_FOLDER, DEFAULT_FOLDERS } from '../models/note.model';
+import { Note, NoteCreate, NoteFolder, DEFAULT_FOLDER, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
 import { v4 as uuidv4 } from 'uuid';
 import { Observable, from, BehaviorSubject, forkJoin, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -12,12 +12,39 @@ import { map, switchMap, tap } from 'rxjs/operators';
 })
 export class NoteService {
   private idb = inject(NoteIdbService);
-  private syncService = inject(NoteSyncService);
+  public syncService = inject(NoteSyncService);
+
+  get sync() {
+    return this.syncService;
+  }
+  
   private auth = inject(Auth);
 
   private notesUpdated$ = new BehaviorSubject<void>(undefined);
   activeFolderId = signal<string | null>(null);
   expandedFolders = signal<Record<string, boolean>>({});
+
+  constructor() {
+    effect(() => {
+      if (this.syncService.syncStatus() === 'completed') {
+        this.triggerRefresh();
+        this.cleanupOldArchivedNotes().subscribe();
+      }
+    });
+  }
+
+  private cleanupOldArchivedNotes(): Observable<void> {
+    const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return from(this.idb.getAllNotes()).pipe(
+      switchMap(notes => {
+        const toDelete = notes.filter(n => n.isDeleted && (now - n.updatedAt) > NINETY_DAYS_MS);
+        const deletes = toDelete.map(n => this.permanentlyDeleteNote(n.id));
+        return deletes.length ? forkJoin(deletes) : of(null);
+      }),
+      map(() => void 0)
+    );
+  }
 
   triggerRefresh(): void {
     this.notesUpdated$.next();
@@ -192,16 +219,41 @@ export class NoteService {
   // ── Folders ──
 
   addFolder(folder: Omit<NoteFolder, 'id'>): Observable<NoteFolder> {
+    const uid = this.currentUserId;
     const newFolder: NoteFolder = {
       ...folder,
       id: uuidv4(),
-      userId: this.currentUserId ?? undefined
+      icon: normalizeIcon(folder.icon),   // migrate any legacy pi-class on create
+      synced: false,                       // marks it as not yet pushed to Firestore
+      userId: uid ?? undefined
     };
-    return from(this.idb.putFolder(newFolder)).pipe(map(() => newFolder));
+
+    // Auto-create a default "Untitled Note" inside the new folder
+    const defaultNote: Note = {
+      id: uuidv4(),
+      title: 'Untitled Note',
+      content: '',
+      folderId: newFolder.id,
+      isPinned: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      synced: false,
+      userId: uid ?? undefined
+    };
+
+    return from(
+      this.idb.putFolder(newFolder).then(() => this.idb.addNote(defaultNote))
+    ).pipe(
+      tap(() => this.syncService.tryAutoSync()),
+      tap(() => this.triggerRefresh()),
+      map(() => newFolder)
+    );
   }
 
   updateFolder(folder: NoteFolder): Observable<void> {
-    return from(this.idb.putFolder(folder));
+    return from(this.idb.putFolder(folder)).pipe(
+      tap(() => this.syncService.tryAutoSync())
+    );
   }
 
   deleteFolder(id: string): Observable<void> {
@@ -215,6 +267,7 @@ export class NoteService {
           for (const note of notes) {
             note.folderId = DEFAULT_FOLDER.id;
             note.updatedAt = Date.now();
+            note.synced = false;
             await this.idb.addNote(note);
           }
         }),
@@ -229,15 +282,31 @@ export class NoteService {
           }
         })
       ]).then(() => this.idb.deleteFolder(id))
+    ).pipe(
+      switchMap(() => this.syncService.deleteRemoteFolder(id))
     );
   }
 
   getFolders(): Observable<NoteFolder[]> {
-    return from(this.idb.getAllFolders());
+    return from(this.idb.getAllFolders()).pipe(
+      switchMap(async folders => {
+        const migrated = folders.map(f => ({ ...f, icon: normalizeIcon(f.icon) }));
+        // Persist the migrated icon back to IDB for any folder that had a legacy pi-class
+        for (const folder of migrated) {
+          const original = folders.find(f => f.id === folder.id);
+          if (original && original.icon !== folder.icon) {
+            await this.idb.putFolder(folder);
+          }
+        }
+        return migrated;
+      })
+    );
   }
 
   getFolder(id: string): Observable<NoteFolder | undefined> {
-    return from(this.idb.getFolder(id));
+    return from(this.idb.getFolder(id)).pipe(
+      map(f => f ? { ...f, icon: normalizeIcon(f.icon) } : undefined)
+    );
   }
 
   getNoteCountByFolder(folderId: string): Observable<number> {

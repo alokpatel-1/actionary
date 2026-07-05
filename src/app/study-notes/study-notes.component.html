@@ -14,13 +14,17 @@
   <aside class="sidebar" [class.mobile-open]="sidebarMobileOpen()">
     <!-- Sidebar Header -->
     <div class="sidebar-header">
+      <!-- Expanded Sidebar: brand -->
       <div class="sidebar-brand" *ngIf="sidebarExpanded()">
         <span class="brand-icon">📝</span>
-        <span class="brand-text">Notes</span>
+        <span class="brand-text">Scribe</span>
       </div>
-      <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
-        <i class="pi" [ngClass]="sidebarExpanded() ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
-      </button>
+
+      <div class="sidebar-header-actions">
+        <button class="sidebar-toggle" (click)="toggleSidebar()" title="Toggle sidebar">
+          <i class="pi" [ngClass]="sidebarExpanded() ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Create Note Button -->
@@ -37,7 +41,8 @@
         <i class="pi pi-search"></i>
         <span class="nav-text" *ngIf="sidebarExpanded()">Search notes</span>
       </button>
-      
+
+
       <button class="nav-item" *ngIf="sidebarExpanded()" routerLink="/notes/folders" style="width: 100%; border: none; background: transparent; cursor: pointer; text-align: left; padding-right: 0.5rem;">
         <i class="pi pi-folder"></i>
         <span class="nav-text" style="flex: 1;">Folders</span>
@@ -71,7 +76,9 @@
             <div class="sidebar-folder-row" 
                [class.active]="noteService.activeFolderId() === folder.id"
                (click)="toggleFolderExpand($event, folder.id)">
-            <i [class]="folder.icon" class="sidebar-folder-icon" [style.color]="folder.color"></i>
+            <span class="folder-icon-chip" [style.background]="folder.color + '22'" [style.color]="folder.color">
+              {{ folder.icon }}
+            </span>
             <span class="sidebar-folder-name" *ngIf="sidebarExpanded()">{{ folder.name }}</span>
             
             <!-- Folder hover options -->
@@ -140,45 +147,7 @@
       </div>
     </div>
 
-    <!-- Sidebar Footer with Profile Action -->
-    <div class="sidebar-footer">
-      <div class="profile-container">
-        <!-- Profile Menu Popover -->
-        <div class="profile-popover" *ngIf="showProfileMenu() && sidebarExpanded()">
-          <div class="popover-user-details">
-            <span class="popover-name">{{ userName() }}</span>
-            <span class="popover-email">{{ userEmail() }}</span>
-          </div>
-          
-          <button class="popover-action archive-btn" (click)="openArchiveModal()">
-            <i class="pi pi-inbox"></i>
-            <span>Archived notes</span>
-          </button>
-
-          <button class="popover-action select-btn" (click)="triggerBulkDelete()">
-            <i class="pi pi-check-square"></i>
-            <span>Bulk delete</span>
-          </button>
-
-          <button class="popover-action logout-btn" (click)="logout()">
-            <i class="pi pi-sign-out"></i>
-            <span>Log out</span>
-          </button>
-        </div>
-
-        <!-- Profile Card Button -->
-        <button class="profile-card" (click)="toggleProfileMenu()" [title]="userName()">
-          <div class="profile-avatar">
-            {{ getUserInitials() }}
-          </div>
-          <div class="profile-info" *ngIf="sidebarExpanded()">
-            <span class="profile-name">{{ userName() }}</span>
-            <span class="profile-email">{{ userEmail() }}</span>
-          </div>
-          <i class="pi pi-ellipsis-v profile-more" *ngIf="sidebarExpanded()"></i>
-        </button>
-      </div>
-    </div>
+    <!-- Empty space where profile footer used to be -->
   </aside>
 
   <!-- Main Content -->
@@ -254,58 +223,6 @@
     </div>
   </div>
 
-  <!-- Bulk Selection Modal -->
-  <div class="archive-modal-backdrop" *ngIf="showBulkSelectionModal()" (click)="closeBulkSelectionModal()">
-    <div class="archive-modal-card" (click)="$event.stopPropagation()">
-      <div class="archive-modal-header">
-        <h3 class="archive-modal-title">
-          <i class="pi pi-check-square"></i>
-          <span>Select Notes to Delete</span>
-        </h3>
-        <button class="archive-modal-close" (click)="closeBulkSelectionModal()" title="Close">
-          <i class="pi pi-times"></i>
-        </button>
-      </div>
-
-      <div class="bulk-select-header-actions">
-        <button (click)="toggleSelectAll()" class="btn-select-all">
-          <i class="pi" [ngClass]="selectedNotes().size === allNotes().length && allNotes().length > 0 ? 'pi-times' : 'pi-check-circle'"></i>
-          {{ selectedNotes().size === allNotes().length && allNotes().length > 0 ? 'Deselect All' : 'Select All' }}
-        </button>
-      </div>
-
-      <div class="bulk-select-list" *ngIf="allNotes().length > 0; else emptySelection">
-        <div class="bulk-select-item" 
-             *ngFor="let note of allNotes()" 
-             (click)="toggleNoteSelection(note.id)"
-             [class.selected]="selectedNotes().has(note.id)">
-          <div class="note-checkbox" [class.checked]="selectedNotes().has(note.id)">
-            <i class="pi" [ngClass]="selectedNotes().has(note.id) ? 'pi-check' : ''"></i>
-          </div>
-          <span class="bulk-select-title">
-            {{ note.title || 'Untitled Note' }}
-          </span>
-        </div>
-      </div>
-
-      <ng-template #emptySelection>
-        <div class="archive-empty">
-          <i class="pi pi-inbox"></i>
-          <p>No active notes available.</p>
-        </div>
-      </ng-template>
-      
-      <div class="archive-modal-footer">
-        <button class="confirm-btn-cancel" (click)="closeBulkSelectionModal()">Cancel</button>
-        <button class="bulk-delete-btn" 
-                [disabled]="selectedNotes().size === 0" 
-                (click)="confirmBulkDelete()">
-          <i class="pi pi-trash" *ngIf="selectedNotes().size > 0"></i>
-          Delete Selected {{ selectedNotes().size > 0 ? '(' + selectedNotes().size + ')' : '' }}
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- Custom Archived Chats Modal Overlay -->
   <div class="archive-modal-backdrop" *ngIf="showArchiveModal()" (click)="closeArchiveModal()">
@@ -321,9 +238,29 @@
       </div>
 
       <div class="archive-modal-body">
+        <!-- Select All / Bulk Bar -->
+        <div class="archive-bulk-header" *ngIf="archivedNotes().length > 0">
+          <label class="archive-select-all">
+            <input type="checkbox" [checked]="isAllArchivedSelected()" (change)="toggleSelectAllArchived($any($event.target).checked)">
+            <span>Select All</span>
+          </label>
+          <div class="archive-bulk-actions" *ngIf="selectedArchivedNotes().size > 0">
+            <span class="bulk-selected-count">{{ selectedArchivedNotes().size }} selected</span>
+            <button class="bulk-action-btn restore" (click)="restoreSelectedArchivedNotes()">
+              <i class="pi pi-refresh"></i>
+              <span>Restore</span>
+            </button>
+            <button class="bulk-action-btn delete" (click)="triggerBulkPermanentDelete()">
+              <i class="pi pi-trash"></i>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
         <div class="archive-list" *ngIf="archivedNotes().length > 0; else emptyArchive">
           <div class="archive-item" *ngFor="let note of archivedNotes()">
             <div class="archive-item-info">
+              <input type="checkbox" class="archive-item-checkbox" [checked]="selectedArchivedNotes().has(note.id)" (change)="toggleArchivedNoteSelection(note.id)">
               <i class="pi pi-comment"></i>
               <span class="archive-item-title">{{ note.title || 'Untitled Note' }}</span>
             </div>
@@ -368,11 +305,30 @@
     </div>
   </div>
 
+  <!-- Custom Bulk Permanent Delete Confirmation Dialog Modal Overlay -->
+  <div class="confirm-dialog-backdrop" *ngIf="showBulkPermanentDeleteConfirm()" (click)="cancelBulkPermanentDelete()">
+    <div class="confirm-dialog-card" (click)="$event.stopPropagation()">
+      <div class="confirm-dialog-header">
+        <div class="confirm-warning-icon">
+          <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <h3 class="confirm-dialog-title">Delete permanently</h3>
+      </div>
+      <div class="confirm-dialog-body">
+        <p>Are you sure you want to permanently delete the <strong>{{ selectedArchivedNotes().size }}</strong> selected notes? This action is permanent and cannot be undone.</p>
+      </div>
+      <div class="confirm-dialog-footer">
+        <button class="confirm-btn-cancel" (click)="cancelBulkPermanentDelete()">Cancel</button>
+        <button class="confirm-btn-danger" (click)="confirmBulkPermanentDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Note Action Menu Popover -->
   <p-popover #noteMenu>
     <div class="note-options-dropdown" style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 220px; padding: 0.25rem;">
 
-      <button class="menu-option-btn" (click)="triggerMoveToFolder()" *ngIf="isNoteUncategorized(selectedMenuNote())">
+      <button class="menu-option-btn" (click)="triggerMoveToFolder()">
         <i class="pi pi-folder"></i>
         <span style="flex-grow: 1; text-align: left;">Move to Folder...</span>
       </button>
@@ -413,7 +369,7 @@
                   [class.active]="selectedMenuNote()?.folderId === folder.id"
                   [style.--folder-accent]="folder.color"
                   (click)="moveNoteToFolder(folder.id)">
-            <i [class]="folder.icon" [style.color]="folder.color"></i>
+            <span class="folder-emoji-icon">{{ folder.icon }}</span>
             <span>{{ folder.name }}</span>
           </button>
         </div>
@@ -495,6 +451,40 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Glassmorphic Sync Status Toast -->
+  <div class="floating-sync-card" [class.active]="noteService.syncService.syncStatus() === 'started' || showSyncSuccessToast()">
+    <div class="sync-card-content">
+      <!-- Loader for syncing state -->
+      <div class="sync-icon-wrapper" *ngIf="noteService.syncService.syncStatus() === 'started'">
+        <div class="sync-spinner-ring"></div>
+      </div>
+      <!-- Success check for completed state -->
+      <div class="sync-icon-wrapper success" *ngIf="noteService.syncService.syncStatus() === 'completed'">
+        <i class="pi pi-check"></i>
+      </div>
+      <!-- Failure check for failed state -->
+      <div class="sync-icon-wrapper failed" *ngIf="noteService.syncService.syncStatus() === 'failed'">
+        <i class="pi pi-times"></i>
+      </div>
+
+      <div class="sync-text-group">
+        <span class="sync-title">
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'started'">Syncing...</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'completed'">Notes Synced</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'failed'">Sync Failed</ng-container>
+        </span>
+        <span class="sync-subtitle">
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'started'">Saving changes to Firebase</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'completed'">All changes are up to date</ng-container>
+          <ng-container *ngIf="noteService.syncService.syncStatus() === 'failed'">{{ noteService.syncService.syncError() || 'Check connection' }}</ng-container>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Screen Sync Blocking Backdrop -->
+  <div class="sync-backdrop" [class.active]="noteService.syncService.syncStatus() === 'started'"></div>
 
   <p-confirmDialog></p-confirmDialog>
 </div>

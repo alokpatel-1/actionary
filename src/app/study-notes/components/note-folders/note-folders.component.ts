@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteService } from '../../services/note.service';
 import { Note, NoteFolder, DEFAULT_FOLDERS, FOLDER_COLORS, FOLDER_ICONS } from '../../models/note.model';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-note-folders',
@@ -12,6 +13,9 @@ import { Note, NoteFolder, DEFAULT_FOLDERS, FOLDER_COLORS, FOLDER_ICONS } from '
 export class NoteFoldersComponent implements OnInit {
   public noteService = inject(NoteService);
   private router = inject(Router);
+  private spinner = inject(NgxSpinnerService);
+  
+  isCreatingNote = signal(false);
 
   folders = signal<NoteFolder[]>([]);
   folderNoteCounts = signal<Map<string, number>>(new Map());
@@ -149,16 +153,39 @@ export class NoteFoldersComponent implements OnInit {
     const folder = this.activeFolder();
     this.closeFolderMenu();
     if (folder) {
-      this.noteService.activeFolderId.set(folder.id);
-      this.router.navigate(['/notes', 'create']);
+      this.createNoteInFolder(folder.id);
     }
   }
 
   triggerCreateNoteInFolderDirect(event: Event, folderId: string): void {
     event.stopPropagation();
     event.preventDefault();
-    this.noteService.activeFolderId.set(folderId);
-    this.router.navigate(['/notes', 'create']);
+    this.createNoteInFolder(folderId);
+  }
+
+  private createNoteInFolder(folderId: string): void {
+    if (this.isCreatingNote()) return;
+    this.isCreatingNote.set(true);
+    this.spinner.show();
+
+    const newNote = {
+      title: '',
+      content: '',
+      folderId: folderId,
+      isPinned: false
+    };
+
+    this.noteService.addNote(newNote).subscribe({
+      next: note => {
+        this.isCreatingNote.set(false);
+        this.spinner.hide();
+        this.router.navigate(['/notes', 'edit', note.id], { queryParams: { edit: 'true' } });
+      },
+      error: () => {
+        this.isCreatingNote.set(false);
+        this.spinner.hide();
+      }
+    });
   }
 
   triggerRenameFolder(): void {
@@ -204,10 +231,17 @@ export class NoteFoldersComponent implements OnInit {
     const newTitle = this.renameNoteTitle().trim();
     if (!note || !newTitle) return;
 
-    this.noteService.renameNote(note.id, newTitle).subscribe(() => {
-      this.showRenameNoteDialog.set(false);
-      this.activeNote.set(null);
-      this.loadFolders();
+    this.spinner.show();
+    this.noteService.renameNote(note.id, newTitle).subscribe({
+      next: () => {
+        this.showRenameNoteDialog.set(false);
+        this.activeNote.set(null);
+        this.loadFolders();
+        this.spinner.hide();
+      },
+      error: () => {
+        this.spinner.hide();
+      }
     });
   }
 
@@ -215,9 +249,16 @@ export class NoteFoldersComponent implements OnInit {
     const note = this.activeNote();
     this.closeNoteMenu();
     if (note) {
-      this.noteService.duplicateNote(note.id).subscribe(() => {
-        this.activeNote.set(null);
-        this.loadFolders();
+      this.spinner.show();
+      this.noteService.duplicateNote(note.id).subscribe({
+        next: () => {
+          this.activeNote.set(null);
+          this.loadFolders();
+          this.spinner.hide();
+        },
+        error: () => {
+          this.spinner.hide();
+        }
       });
     }
   }
@@ -234,10 +275,17 @@ export class NoteFoldersComponent implements OnInit {
     const note = this.activeNote();
     if (!note) return;
 
-    this.noteService.updateNote(note.id, { folderId }).subscribe(() => {
-      this.showMoveNoteDialog.set(false);
-      this.activeNote.set(null);
-      this.loadFolders();
+    this.spinner.show();
+    this.noteService.updateNote(note.id, { folderId }).subscribe({
+      next: () => {
+        this.showMoveNoteDialog.set(false);
+        this.activeNote.set(null);
+        this.loadFolders();
+        this.spinner.hide();
+      },
+      error: () => {
+        this.spinner.hide();
+      }
     });
   }
 
@@ -245,9 +293,16 @@ export class NoteFoldersComponent implements OnInit {
     const note = this.activeNote();
     this.closeNoteMenu();
     if (note) {
-      this.noteService.deleteNote(note.id).subscribe(() => {
-        this.activeNote.set(null);
-        this.loadFolders();
+      this.spinner.show();
+      this.noteService.deleteNote(note.id).subscribe({
+        next: () => {
+          this.activeNote.set(null);
+          this.loadFolders();
+          this.spinner.hide();
+        },
+        error: () => {
+          this.spinner.hide();
+        }
       });
     }
   }
@@ -280,15 +335,22 @@ export class NoteFoldersComponent implements OnInit {
     const name = this.folderName().trim();
     if (!name) return;
 
+    this.spinner.show();
     if (this.isNewFolder()) {
       this.noteService.addFolder({
         name,
         icon: this.folderIcon(),
         color: this.folderColor(),
         order: this.folders().length
-      }).subscribe(() => {
-        this.showDialog.set(false);
-        this.loadFolders();
+      }).subscribe({
+        next: () => {
+          this.showDialog.set(false);
+          this.loadFolders();
+          this.spinner.hide();
+        },
+        error: () => {
+          this.spinner.hide();
+        }
       });
     } else {
       const folder = this.editingFolder()!;
@@ -297,17 +359,30 @@ export class NoteFoldersComponent implements OnInit {
         name,
         icon: this.folderIcon(),
         color: this.folderColor()
-      }).subscribe(() => {
-        this.showDialog.set(false);
-        this.loadFolders();
+      }).subscribe({
+        next: () => {
+          this.showDialog.set(false);
+          this.loadFolders();
+          this.spinner.hide();
+        },
+        error: () => {
+          this.spinner.hide();
+        }
       });
     }
   }
 
   deleteFolder(folder: NoteFolder): void {
     if (this.DEFAULT_IDS.includes(folder.id)) return;
-    this.noteService.deleteFolder(folder.id).subscribe(() => {
-      this.loadFolders();
+    this.spinner.show();
+    this.noteService.deleteFolder(folder.id).subscribe({
+      next: () => {
+        this.loadFolders();
+        this.spinner.hide();
+      },
+      error: () => {
+        this.spinner.hide();
+      }
     });
   }
 

@@ -1,7 +1,7 @@
 export interface Note {
   id: string;
   title: string;
-  content: string;           // HTML from CKEditor
+  content: string;           // HTML from Tiptap
   folderId: string;          // references a NoteFolder.id
   isPinned: boolean;
   createdAt: number;         // epoch ms
@@ -16,9 +16,10 @@ export type NoteCreate = Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'synced'>
 export interface NoteFolder {
   id: string;
   name: string;
-  icon: string;              // PrimeIcons class e.g. 'pi pi-folder'
+  icon: string;              // Emoji character e.g. '📁'
   color: string;             // hex color for accent
   order: number;
+  synced?: boolean;          // false = not yet pushed to Firestore
   userId?: string;
   parentId?: string;         // optional parent folder ID for hierarchical folders
 }
@@ -33,7 +34,7 @@ export const NOTE_DB_VERSION = 3;
 export const DEFAULT_FOLDER: NoteFolder = {
   id: '__uncategorized__',
   name: 'General',
-  icon: 'pi pi-folder',
+  icon: '📁',
   color: '#4DA3FF',
   order: 0
 };
@@ -41,7 +42,7 @@ export const DEFAULT_FOLDER: NoteFolder = {
 export const QUICK_NOTES_FOLDER: NoteFolder = {
   id: '__quick_notes__',
   name: 'Quick Notes',
-  icon: 'pi pi-bolt',
+  icon: '⚡',
   color: '#F59E0B',
   order: 1
 };
@@ -63,16 +64,66 @@ export const FOLDER_COLORS: string[] = [
   '#64748B',  // Slate
 ];
 
-/** Preset folder icons */
+/** Preset folder icons (emojis — universal, no font-loading issues) */
 export const FOLDER_ICONS: string[] = [
-  'pi pi-folder',
-  'pi pi-book',
-  'pi pi-bookmark',
-  'pi pi-star',
-  'pi pi-heart',
-  'pi pi-bolt',
-  'pi pi-code',
-  'pi pi-palette',
-  'pi pi-calculator',
-  'pi pi-globe',
+  '📁',  // Folder
+  '📂',  // Open Folder
+  '📚',  // Books
+  '📖',  // Open Book
+  '📝',  // Memo
+  '⭐',  // Star
+  '❤️',  // Heart
+  '⚡',  // Lightning
+  '💻',  // Laptop
+  '🎨',  // Art
+  '🔬',  // Science
+  '🧮',  // Calculator
+  '🌍',  // Globe
+  '🚀',  // Rocket
+  '🎯',  // Target
+  '💡',  // Idea
+  '🔒',  // Lock
+  '🎵',  // Music
+  '🏆',  // Trophy
+  '🌿',  // Plant
 ];
+
+/** Maps legacy PrimeIcons class strings → emoji equivalents */
+const PI_TO_EMOJI: Record<string, string> = {
+  'pi pi-folder':       '📁',
+  'pi pi-folder-open':  '📂',
+  'pi pi-book':         '📚',
+  'pi pi-bookmark':     '📖',
+  'pi pi-file':         '📝',
+  'pi pi-star':         '⭐',
+  'pi pi-heart':        '❤️',
+  'pi pi-bolt':         '⚡',
+  'pi pi-code':         '💻',
+  'pi pi-palette':      '🎨',
+  'pi pi-calculator':   '🧮',
+  'pi pi-globe':        '🌍',
+  'pi pi-home':         '🏠',
+  'pi pi-lock':         '🔒',
+  'pi pi-music':        '🎵',
+  'pi pi-tag':          '🏷️',
+  'pi pi-inbox':        '📥',
+  'pi pi-check':        '✅',
+  'pi pi-cog':          '⚙️',
+};
+
+/**
+ * Normalises a folder icon value.
+ * Old IndexedDB/Firestore data stored PrimeIcons strings like "pi pi-folder".
+ * New data stores emoji directly like "📁".
+ * Converts any legacy pi-class to an emoji; returns the value unchanged if it's already an emoji.
+ */
+export function normalizeIcon(icon: string): string {
+  if (!icon) return '📁';
+  // Legacy PrimeIcons value — convert to emoji
+  if (icon.startsWith('pi ') || icon.startsWith('pi-') || icon === 'pi') {
+    const key = icon.startsWith('pi-') ? `pi ${icon}` : icon.trim();
+    return PI_TO_EMOJI[key] ?? '📁';
+  }
+  return icon;
+}
+

@@ -121,8 +121,21 @@
   min-width: 0;
 }
 
-.folder-icon {
+.folder-icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  flex-shrink: 0;
   font-size: 1.15rem;
+  line-height: 1;
+}
+
+.folder-emoji-icon {
+  font-size: 1.15rem;
+  line-height: 1;
   flex-shrink: 0;
 }
 
@@ -359,8 +372,8 @@
 }
 
 .icon-option {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 8px;
   border: 1.5px solid var(--color-border-subtle);
   background: var(--color-bg-surface);
@@ -369,19 +382,19 @@
   align-items: center;
   justify-content: center;
   transition: all 0.15s;
-  color: var(--color-text-secondary);
-
-  i { font-size: 0.9rem; }
+  font-size: 1.25rem;
+  line-height: 1;
 
   &:hover {
     border-color: var(--sel-color, #6366F1);
-    color: var(--sel-color, #6366F1);
+    background: color-mix(in srgb, var(--sel-color, #6366F1) 10%, transparent);
+    transform: scale(1.1);
   }
 
   &.selected {
     border-color: var(--sel-color, #6366F1);
-    background: var(--sel-color, #6366F1);
-    color: #fff;
+    background: color-mix(in srgb, var(--sel-color, #6366F1) 15%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--sel-color, #6366F1) 30%, transparent);
   }
 }
 

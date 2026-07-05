@@ -25,7 +25,7 @@
             [class.active]="selectedFolderId() === folder.id"
             [style.--pill-color]="folder.color"
             (click)="selectFolder(folder.id)">
-      <i [class]="folder.icon" style="font-size: 0.7rem"></i>
+      <span class="folder-pill-emoji">{{ folder.icon }}</span>
       {{ folder.name }}
     </button>
   </div>

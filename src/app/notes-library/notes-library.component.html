@@ -1,0 +1,48 @@
+<div class="library-container">
+  <app-library-navbar 
+    [showSearch]="true" 
+    [searchQuery]="searchQuery()" 
+    (searchChange)="searchQuery.set($event)">
+  </app-library-navbar>
+
+  <!-- Content -->
+  <main class="library-content">
+    <div class="empty-state" *ngIf="groupedNotes().length === 0">
+      <i class="pi pi-file-o empty-icon"></i>
+      <h3>No notes found</h3>
+      <p>Try adjusting your search or write a new note in the editor.</p>
+    </div>
+
+    <!-- Folders Iteration -->
+    <div class="folder-group" *ngFor="let group of groupedNotes()">
+      <!-- Folder Header -->
+      <div class="folder-header">
+        <span class="folder-emoji" *ngIf="group.folder">{{ group.folder.icon }}</span>
+        <span class="folder-emoji" *ngIf="!group.folder">📁</span>
+        <h2 class="folder-title">{{ group.folder ? group.folder.name : 'Uncategorized' }}</h2>
+        <span class="note-count">{{ group.notes.length }} notes</span>
+      </div>
+
+      <!-- Notes Grid / List -->
+      <div class="notes-list">
+        <article class="note-card" *ngFor="let note of group.notes" (click)="openNote(note.id)">
+          <div class="note-card-content">
+            <h3 class="note-title">{{ note.title || 'Untitled Note' }}</h3>
+            <p class="note-preview">{{ getPreview(note.content) }}</p>
+            
+            <div class="note-meta">
+              <span class="meta-item date">
+                <i class="pi pi-clock"></i>
+                Updated {{ note.updatedAt | date:'mediumDate' }}
+              </span>
+              <span class="meta-dot">&middot;</span>
+              <span class="meta-item read-time">
+                {{ getReadingTime(note.content) }} min read
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+</div>
