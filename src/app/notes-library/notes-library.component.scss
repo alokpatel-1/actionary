@@ -152,7 +152,6 @@
 
 .note-card {
   cursor: pointer;
-  group: hover;
   padding-bottom: 2rem;
   border-bottom: 1px solid #f0f0f0;
   transition: opacity 0.2s;
@@ -430,6 +429,7 @@
 
 .library-main-feed {
   min-width: 0;
+  grid-column: 1;
 }
 
 .library-sidebar-filters {
@@ -440,6 +440,7 @@
   top: 6rem;
   border-left: 1px solid rgba(0, 0, 0, 0.06);
   padding-left: 2.5rem;
+  grid-column: 2;
 }
 
 .sidebar-section {
@@ -547,26 +548,16 @@
 
 @media (max-width: 850px) {
   .library-split-layout {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
   }
 
   .library-sidebar-filters {
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 1.5rem;
-    border-left: none;
-    padding-left: 0;
+    display: none !important;
   }
 
-  .sidebar-section {
-    flex: 1;
-    min-width: 200px;
-  }
+
 }
 
 /* ── Dark Mode Overrides ── */
@@ -621,6 +612,38 @@
 
   .library-sidebar-filters {
     border-left-color: rgba(255, 255, 255, 0.08);
+  }
+
+  @media (max-width: 850px) {
+    .library-sidebar-filters {
+      background: #1e1e1e;
+      border-color: transparent;
+      box-shadow: none;
+
+      &.expanded {
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      }
+    }
+
+    .sort-row-btn,
+    .folder-row-btn,
+    .tag-row-btn {
+      background: #121212 !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+      color: #94a3b8 !important;
+
+      &.active {
+        background: #818cf8 !important;
+        color: #1e1e1e !important;
+        border-color: #818cf8 !important;
+        box-shadow: 0 2px 8px rgba(129, 140, 248, 0.35) !important;
+
+        i {
+          color: #1e1e1e !important;
+        }
+      }
+    }
   }
 }
 
@@ -1127,3 +1150,136 @@
     }
   }
 }
+
+@media (max-width: 480px) {
+  .library-header {
+    padding: 1.5rem 1rem;
+  }
+
+  .library-title {
+    font-size: 1.85rem;
+  }
+
+  .library-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .library-content {
+    padding: 1.5rem 1rem;
+  }
+
+
+
+  .notes-list {
+    gap: 1.5rem;
+  }
+
+  .note-title {
+    font-size: 1.2rem;
+  }
+
+  .note-preview {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+
+}
+
+.mobile-filter-toggle-container {
+  display: none !important;
+}
+
+
+
+.notes-feed-container.hidden-on-mobile,
+.thoughts-feed-container.hidden-on-mobile {
+  @media (max-width: 850px) {
+    display: none !important;
+  }
+}
+
+.mobile-feed-switcher-webstyle {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .mobile-feed-switcher-webstyle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 0.75rem;
+  }
+
+  .switcher-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 38px;
+
+    i {
+      font-size: 0.95rem;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.02);
+      color: #0f172a;
+    }
+
+    &.active {
+      background: #fff;
+      border-color: rgba(99, 102, 241, 0.15);
+      color: #4f46e5;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
+
+      i {
+        color: #4f46e5 !important;
+      }
+    }
+  }
+}
+
+:host-context([data-theme="dark"]) {
+  @media (max-width: 850px) {
+    .mobile-feed-switcher-webstyle {
+      border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .switcher-btn {
+      color: #94a3b8;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: #f8fafc;
+      }
+
+      &.active {
+        background: #1e1e1e;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #818cf8;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+        i {
+          color: #818cf8 !important;
+        }
+      }
+    }
+  }
+}
+
+

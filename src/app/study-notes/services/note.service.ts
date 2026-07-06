@@ -2,7 +2,7 @@ import { Injectable, inject, signal, effect } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { NoteIdbService } from './note-idb.service';
 import { NoteSyncService } from './note-sync.service';
-import { Note, NoteCreate, NoteFolder, DEFAULT_FOLDER, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
+import { Note, NoteCreate, NoteFolder, QuickThought, DEFAULT_FOLDER, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
 import { v4 as uuidv4 } from 'uuid';
 import { Observable, from, BehaviorSubject, forkJoin, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -25,11 +25,11 @@ export class NoteService {
   expandedFolders = signal<Record<string, boolean>>({});
 
   constructor() {
-    effect(() => {
-      if (this.syncService.syncStatus() === 'completed') {
-        this.triggerRefresh();
-        this.cleanupOldArchivedNotes().subscribe();
-      }
+    console.log('[Note Service] Constructor initialized');
+    this.syncService.syncCompleted$.subscribe(() => {
+      console.log('[Note Service] Sync completed event received, triggering refresh');
+      this.triggerRefresh();
+      this.cleanupOldArchivedNotes().subscribe();
     });
   }
 
@@ -297,8 +297,15 @@ export class NoteService {
     );
   }
 
+  private filterFoldersByUser(folders: NoteFolder[]): NoteFolder[] {
+    const uid = this.currentUserId;
+    if (!uid) return folders;
+    return folders.filter(f => f.userId === uid || !f.userId);
+  }
+
   getFolders(): Observable<NoteFolder[]> {
     return from(this.idb.getAllFolders()).pipe(
+      map(folders => this.filterFoldersByUser(folders)),
       switchMap(async folders => {
         const migrated = folders.map(f => ({ ...f, icon: normalizeIcon(f.icon) }));
         // Persist the migrated icon back to IDB for any folder that had a legacy pi-class
@@ -321,5 +328,33 @@ export class NoteService {
 
   getNoteCountByFolder(folderId: string): Observable<number> {
     return from(this.idb.getNoteCountByFolder(folderId));
+  }
+
+  getThoughts(): Observable<QuickThought[]> {
+    const uid = this.currentUserId;
+    return from(this.idb.getAllThoughts()).pipe(
+      map(thoughts => {
+        if (!uid) return thoughts;
+        return thoughts.filter(t => t.userId === uid || !t.userId);
+      })
+    );
+  }
+
+  saveThought(thought: QuickThought): Observable<void> {
+    const uid = this.currentUserId;
+    const toSave: QuickThought = {
+      ...thought,
+      userId: thought.userId || uid || undefined,
+      synced: false
+    };
+    return from(this.idb.putThought(toSave)).pipe(
+      tap(() => this.syncService.tryAutoSync())
+    );
+  }
+
+  deleteThought(id: string): Observable<void> {
+    return from(this.idb.deleteThought(id)).pipe(
+      switchMap(() => this.syncService.deleteRemoteThought(id))
+    );
   }
 }

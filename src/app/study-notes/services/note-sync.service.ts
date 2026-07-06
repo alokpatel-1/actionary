@@ -1,9 +1,9 @@
 import { Injectable, Injector, inject, runInInjectionContext, signal } from '@angular/core';
-import { Auth } from '@angular/fire/auth';
+import { Auth, user } from '@angular/fire/auth';
 import { Firestore, collection, doc, setDoc, deleteDoc, getDocs, CollectionReference, DocumentData } from '@angular/fire/firestore';
 import { NoteIdbService } from './note-idb.service';
-import { Note, NoteFolder, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
-import { Observable, from, of } from 'rxjs';
+import { Note, NoteFolder, QuickThought, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
+import { Observable, from, of, Subject } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -19,6 +19,7 @@ export class NoteSyncService {
   readonly syncStatus = signal<'idle' | 'started' | 'completed' | 'failed'>('idle');
   readonly lastSyncTimestamp = signal<number | null>(null);
   readonly syncError = signal<string | null>(null);
+  readonly syncCompleted$ = new Subject<void>();
 
   /** Debounce gate: prevent overlapping auto-sync calls */
   private autoSyncTimer: any = null;
@@ -32,11 +33,21 @@ export class NoteSyncService {
       });
       window.addEventListener('offline', () => this.isOnline.set(false));
     }
+    
+    // Automatically trigger sync when the user logs in
+    user(this.auth).subscribe(u => {
+      console.log('[Notes Sync] Auth state user changed:', u?.uid);
+      if (u) {
+        this.scheduleBackgroundSync(true);
+      }
+    });
   }
 
   private get uid(): string | null {
-    return this.auth.currentUser?.uid ??
+    const val = this.auth.currentUser?.uid ??
       (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('localId') : null);
+    console.log('[Notes Sync] Getter uid returned:', val);
+    return val;
   }
 
   private get notesCollection() {
@@ -51,8 +62,28 @@ export class NoteSyncService {
     return collection(this.firestore, `users/${uid}/studyFolders`);
   }
 
-  scheduleBackgroundSync(): void {
-    this.tryAutoSync();
+  private get thoughtsCollection() {
+    const uid = this.uid;
+    if (!uid) return null;
+    return collection(this.firestore, `users/${uid}/studyThoughts`);
+  }
+
+  scheduleBackgroundSync(immediate = false): void {
+    console.log('[Notes Sync] scheduleBackgroundSync called, immediate:', immediate);
+    if (immediate) {
+      if (this.autoSyncTimer) {
+        clearTimeout(this.autoSyncTimer);
+        this.autoSyncTimer = null;
+      }
+      if (!this.isSyncing) {
+        console.log('[Notes Sync] Starting immediate silent sync');
+        this.syncSilent().subscribe();
+      } else {
+        console.log('[Notes Sync] Already syncing, skipping immediate trigger');
+      }
+    } else {
+      this.tryAutoSync();
+    }
   }
 
   /**
@@ -61,11 +92,13 @@ export class NoteSyncService {
    * Does NOT show the sync status loader — it runs silently in the background.
    */
   tryAutoSync(): void {
-    if (!this.isOnline() || !this.uid) return;
+    console.log('[Notes Sync] tryAutoSync called. Online:', this.isOnline(), 'uid:', this.uid);
+    if (!this.uid) return;
     if (this.autoSyncTimer) clearTimeout(this.autoSyncTimer);
     this.autoSyncTimer = setTimeout(() => {
       this.autoSyncTimer = null;
       if (!this.isSyncing) {
+        console.log('[Notes Sync] Timer fired, starting silent sync');
         this.syncSilent().subscribe();
       }
     }, 2000);
@@ -76,16 +109,22 @@ export class NoteSyncService {
    * Used for auto-save and periodic syncs.
    */
   private syncSilent(): Observable<{ success: boolean }> {
-    if (!this.isOnline() || !this.uid) return of({ success: false });
+    console.log('[Notes Sync] syncSilent called. Online:', this.isOnline(), 'uid:', this.uid);
+    if (!this.uid) {
+      console.log('[Notes Sync] syncSilent aborted due to missing uid');
+      return of({ success: false });
+    }
     this.isSyncing = true;
     return from(this.performSync()).pipe(
       map(() => {
+        console.log('[Notes Sync] performSync completed successfully');
         this.lastSyncTimestamp.set(Date.now());
         this.syncStatus.set('completed');
+        this.syncCompleted$.next();
         return { success: true };
       }),
       catchError(err => {
-        console.error('[Notes Sync]', err);
+        console.error('[Notes Sync] Error inside syncSilent:', err);
         return of({ success: false });
       }),
       map(result => {
@@ -100,7 +139,7 @@ export class NoteSyncService {
    * Used when the user clicks the Save button.
    */
   sync(): Observable<{ success: boolean }> {
-    if (!this.isOnline() || !this.uid) {
+    if (!this.uid) {
       return of({ success: false });
     }
 
@@ -121,6 +160,7 @@ export class NoteSyncService {
       map(() => {
         this.syncStatus.set('completed');
         this.lastSyncTimestamp.set(Date.now());
+        this.syncCompleted$.next();
         return { success: true };
       }),
       catchError(err => {
@@ -146,22 +186,25 @@ export class NoteSyncService {
   private performSync(): Promise<void> {
     const col = this.firebaseCall(() => this.notesCollection);
     const foldCol = this.firebaseCall(() => this.foldersCollection);
+    const thoughtCol = this.firebaseCall(() => this.thoughtsCollection);
     if (!col) return Promise.resolve();
 
-    return this.performSyncWithCollections(col, foldCol);
+    return this.performSyncWithCollections(col, foldCol, thoughtCol);
   }
 
   private async performSyncWithCollections(
     col: CollectionReference<DocumentData>,
-    foldCol: CollectionReference<DocumentData> | null
+    foldCol: CollectionReference<DocumentData> | null,
+    thoughtCol: CollectionReference<DocumentData> | null
   ): Promise<void> {
 
     // ══════════════════════════════════════════
     // STEP 1: Fetch current remote state FIRST
     // ══════════════════════════════════════════
-    const [noteSnapshot, foldSnapshot] = await Promise.all([
+    const [noteSnapshot, foldSnapshot, thoughtSnapshot] = await Promise.all([
       this.firebaseAwait(() => getDocs(col)),
-      foldCol ? this.firebaseAwait(() => getDocs(foldCol)) : Promise.resolve(null)
+      foldCol ? this.firebaseAwait(() => getDocs(foldCol)) : Promise.resolve(null),
+      thoughtCol ? this.firebaseAwait(() => getDocs(thoughtCol)) : Promise.resolve(null)
     ]);
 
     const remoteNotes = noteSnapshot.docs.map(d => d.data() as Omit<Note, 'synced'>);
@@ -171,6 +214,11 @@ export class NoteSyncService {
       ? foldSnapshot.docs.map(d => d.data() as NoteFolder)
       : [];
     const remoteFolderIds = new Set(remoteFolders.map(f => f.id));
+
+    const remoteThoughts = thoughtSnapshot
+      ? thoughtSnapshot.docs.map(d => d.data() as QuickThought)
+      : [];
+    const remoteThoughtIds = new Set(remoteThoughts.map(t => t.id));
 
     // ══════════════════════════════════════════
     // STEP 2: Sync Folders
@@ -258,13 +306,46 @@ export class NoteSyncService {
         await this.idb.addNote({ ...remote, synced: true } as Note);
       }
     }
+
+    // ══════════════════════════════════════════
+    // STEP 6: Sync Quick Thoughts
+    // ══════════════════════════════════════════
+    if (thoughtCol) {
+      // 6a. Push local unsynced thoughts to Firestore
+      const unsyncedThoughts = await this.idb.getUnsyncedThoughts();
+      for (const thought of unsyncedThoughts) {
+        const { synced, ...data } = thought;
+        await this.firebaseAwait(() => setDoc(doc(thoughtCol, thought.id), data, { merge: true }));
+        thought.synced = true;
+        await this.idb.putThought(thought);
+        remoteThoughtIds.add(thought.id);
+      }
+
+      // 6b. Delete local thoughts that no longer exist on Firestore (skip unsynced ones)
+      const localThoughts = await this.idb.getAllThoughts();
+      for (const thought of localThoughts) {
+        if (thought.synced && !remoteThoughtIds.has(thought.id)) {
+          await this.idb.deleteThought(thought.id);
+        }
+      }
+
+      // 6c. Merge remote thoughts into local IndexedDB
+      for (const remote of remoteThoughts) {
+        const local = (await this.idb.getAllThoughts()).find(t => t.id === remote.id);
+        if (!local) {
+          await this.idb.putThought({ ...remote, synced: true } as QuickThought);
+        } else if (local.synced !== false && remote.createdAt > local.createdAt) {
+          await this.idb.putThought({ ...remote, synced: true } as QuickThought);
+        }
+      }
+    }
   }
 
   /**
    * Immediately deletes a note from Firestore. Shows the sync loader.
    */
   deleteRemote(noteId: string): Observable<void> {
-    if (!this.isOnline() || !this.uid) return of(undefined);
+    if (!this.uid) return of(undefined);
 
     this.syncStatus.set('started');
     this.syncError.set(null);
@@ -295,7 +376,7 @@ export class NoteSyncService {
    * Immediately deletes a folder from Firestore. Shows the sync loader.
    */
   deleteRemoteFolder(folderId: string): Observable<void> {
-    if (!this.isOnline() || !this.uid) return of(undefined);
+    if (!this.uid) return of(undefined);
 
     this.syncStatus.set('started');
     this.syncError.set(null);
@@ -313,6 +394,38 @@ export class NoteSyncService {
       map(() => {
         this.syncStatus.set('completed');
         this.lastSyncTimestamp.set(Date.now());
+      }),
+      catchError(err => {
+        this.syncStatus.set('failed');
+        this.syncError.set(err?.message || 'Sync failed');
+        return of(undefined);
+      })
+    );
+  }
+
+  /**
+   * Immediately deletes a thought from Firestore. Shows the sync loader.
+   */
+  deleteRemoteThought(thoughtId: string): Observable<void> {
+    if (!this.uid) return of(undefined);
+
+    this.syncStatus.set('started');
+    this.syncError.set(null);
+
+    const deletePromise = Promise.all([
+      this.firebaseAwait(async () => {
+        const col = this.thoughtsCollection;
+        if (!col) return;
+        await deleteDoc(doc(col, thoughtId));
+      }),
+      new Promise(resolve => setTimeout(resolve, 800))
+    ]);
+
+    return from(deletePromise).pipe(
+      map(() => {
+        this.syncStatus.set('completed');
+        this.lastSyncTimestamp.set(Date.now());
+        this.syncCompleted$.next();
       }),
       catchError(err => {
         this.syncStatus.set('failed');
