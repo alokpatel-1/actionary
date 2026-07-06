@@ -240,6 +240,11 @@ export class NoteIdbService {
     });
   }
 
+  async getUnsyncedThoughts(): Promise<QuickThought[]> {
+    const all = await this.getAllThoughts();
+    return all.filter(t => t.synced === false);
+  }
+
   async deleteThought(id: string): Promise<void> {
     const store = await this.getThoughtStore('readwrite');
     return new Promise((resolve, reject) => {

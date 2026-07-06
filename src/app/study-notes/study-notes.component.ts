@@ -53,7 +53,7 @@ export class StudyNotesComponent implements OnInit {
   editingThoughtId = signal<string | null>(null);
 
   loadQuickThoughts(): void {
-    this.idb.getAllThoughts().then(list => {
+    this.noteService.getThoughts().subscribe(list => {
       this.quickThoughtsList.set(list);
     });
   }
@@ -70,7 +70,7 @@ export class StudyNotesComponent implements OnInit {
         text,
         createdAt: Date.now()
       };
-      this.idb.putThought(updated).then(() => {
+      this.noteService.saveThought(updated).subscribe(() => {
         this.newThoughtText.set('');
         this.editingThoughtId.set(null);
         this.quickThoughtsView.set('list');
@@ -83,7 +83,7 @@ export class StudyNotesComponent implements OnInit {
         text,
         createdAt: Date.now()
       };
-      this.idb.putThought(newThought).then(() => {
+      this.noteService.saveThought(newThought).subscribe(() => {
         this.newThoughtText.set('');
         this.quickThoughtsView.set('list'); // transition to list to show their new thought!
         this.loadQuickThoughts();
@@ -92,7 +92,7 @@ export class StudyNotesComponent implements OnInit {
   }
 
   deleteQuickThought(id: string): void {
-    this.idb.deleteThought(id).then(() => {
+    this.noteService.deleteThought(id).subscribe(() => {
       this.loadQuickThoughts();
       // If we are currently editing the deleted thought, clear the edit state
       if (this.editingThoughtId() === id) {
@@ -207,7 +207,7 @@ export class StudyNotesComponent implements OnInit {
     this.loadQuickThoughts();
 
     // On startup: pull latest from Firestore in the background (no blocking loader).
-    this.noteService.syncService.scheduleBackgroundSync();
+    this.noteService.syncService.scheduleBackgroundSync(true);
 
     // Subscribe to note refreshes
     this.noteService.getNotesRefreshObservable().subscribe(() => {

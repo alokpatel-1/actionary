@@ -1272,6 +1272,48 @@ import { forkJoin, from } from 'rxjs';
     }
 
     @media (max-width: 768px) {
+      .medium-nav {
+        padding: 0 0.75rem;
+        height: 56px;
+      }
+
+      .nav-left {
+        min-width: auto;
+        gap: 0.5rem;
+      }
+
+      .brand-text {
+        display: block !important;
+      }
+
+      .search-wrapper {
+        display: block !important;
+        max-width: 120px;
+      }
+
+      .search-input {
+        padding: 0.45rem 0.5rem 0.45rem 2rem;
+        font-size: 0.8rem;
+      }
+
+      .nav-switch-btn {
+        display: none !important;
+      }
+
+      .widget-info,
+      .widget-chevron {
+        display: none !important;
+      }
+
+      .user-profile-widget {
+        padding: 0;
+        border: none;
+        &:hover {
+          background: transparent;
+          border-color: transparent;
+        }
+      }
+
       .archive-editor-modal {
         width: 92vw;
         max-width: 92vw;

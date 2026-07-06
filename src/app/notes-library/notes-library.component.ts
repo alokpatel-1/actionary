@@ -40,6 +40,7 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   sortOrder = signal<SortOrder>('created');
   selectedTag = signal<string | null>(null);
   filterFolderId = signal<string | null>(null);
+  showMobileFilters = signal(false);
 
   // Recent searches
   recentSearches = signal<string[]>(this.loadRecentSearches());
@@ -174,14 +175,22 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
 
     this.loadNotes();
 
-    this.idbService.getAllThoughts().then(thoughts => {
+    // Trigger sync on startup if they land on library view directly
+    this.noteService.syncService.scheduleBackgroundSync(true);
+
+    this.noteService.getThoughts().subscribe(thoughts => {
       this.thoughts.set(thoughts);
     });
 
     this.noteService.getNotesRefreshObservable().pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => {
+      console.log('[Notes Library] Notes refresh observable fired');
       this.loadNotes();
+      this.noteService.getFolders().subscribe(f => {
+        console.log('[Notes Library] Loaded folders count:', f.length);
+        this.folders.set(f);
+      });
     });
   }
 
@@ -191,8 +200,10 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   }
 
   loadNotes(): void {
-    this.idbService.getAllNotes().then(notes => {
-      this.notes.set(notes.filter(n => !n.isDeleted));
+    console.log('[Notes Library] loadNotes called');
+    this.noteService.getAllNotes().subscribe(notes => {
+      console.log('[Notes Library] Received notes array from NoteService:', notes);
+      this.notes.set(notes);
     });
   }
 
@@ -231,10 +242,10 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
       text,
       createdAt: Date.now()
     };
-    this.idbService.putThought(newThought).then(() => {
+    this.noteService.saveThought(newThought).subscribe(() => {
       this.newLibraryThoughtText.set('');
       this.thoughtsView.set('list');
-      this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+      this.noteService.getThoughts().subscribe(list => this.thoughts.set(list));
     });
   }
 
@@ -250,9 +261,9 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
         text,
         createdAt: Date.now()
       };
-      this.idbService.putThought(newThought).then(() => {
+      this.noteService.saveThought(newThought).subscribe(() => {
         this.editingThought.set(null);
-        this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+        this.noteService.getThoughts().subscribe(list => this.thoughts.set(list));
       });
     } else {
       // Update existing thought
@@ -260,18 +271,18 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
         ...t,
         text
       };
-      this.idbService.putThought(updated).then(() => {
+      this.noteService.saveThought(updated).subscribe(() => {
         this.editingThought.set(null);
-        this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+        this.noteService.getThoughts().subscribe(list => this.thoughts.set(list));
       });
     }
   }
 
   deleteThought(id: string): void {
     if (!id) return;
-    this.idbService.deleteThought(id).then(() => {
+    this.noteService.deleteThought(id).subscribe(() => {
       this.editingThought.set(null);
-      this.idbService.getAllThoughts().then(list => this.thoughts.set(list));
+      this.noteService.getThoughts().subscribe(list => this.thoughts.set(list));
     });
   }
 

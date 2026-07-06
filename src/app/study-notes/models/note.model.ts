@@ -27,6 +27,8 @@ export interface QuickThought {
   id: string;
   text: string;
   createdAt: number;
+  userId?: string;
+  synced?: boolean;
 }
 
 export type NoteCreate = Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'synced'>;
