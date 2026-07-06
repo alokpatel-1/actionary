@@ -212,16 +212,6 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
     return text.trim().split(/\s+/).length;
   }
 
-  openNewThoughtSheet(): void {
-    this.editingThought.set({
-      id: '',
-      text: '',
-      createdAt: 0
-    });
-    this.thoughtEditText.set('');
-    this.isEditingThoughtMode.set(true);
-  }
-
   openThoughtEdit(thought: QuickThought): void {
     this.editingThought.set(thought);
     this.thoughtEditText.set(thought.text);

@@ -1200,6 +1200,13 @@
   }
 }
 
+.notes-feed-container.hidden-on-desktop,
+.thoughts-feed-container.hidden-on-desktop {
+  @media (min-width: 851px) {
+    display: none !important;
+  }
+}
+
 .mobile-feed-switcher-webstyle {
   display: none;
 }
