@@ -44,6 +44,40 @@ export class StudyNotesComponent implements OnInit {
   sidebarExpanded = signal(true);
   sidebarMobileOpen = signal(false);
   isSidebarFoldersExpanded = signal(true);
+  groupByTag = signal<boolean>(
+    typeof localStorage !== 'undefined'
+      ? localStorage.getItem('group_by_tag') === 'true'
+      : false
+  );
+  expandedTags = signal<Record<string, boolean>>({});
+  allExistingTags = computed(() => {
+    const tagsSet = new Set<string>();
+    this.allNotes().forEach(note => {
+      (note.tags || []).forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) {
+          tagsSet.add(trimmed);
+        }
+      });
+    });
+    return Array.from(tagsSet).sort();
+  });
+  menuTagInput = signal('');
+  menuTagInputFocused = signal(false);
+  menuMatchingTags = computed(() => {
+    const query = this.menuTagInput().trim().toLowerCase();
+    const existing = this.allExistingTags();
+    const note = this.selectedMenuNote();
+    const noteTags = note ? (note.tags || []) : [];
+    
+    if (!query) {
+      return existing.filter(tag => !noteTags.includes(tag));
+    }
+    
+    return existing.filter(tag => 
+      tag.includes(query) && !noteTags.includes(tag)
+    );
+  });
 
   // Quick Thoughts signals & methods
   showQuickThoughts = signal(false);
@@ -126,12 +160,11 @@ export class StudyNotesComponent implements OnInit {
   createNewNote(): void {
     if (this.isCreatingNote()) return;
     this.closeMobileSidebar();
-    const activeFid = this.noteService.activeFolderId();
     
     const newNote = {
       title: '',
       content: '',
-      folderId: activeFid || '__uncategorized__',
+      folderId: '__uncategorized__',
       isPinned: false
     };
     
@@ -161,6 +194,95 @@ export class StudyNotesComponent implements OnInit {
     }
     return list.filter(n => n.folderId === folderId);
   });
+
+  toggleGroupByTag(): void {
+    const newValue = !this.groupByTag();
+    this.groupByTag.set(newValue);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('group_by_tag', String(newValue));
+    }
+  }
+
+  isTagExpanded(tag: string): boolean {
+    return !!this.expandedTags()[tag];
+  }
+
+  toggleTagExpand(event: Event, tag: string): void {
+    event.stopPropagation();
+    event.preventDefault();
+    const current = this.expandedTags();
+    this.expandedTags.set({
+      ...current,
+      [tag]: !current[tag]
+    });
+  }
+
+  groupedNotes = computed(() => {
+    const notesList = this.allNotes();
+    const groups: { tag: string; notes: Note[] }[] = [];
+    const untaggedNotes: Note[] = [];
+    const tagMap = new Map<string, Note[]>();
+
+    notesList.forEach(note => {
+      const tags = note.tags || [];
+      if (tags.length === 0) {
+        untaggedNotes.push(note);
+      } else {
+        tags.forEach(tag => {
+          const trimmedTag = tag.trim();
+          if (trimmedTag) {
+            if (!tagMap.has(trimmedTag)) {
+              tagMap.set(trimmedTag, []);
+            }
+            tagMap.get(trimmedTag)!.push(note);
+          }
+        });
+      }
+    });
+
+    const sortedTags = Array.from(tagMap.keys()).sort((a, b) => a.localeCompare(b));
+    sortedTags.forEach(tag => {
+      groups.push({
+        tag,
+        notes: tagMap.get(tag)!
+      });
+    });
+
+    return {
+      grouped: groups,
+      untagged: untaggedNotes
+    };
+  });
+
+  triggerCreateNoteWithTag(event: Event, tag: string): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.closeMobileSidebar();
+    
+    if (this.isCreatingNote()) return;
+    
+    const newNote = {
+      title: '',
+      content: '',
+      folderId: '__uncategorized__',
+      isPinned: false,
+      tags: [tag]
+    };
+    
+    this.isCreatingNote.set(true);
+    this.spinner.show();
+    this.noteService.addNote(newNote as any).subscribe({
+      next: note => {
+        this.isCreatingNote.set(false);
+        this.spinner.hide();
+        this.router.navigate(['/notes', 'edit', note.id], { queryParams: { edit: 'true' } });
+      },
+      error: () => {
+        this.isCreatingNote.set(false);
+        this.spinner.hide();
+      }
+    });
+  }
 
   userName = signal('User');
   userEmail = signal('');
@@ -383,6 +505,56 @@ export class StudyNotesComponent implements OnInit {
     if (this.noteMenuPopover) {
       this.noteMenuPopover.hide();
     }
+  }
+
+  onMenuShow(): void {
+    this.menuTagInput.set('');
+  }
+
+  onMenuTagFocus(): void {
+    this.menuTagInputFocused.set(true);
+  }
+
+  onMenuTagBlur(): void {
+    setTimeout(() => {
+      this.menuTagInputFocused.set(false);
+    }, 150);
+  }
+
+  addTagToSelectedNote(tag: string): void {
+    const note = this.selectedMenuNote();
+    this.menuTagInput.set('');
+    if (!note) return;
+    const current = note.tags || [];
+    const normalizedTag = tag.trim().toLowerCase();
+    if (normalizedTag && !current.includes(normalizedTag)) {
+      const updatedTags = [...current, normalizedTag];
+      
+      this.noteService.updateNote(note.id, { tags: updatedTags }).subscribe({
+        next: () => {
+          note.tags = updatedTags;
+          this.selectedMenuNote.set({ ...note });
+          this.noteService.triggerRefresh();
+        },
+        error: (err) => console.error('Error adding tag to selected note:', err)
+      });
+    }
+  }
+
+  removeTagFromSelectedNote(tag: string): void {
+    const note = this.selectedMenuNote();
+    if (!note) return;
+    const current = note.tags || [];
+    const updatedTags = current.filter(t => t !== tag);
+    
+    this.noteService.updateNote(note.id, { tags: updatedTags }).subscribe({
+      next: () => {
+        note.tags = updatedTags;
+        this.selectedMenuNote.set({ ...note });
+        this.noteService.triggerRefresh();
+      },
+      error: (err) => console.error('Error removing tag from selected note:', err)
+    });
   }
 
   triggerMoveToFolder(): void {

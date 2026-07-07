@@ -63,11 +63,6 @@
                 </div>
 
                 <div class="note-meta">
-                  <span class="meta-item folder" style="opacity: 0.85;">
-                    <i [class]="getPrimeIcon(getFolderIcon(note.folderId))" [style.color]="getFolderColor(note.folderId)"></i>
-                    <span style="font-weight: 500;">{{ getFolderName(note.folderId) }}</span>
-                  </span>
-                  <span class="meta-dot">&middot;</span>
                   <span class="meta-item date">
                     <i class="pi pi-clock"></i>
                     Created {{ note.createdAt | date:'mediumDate' }}
@@ -205,25 +200,7 @@
           </div>
         </div>
 
-        <!-- Folder Filter Control (only for Notes) -->
-        <div class="sidebar-section" *ngIf="activeTab() === 'notes' && visibleFolders().length > 0">
-          <h4 class="sidebar-section-title">Folders</h4>
-          <div class="folder-vertical-group">
-            <button class="folder-row-btn" 
-                    [class.active]="filterFolderId() === null"
-                    (click)="selectFolder(null)">
-              <i class="pi pi-folder" style="color: #64748B;"></i>
-              <span>All Folders</span>
-            </button>
-            <button class="folder-row-btn"
-                    *ngFor="let folder of visibleFolders()"
-                    [class.active]="filterFolderId() === folder.id"
-                    (click)="selectFolder(folder.id)">
-              <i [class]="getPrimeIcon(folder.icon)" [style.color]="folder.color"></i>
-              <span>{{ folder.name }}</span>
-            </button>
-          </div>
-        </div>
+
 
         <!-- Tag Filter Control (only for Notes) -->
         <div class="sidebar-section" *ngIf="activeTab() === 'notes' && allTags().length > 0">

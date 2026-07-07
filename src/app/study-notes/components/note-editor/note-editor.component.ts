@@ -106,6 +106,21 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   // Tags
   tags = signal<string[]>([]);
   tagInput = signal('');
+  allExistingTags = signal<string[]>([]);
+  tagInputFocused = signal(false);
+  matchingTags = computed(() => {
+    const query = this.tagInput().trim().toLowerCase();
+    const existing = this.allExistingTags();
+    const currentTags = this.tags();
+    
+    if (!query) {
+      return existing.filter(tag => !currentTags.includes(tag));
+    }
+    
+    return existing.filter(tag =>
+      tag.includes(query) && !currentTags.includes(tag)
+    );
+  });
 
   // Status
   status = signal<'draft' | 'published'>('draft');
@@ -163,6 +178,16 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.autoSave$.next();
   }
 
+  addTagFromSuggestion(tag: string): void {
+    const current = this.tags();
+    if (!current.includes(tag)) {
+      this.tags.set([...current, tag]);
+    }
+    this.tagInput.set('');
+    this.autoSaveSession = this.noteSession;
+    this.autoSave$.next();
+  }
+
   removeTag(tag: string): void {
     this.tags.set(this.tags().filter(t => t !== tag));
     this.autoSaveSession = this.noteSession;
@@ -174,6 +199,16 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       event.preventDefault();
       this.addTag();
     }
+  }
+
+  onTagFocus(): void {
+    this.tagInputFocused.set(true);
+  }
+
+  onTagBlur(): void {
+    setTimeout(() => {
+      this.tagInputFocused.set(false);
+    }, 150);
   }
 
   toggleStatus(): void {
@@ -215,6 +250,15 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.noteService.getFolders().subscribe(f => this.folders.set(f));
+
+    this.noteService.getAllNotes().subscribe(notes => {
+      const tagsSet = new Set<string>();
+      notes.forEach(note => (note.tags || []).forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tagsSet.add(trimmed);
+      }));
+      this.allExistingTags.set(Array.from(tagsSet).sort());
+    });
 
     this.route.paramMap.pipe(
       tap(() => {
