@@ -63,14 +63,27 @@
           #{{ tag }}
           <button class="tag-remove" (click)="removeTag(tag)" title="Remove tag">&times;</button>
         </span>
-        <input class="tag-input"
-               type="text"
-               placeholder="Add tag…"
-               [value]="tagInput()"
-               (input)="tagInput.set($any($event.target).value)"
-               (keydown)="onTagKeydown($event)"
-               (blur)="addTag()"
-               maxlength="30">
+        <div class="tag-input-container" style="position: relative; display: inline-block;">
+          <input class="tag-input"
+                 type="text"
+                 placeholder="Add tag…"
+                 [ngModel]="tagInput()"
+                 (ngModelChange)="tagInput.set($event)"
+                 (keydown)="onTagKeydown($event)"
+                 (focus)="onTagFocus()"
+                 (blur)="onTagBlur()"
+                 maxlength="30">
+
+          <!-- Autocomplete suggestions dropdown -->
+          <div class="editor-tag-suggestions" *ngIf="tagInputFocused() && matchingTags().length > 0">
+            <button type="button"
+                    class="editor-suggestion-item" 
+                    *ngFor="let suggestion of matchingTags()"
+                    (mousedown)="addTagFromSuggestion(suggestion)">
+              #{{ suggestion }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
