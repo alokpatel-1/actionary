@@ -965,3 +965,51 @@
     color: var(--color-text-primary);
   }
 }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — MOBILE (<768px)
+   ═══════════════════════════════════════ */
+@media (max-width: 767px) {
+  :host {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .editor-page {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .content-container {
+    padding: 0 0.25rem;
+    max-width: 100%;
+  }
+
+  .note-title,
+  .note-title-preview {
+    font-size: 1.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .bar-btn span,
+  .edit-btn-pill span,
+  .save-btn-pill span {
+    display: none;
+  }
+
+  .bar-btn,
+  .edit-btn-pill,
+  .save-btn-pill {
+    padding: 0 0.5rem;
+    min-width: 32px;
+  }
+
+  .editor-sync-group {
+    display: none;
+  }
+
+  .word-count-stat {
+    display: none;
+  }
+}

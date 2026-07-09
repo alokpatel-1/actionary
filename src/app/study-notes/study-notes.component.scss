@@ -2,6 +2,13 @@
    Study Notes — Sidebar + Centered Content Layout
    ========================================================= */
 
+/* Critical: Angular custom elements default to display:inline — must override */
+:host {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 $sidebar-width-expanded: 14.5rem;
 $sidebar-width-collapsed: 4rem;
 $sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -808,6 +815,16 @@ $sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
    RESPONSIVE — MOBILE (<768px)
    ═══════════════════════════════════════ */
 @media (max-width: 767px) {
+  .notes-shell {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  .shell-body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   .mobile-menu-btn {
     display: flex;
   }
@@ -853,9 +870,18 @@ $sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   .main-content {
     margin-left: 0 !important;
-    padding: 1.5rem 1rem;
+    width: 100% !important;
+    padding: 1rem 0.75rem;
+    box-sizing: border-box;
+  }
+
+  .content-centered {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
+
 
 .bar-center[editor-status] {
   display: flex;

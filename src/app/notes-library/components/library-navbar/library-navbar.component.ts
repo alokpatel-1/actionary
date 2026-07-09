@@ -1275,10 +1275,27 @@ import { forkJoin, from } from 'rxjs';
       .medium-nav {
         padding: 0 0.75rem;
         height: 56px;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100vw;
+        overflow: hidden;
       }
 
       .nav-left {
         min-width: auto;
+        flex-shrink: 0;
+        gap: 0.5rem;
+      }
+
+      .nav-center {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .nav-right {
+        min-width: auto;
+        flex-shrink: 0;
         gap: 0.5rem;
       }
 
