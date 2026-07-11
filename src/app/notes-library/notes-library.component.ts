@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NoteService } from '../study-notes/services/note.service';
@@ -42,6 +42,10 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   filterFolderId = signal<string | null>(null);
   showMobileFilters = signal(false);
 
+  // Search modal
+  showSearchModal = signal(false);
+  searchModalQuery = signal('');
+
   // Recent searches
   recentSearches = signal<string[]>(this.loadRecentSearches());
   showRecentSearches = signal(false);
@@ -50,6 +54,31 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   visibleFolders = computed(() => {
     return this.folders().filter(f => f.id !== '__uncategorized__' && f.id !== '__quick_notes__');
   });
+
+  filteredNotesForSearch = computed(() => {
+    const q = this.searchModalQuery().toLowerCase().trim();
+    if (!q) return this.notes().slice(0, 5);
+    return this.notes().filter(note =>
+      (note.title || '').toLowerCase().includes(q)
+    );
+  });
+
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    // Cmd+K (Mac) or Ctrl+K (Windows/Linux) — open/close search
+    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      event.preventDefault();
+      if (this.showSearchModal()) {
+        this.closeSearchModal();
+      } else {
+        this.openSearchModal();
+      }
+    }
+    // Escape — close search
+    if (event.key === 'Escape' && this.showSearchModal()) {
+      this.closeSearchModal();
+    }
+  }
 
   // All unique tags from notes
   allTags = computed(() => {
@@ -65,13 +94,10 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
     const folderId = this.filterFolderId();
 
     let filtered = allNotes.filter(note => {
-      // Search filter
+      // Search filter — title and tags only (not content)
       const titleMatch = (note.title || '').toLowerCase().includes(query);
-      const contentMatch = (note.content || '').toLowerCase().includes(query);
-      const folderName = this.getFolderName(note.folderId).toLowerCase();
-      const folderMatch = folderName.includes(query);
-      const tagMatch = !query || (note.tags || []).some(t => t.includes(query));
-      if (query && !titleMatch && !contentMatch && !folderMatch && !tagMatch) return false;
+      const tagMatch = !query || (note.tags || []).some(t => t.toLowerCase().includes(query));
+      if (query && !titleMatch && !tagMatch) return false;
 
       // Tag filter
       if (tag && !(note.tags || []).includes(tag)) return false;
@@ -370,5 +396,31 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
     } catch {
       return [];
     }
+  }
+
+  // Search modal methods
+  openSearchModal(): void {
+    this.searchModalQuery.set('');
+    this.showSearchModal.set(true);
+    // Focus the input after Angular renders the modal into the DOM
+    setTimeout(() => {
+      const input = document.getElementById('lib-search-input') as HTMLInputElement | null;
+      input?.focus();
+    }, 50);
+  }
+
+  closeSearchModal(): void {
+    this.showSearchModal.set(false);
+    this.searchModalQuery.set('');
+  }
+
+  selectNoteFromSearch(note: Note): void {
+    this.closeSearchModal();
+    this.router.navigate(['/library/read', note.id]);
+  }
+
+  createNewNoteFromSearch(): void {
+    this.closeSearchModal();
+    this.router.navigate(['/notes', 'create']);
   }
 }

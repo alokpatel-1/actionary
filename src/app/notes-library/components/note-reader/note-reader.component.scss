@@ -92,33 +92,7 @@
 
 .dot { color: #cbd5e1; }
 
-.article-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
 
-.action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  font-family: inherit;
-
-  i { font-size: 0.85rem; }
-
-  &:hover {
-    background: #f3f4f6;
-    color: #6366f1;
-  }
-}
 
 /* Read Position Indicator */
 .read-position {
@@ -332,20 +306,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Focus Mode ── */
-.reader-container.focus-mode {
-  .toc-sidebar { display: none !important; }
-
-  .reader-layout {
-    grid-template-columns: 1fr;
-    max-width: 680px;
-  }
-
-  .article-actions .action-btn[title="Focus Mode"],
-  .article-actions .action-btn[title="Exit Focus Mode"] {
-    color: #6366f1;
-  }
-}
 
 /* ── Loading ── */
 .loading-state {
@@ -360,9 +320,7 @@
   .read-progress-bar,
   app-library-navbar,
   .toc-sidebar,
-  .back-to-top,
-  .article-actions,
-  .read-position { display: none !important; }
+  .back-to-top { display: none !important; }
 
   .reader-layout {
     grid-template-columns: 1fr;
@@ -376,6 +334,7 @@
   .article-content { font-size: 1rem; line-height: 1.6; }
 }
 
+
 /* ── Dark Mode ── */
 :host-context([data-theme="dark"]) {
   .reader-container {
@@ -384,15 +343,15 @@
   }
 
   .article-title {
-    color: #e8e8e8;
+    color: #f0f0f0;
   }
 
   .article-author-info {
-    color: #888;
+    color: #9ca3af;
   }
 
   .dot {
-    color: #444;
+    color: #4b5563;
   }
 
   .action-btn {
@@ -403,35 +362,55 @@
     }
   }
 
-  .read-position {
-    color: #4b5563;
-  }
-
   .article-content {
     color: #d1d5db;
 
     ::ng-deep {
+      p {
+        color: #d1d5db;
+      }
+
+      li {
+        color: #d1d5db;
+      }
+
       h1, h2, h3, h4, h5, h6 {
-        color: #e8e8e8;
+        color: #f0f0f0;
       }
+
       blockquote {
-        border-left-color: #333;
-        color: #9ca3af;
+        border-left-color: #6366f1;
+        color: #a5b4fc;
+        background: rgba(99, 102, 241, 0.06);
       }
+
       pre {
-        background: #1e1e1e;
-        border-color: #333;
-        color: #e0e0e0;
+        background: #1a1a2e;
+        border-color: #2d2d4e;
+        color: #e2e8f0;
       }
+
       code {
         background: rgba(255, 255, 255, 0.1);
-        color: #f43f5e;
+        color: #f472b6;
+      }
+
+      a {
+        color: #818cf8;
+      }
+
+      strong {
+        color: #e2e8f0;
       }
     }
   }
 
   .toc-sidebar {
-    border-left-color: #333;
+    border-left-color: #2d2d2d;
+  }
+
+  .toc-heading {
+    color: #6b7280;
   }
 
   .toc-link {
@@ -928,10 +907,6 @@
     flex-wrap: wrap;
   }
 
-  /* Hide focus mode and print buttons on mobile */
-  .article-actions {
-    display: none;
-  }
 
   /* Hide the per-paragraph comment action buttons on mobile */
   .reader-block-actions {

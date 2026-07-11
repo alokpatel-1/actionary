@@ -1,8 +1,13 @@
 <div class="library-container">
-  <app-library-navbar 
-    [showSearch]="true" 
-    [searchQuery]="searchQuery()" 
-    (searchChange)="onSearch($event)">
+  <app-library-navbar [showSearch]="false" [searchQuery]="searchQuery()" (searchChange)="onSearch($event)">
+    <!-- Search icon button projected into the navbar center -->
+    <div editor-status style="display:flex; align-items:center; justify-content:center; width:100%;">
+      <button class="lib-search-trigger" (click)="openSearchModal()" id="lib-search-trigger-btn">
+        <i class="pi pi-search"></i>
+        <span>Search notes...</span>
+        <kbd>⌘K</kbd>
+      </button>
+    </div>
   </app-library-navbar>
 
   <!-- Content -->
@@ -38,9 +43,7 @@
         </div>
 
         <!-- Notes Section -->
-        <div class="notes-feed-container" 
-             [class.hidden-on-desktop]="activeTab() !== 'notes'"
-             [class.hidden-on-mobile]="activeTab() !== 'notes'">
+        <div class="notes-feed-container" [class.hidden-on-desktop]="activeTab() !== 'notes'" [class.hidden-on-mobile]="activeTab() !== 'notes'">
 
 
           <!-- Empty state -->
@@ -55,8 +58,8 @@
             <article class="note-card" *ngFor="let note of filteredNotes()" (click)="openNote(note.id)">
               <div class="note-card-content">
                 <h3 class="note-title" [innerHTML]="highlight(note.title || 'Untitled Note', searchQuery())"></h3>
-                <p class="note-preview" [innerHTML]="highlight(getPreview(note.content), searchQuery())"></p>
-                
+                <p class="note-preview">{{ getPreview(note.content) }}</p>
+
                 <!-- Tag chips -->
                 <div class="card-tags" *ngIf="note.tags && note.tags.length > 0">
                   <span class="card-tag" *ngFor="let tag of note.tags">#{{ tag }}</span>
@@ -78,9 +81,7 @@
         </div>
 
         <!-- Thoughts Section -->
-        <div class="thoughts-feed-container" 
-             [class.hidden-on-desktop]="activeTab() !== 'thoughts'"
-             [class.hidden-on-mobile]="activeTab() !== 'thoughts'">
+        <div class="thoughts-feed-container" [class.hidden-on-desktop]="activeTab() !== 'thoughts'" [class.hidden-on-mobile]="activeTab() !== 'thoughts'">
 
 
           <!-- Thoughts Feed Header & Create/List View Toggle -->
@@ -89,19 +90,13 @@
               <i class="pi pi-lightbulb feed-title-icon"></i>
               <h2>{{ thoughtsView() === 'create' ? 'Write New Thought' : 'Thoughts Feed' }}</h2>
             </div>
-            
+
             <div class="feed-view-toggles">
-              <button class="feed-toggle-icon-btn" 
-                      *ngIf="thoughtsView() === 'create'" 
-                      (click)="thoughtsView.set('list')" 
-                      title="View Past Thoughts">
+              <button class="feed-toggle-icon-btn" *ngIf="thoughtsView() === 'create'" (click)="thoughtsView.set('list')" title="View Past Thoughts">
                 <i class="pi pi-history"></i>
                 <span>View Feed</span>
               </button>
-              <button class="feed-toggle-icon-btn" 
-                      *ngIf="thoughtsView() === 'list'" 
-                      (click)="openNewThoughtCreate()" 
-                      title="Write New Thought">
+              <button class="feed-toggle-icon-btn" *ngIf="thoughtsView() === 'list'" (click)="openNewThoughtCreate()" title="Write New Thought">
                 <i class="pi pi-plus"></i>
                 <span>Write Thought</span>
               </button>
@@ -111,11 +106,7 @@
           <!-- Thoughts Create Mode -->
           <div class="thoughts-create-view" *ngIf="thoughtsView() === 'create'">
             <div class="thoughts-input-container">
-              <textarea 
-                class="thoughts-textarea" 
-                placeholder="What's on your mind? Type a thought here..." 
-                [ngModel]="newLibraryThoughtText()" 
-                (ngModelChange)="newLibraryThoughtText.set($event)">
+              <textarea class="thoughts-textarea" placeholder="What's on your mind? Type a thought here..." [ngModel]="newLibraryThoughtText()" (ngModelChange)="newLibraryThoughtText.set($event)">
               </textarea>
             </div>
             <div class="thoughts-footer-actions">
@@ -141,7 +132,7 @@
                 <div class="note-card-content">
                   <h3 class="note-title">Thought — {{ thought.createdAt | date:'mediumDate' }}</h3>
                   <p class="note-preview" [innerHTML]="highlight(getPreview(thought.text), searchQuery())"></p>
-   
+
                   <div class="note-meta">
                     <span class="meta-item badge">
                       <i class="pi pi-lightbulb" style="color: #F59E0B; font-size: 0.85rem;"></i>
@@ -206,10 +197,7 @@
         <div class="sidebar-section" *ngIf="activeTab() === 'notes' && allTags().length > 0">
           <h4 class="sidebar-section-title">Filter by Tags</h4>
           <div class="tags-vertical-group">
-            <button class="tag-row-btn"
-                    *ngFor="let tag of allTags()"
-                    [class.active]="selectedTag() === tag"
-                    (click)="selectTag(tag)">
+            <button class="tag-row-btn" *ngFor="let tag of allTags()" [class.active]="selectedTag() === tag" (click)="selectTag(tag)">
               <span>#{{ tag }}</span>
             </button>
           </div>
@@ -238,12 +226,7 @@
       </div>
 
       <!-- Edit Mode -->
-      <textarea 
-        *ngIf="isEditingThoughtMode()"
-        class="thought-edit-textarea" 
-        [ngModel]="thoughtEditText()" 
-        (ngModelChange)="thoughtEditText.set($event)"
-        placeholder="What's on your mind? Type a thought here...">
+      <textarea *ngIf="isEditingThoughtMode()" class="thought-edit-textarea" [ngModel]="thoughtEditText()" (ngModelChange)="thoughtEditText.set($event)" placeholder="What's on your mind? Type a thought here...">
       </textarea>
     </div>
 
@@ -272,4 +255,51 @@
       </ng-container>
     </div>
   </div>
+
+  <!-- ─── Search Modal (same as editor) ─── -->
+  <div class="lib-search-backdrop" *ngIf="showSearchModal()" (click)="closeSearchModal()">
+    <div class="lib-search-card" (click)="$event.stopPropagation()">
+
+      <!-- Input -->
+      <div class="lib-search-input-wrapper">
+        <i class="pi pi-search lib-search-icon"></i>
+        <input type="text"
+               class="lib-search-input-box"
+               placeholder="Search notes..."
+               [ngModel]="searchModalQuery()"
+               (ngModelChange)="searchModalQuery.set($event)"
+               autofocus
+               id="lib-search-input">
+        <button class="lib-search-clear" *ngIf="searchModalQuery()" (click)="searchModalQuery.set('')" title="Clear">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <!-- New Note -->
+      <button class="lib-search-new-btn" (click)="createNewNoteFromSearch()">
+        <i class="pi pi-plus"></i>
+        <span>New Note</span>
+      </button>
+
+      <!-- Results -->
+      <div class="lib-search-results-container">
+        <div class="lib-search-section-label">
+          {{ searchModalQuery() ? 'Search Results' : 'Recent Notes' }}
+        </div>
+        <div class="lib-search-results-list">
+          <button *ngFor="let note of filteredNotesForSearch()"
+                  class="lib-search-result-item"
+                  (click)="selectNoteFromSearch(note)">
+            <i class="pi pi-comment"></i>
+            <span class="lib-search-result-title">{{ note.title || 'Untitled' }}</span>
+          </button>
+          <div class="lib-search-no-results" *ngIf="filteredNotesForSearch().length === 0">
+            No matching notes found
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>

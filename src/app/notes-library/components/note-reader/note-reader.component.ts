@@ -60,8 +60,6 @@ export class NoteReaderComponent implements OnInit, OnDestroy {
   tocItems = signal<{ id: string; text: string; level: number }[]>([]);
   activeSection = signal('');
 
-  // Focus mode
-  focusMode = signal(false);
 
   @HostListener('window:scroll')
   onScroll(): void {
@@ -333,9 +331,6 @@ export class NoteReaderComponent implements OnInit, OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  toggleFocusMode(): void {
-    this.focusMode.update(v => !v);
-  }
 
   scrollToSection(id: string): void {
     const el = document.getElementById(id);
@@ -344,7 +339,5 @@ export class NoteReaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  printNote(): void {
-    window.print();
-  }
 }
+
