@@ -1,9 +1,9 @@
-<div class="reader-container" [class.focus-mode]="focusMode()">
+<div class="reader-container">
   <!-- Reading Progress Bar -->
   <div class="read-progress-bar" [style.width.%]="scrollProgress()"></div>
 
   <app-library-navbar 
-    [showSearch]="true"
+    [showSearch]="false"
     [noteIdToEdit]="note()?.id"
     (searchChange)="onSearchChange($event)">
   </app-library-navbar>
@@ -23,16 +23,7 @@
               <span class="dot">&middot;</span>
               <span class="read-time">{{ readingTime() }} min read</span>
             </div>
-            <div class="article-actions">
-              <!-- Focus Mode -->
-              <button class="action-btn" (click)="toggleFocusMode()" [title]="focusMode() ? 'Exit Focus Mode' : 'Focus Mode'">
-                <i class="pi" [ngClass]="focusMode() ? 'pi-window-maximize' : 'pi-expand'"></i>
-              </button>
-              <!-- Print -->
-              <button class="action-btn" (click)="printNote()" title="Print / Export PDF">
-                <i class="pi pi-print"></i>
-              </button>
-            </div>
+
           </div>
 
           <!-- Read position indicator -->

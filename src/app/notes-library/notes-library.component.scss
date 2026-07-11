@@ -1298,3 +1298,298 @@
 }
 
 
+/* ── Library Search Trigger Button (in navbar center) ── */
+.lib-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 400px;
+  padding: 0.55rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f5f5f5;
+  color: #9ca3af;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  text-align: left;
+
+  i { font-size: 0.9rem; flex-shrink: 0; }
+
+  span { flex: 1; }
+
+  kbd {
+    font-size: 0.7rem;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    font-family: inherit;
+    color: #bdbdbd;
+  }
+
+  &:hover {
+    background: #fff;
+    border-color: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.08);
+    color: #6b7280;
+  }
+}
+
+/* ── Library Search Modal ── */
+.lib-search-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  animation: libSearchFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes libSearchFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lib-search-card {
+  width: 100%;
+  max-width: 540px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 75vh;
+  overflow: hidden;
+  animation: libSearchSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes libSearchSlideDown {
+  from { transform: translateY(-16px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.lib-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.lib-search-icon {
+  font-size: 1.1rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.lib-search-input-box {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: #111;
+  font-family: inherit;
+  outline: none;
+
+  &::placeholder { color: #9ca3af; }
+}
+
+.lib-search-clear {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+
+  i { font-size: 0.8rem; }
+
+  &:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+}
+
+.lib-search-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.75rem 1.25rem 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+  i { font-size: 0.9rem; }
+
+  &:hover {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.04);
+    color: #6366f1;
+  }
+}
+
+.lib-search-results-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 1.25rem 1.25rem;
+}
+
+.lib-search-section-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.05em;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.lib-search-results-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+  }
+}
+
+.lib-search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+
+  i {
+    font-size: 1rem;
+    color: #9ca3af;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  &:hover {
+    background: #f5f5f5;
+    color: #111;
+    i { color: #374151; }
+  }
+}
+
+.lib-search-result-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lib-search-no-results {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* ── Dark mode overrides ── */
+:host-context([data-theme="dark"]) {
+  .lib-search-trigger {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #6b7280;
+
+    kbd {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+      color: #4b5563;
+    }
+
+    &:hover {
+      background: #222;
+      border-color: rgba(129, 140, 248, 0.3);
+    }
+  }
+
+  .lib-search-card {
+    background: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .lib-search-input-wrapper {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .lib-search-input-box {
+    color: #f0f0f0;
+    &::placeholder { color: #4b5563; }
+  }
+
+  .lib-search-icon { color: #4b5563; }
+
+  .lib-search-clear {
+    color: #4b5563;
+    &:hover { background: rgba(255,255,255,0.06); color: #e0e0e0; }
+  }
+
+  .lib-search-new-btn {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #6b7280;
+    &:hover {
+      border-color: #818cf8;
+      background: rgba(129, 140, 248, 0.08);
+      color: #818cf8;
+    }
+  }
+
+  .lib-search-section-label { color: #4b5563; }
+
+  .lib-search-result-item {
+    color: #d1d5db;
+    i { color: #4b5563; }
+    &:hover { background: rgba(255,255,255,0.05); color: #f0f0f0; i { color: #9ca3af; } }
+  }
+
+  .lib-search-no-results { color: #4b5563; }
+}
+
+@media (max-width: 767px) {
+  .lib-search-backdrop { padding-top: 5vh; }
+  .lib-search-card { max-height: 85vh; border-radius: 0; }
+  .lib-search-trigger kbd { display: none; }
+}
