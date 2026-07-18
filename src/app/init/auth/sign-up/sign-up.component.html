@@ -1,160 +1,166 @@
-<div class="min-h-screen flex flex-col items-center p-6 bg-white">
-  <header class="mb-6 w-full flex items-center h-[60px]">
-    <a [routerLink]="['/']" class="logo text-3xl">
-      Actionary
+<div class="auth-page-wrapper">
+
+  <!-- Ambient Background Glows -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Top Header -->
+  <header class="auth-header">
+    <a [routerLink]="['/']" class="brand-logo">
+      <div class="brand-icon">
+        <i class="pi pi-book"></i>
+      </div>
+      <span class="brand-name">Scribe<span class="brand-dot">.</span></span>
+    </a>
+
+    <a [routerLink]="['/']" class="btn-back">
+      <i class="pi pi-arrow-left"></i>
+      <span>Back to Home</span>
     </a>
   </header>
-  <div class="w-[1200px] min-h-[700px] bg-white rounded-lg flex">
-    <div class="w-1/2 bg-gray-50 flex items-center justify-center">
-      <img src="createaccount.jpg" alt="Signup Illustration" class="w-full h-full object-cover rounded-l-lg" />
-    </div>
-    <div class="flex flex-col justify-center w-1/2 p-10 border-l border-gray-300">
-      <header class="mb-8 text-center">
-        <h1 class="text-3xl font-title font-extrabold text-neutral-950 leading-tight">
-          Create Your Account
-        </h1>
-      </header>
-      <form class="flex flex-col gap-6" [formGroup]="signupForm">
-        <div>
-          <label for="name" class="block text-sm text-neutral-500 mb-2">
-            Full Name
-          </label>
-          <input pInputText formControlName="fullName" type="text" id="name" placeholder="Enter your full name..."
-            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0C2AFA] transition-all duration-300" />
-          @if (signupForm.get('fullName')?.touched && signupForm.get('fullName')?.hasError('required')) {
-          <small class="error-message">Full Name is required</small>
-          }
-        </div>
-        <div>
-          <label for="email" class="block text-sm text-neutral-500 mb-2">
-            Email
-          </label>
-          <input formControlName="email" type="email" id="email" placeholder="Enter your email..."
-            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0C2AFA] transition-all duration-300" />
-          @if(signupForm.get('email')?.touched){
-          @if (signupForm.get('email')?.hasError('email') &&
-          !signupForm.get('email')?.hasError('required')) {
-          <small class="error-message">Please enter a valid email address</small>
-          }
-          @if (signupForm.get('email')?.hasError('required')) {
-          <small class="error-message">Email is required</small>
-          }
-          }
-        </div>
-        <div class="gap-6">
-          <div class="flex gap-4">
-            <div class="w-1/2">
-              <label for="password" class="block text-sm text-neutral-500 mb-2">
-                Password
-              </label>
-              <div class="relative">
-                <input pInputText formControlName="password" [type]="showpassword() ? 'text': 'password'" id="password"
-                  placeholder="Create a password..."
-                  class="w-full cursor-pointer p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0C2AFA] transition-all duration-300" />
-                <span (click)="changePasswordVisibilityType()"
-                  class="absolute inset-y-0 right-3 flex items-center material-symbols-outlined text-neutral-400 cursor-pointer transform transition duration-300 hover:text-neutral-600">
-                  @if (!showpassword()) {
-                  <i class="pi pi-eye"></i>
-                  }
-                  @if (showpassword()) {
-                  <i class="pi pi-eye-slash"></i>
-                  }
-                </span>
-              </div>
-            </div>
-            <div class="w-1/2">
-              <label for="confirm-password" class="block text-sm text-neutral-500 mb-2">
-                Confirm Password
-              </label>
-              <div class="relative">
-                <input pInputText formControlName="confirmPassword" [type]="showpassword() ? 'text': 'password'"
-                  id="confirm-password" placeholder="Confirm your password..."
-                  class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0C2AFA] transition-all duration-300" />
-                <span (click)="changePasswordVisibilityType()"
-                  class="absolute cursor-pointer inset-y-0 right-3 flex items-center material-symbols-outlined text-neutral-400 cursor-pointer transform transition duration-300 hover:text-neutral-600">
-                  @if (!showpassword()) {
-                  <i class="pi pi-eye"></i>
-                  }
-                  @if (showpassword()) {
-                  <i class="pi pi-eye-slash"></i>
-                  }
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="w-full">
-            <!-- Password Errors -->
-            @if(signupForm.get('password')?.touched) {
-            @if(signupForm.get('password')?.hasError('required')) {
-            <small class="error-message">Password is required</small>
-            }
-            @if(signupForm.get('password')?.hasError('minlength')) {
-            <small class="error-message">Password must contain more than 8 characters.</small>
-            }
-            }
 
-            <!-- Confirm Password Errors -->
-            @if(signupForm.get('confirmPassword')?.touched) {
-            @if(signupForm.get('confirmPassword')?.hasError('required')) {
-            <small class="error-message">Confirm password is required</small>
-            }
-            }
+  <!-- Split Glassmorphism Card Container -->
+  <main class="auth-main-container">
+    <div class="auth-card">
 
-            <!-- Password Mismatch -->
-            @if(signupForm.get('password')?.value && signupForm.get('confirmPassword')?.value &&
-            !signupForm.get('password')?.hasError('minlength')) {
-            @if(signupForm.errors?.['passwordsMismatch']) {
-            <small class="error-message">Passwords do not match.</small>
-            }
-            }
+      <!-- Left Side: Visual & Value Proposition -->
+      <div class="auth-visual-side">
+        <div class="visual-content">
+          <div class="visual-badge">
+            <i class="pi pi-star"></i>
+            <span>Create Your Free Account</span>
           </div>
 
+          <h2 class="visual-title">
+            Start writing at the<br />
+            <span class="gradient-text">speed of thought.</span>
+          </h2>
+
+          <p class="visual-subtitle">
+            Join thousands of writers, developers, and researchers organizing their knowledge in Scribe.
+          </p>
+
+          <div class="feature-pills">
+            <div class="pill-item">
+              <i class="pi pi-check-circle"></i>
+              <span>Free Forever Plan</span>
+            </div>
+            <div class="pill-item">
+              <i class="pi pi-check-circle"></i>
+              <span>Unlimited Notes</span>
+            </div>
+            <div class="pill-item">
+              <i class="pi pi-check-circle"></i>
+              <span>Multi-device Sync</span>
+            </div>
+          </div>
         </div>
-        <button type="button" (click)="signUpWithFirebase()"
-          class="bg-gradient-to-r from-[#0C2AFA] to-blue-500 text-primary-50 rounded-md p-2 font-bold text-lg text-center text-white">
-          Sign up
-        </button>
-      </form>
-      <div class="text-sm mt-6 text-center">
-        <p>
-          By signing up with Google, Apple, or Email, you agree to our
-          <a href="/" class="text-[#0C2AFA] underline transition-all duration-300 hover:text-blue-700">
-            Terms of Service
-          </a>
-          and
-          <a href="/" class="text-[#0C2AFA] underline transition-all duration-300 hover:text-blue-700">
-            Privacy Policy
-          </a>
-          .
-        </p>
+
+        <div class="mini-editor-preview">
+          <div class="mini-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="mini-title">New Account Setup</span>
+          </div>
+          <div class="mini-body">
+            <strong>Ready in 10 Seconds</strong>
+            <p>No credit card required. Pure note-taking power.</p>
+          </div>
+        </div>
       </div>
-      <div class="flex items-center justify-center gap-6 mt-8">
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-google text-red-600 text-xl"></i>
+
+      <!-- Right Side: Signup Form -->
+      <div class="auth-form-side">
+        <div class="form-header">
+          <h1>Create your Scribe account</h1>
+          <p>Get started with your free digital workspace</p>
         </div>
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-facebook text-blue-600 text-xl"></i>
+
+        <form [formGroup]="signupForm" (ngSubmit)="signUpWithFirebase()" class="auth-form">
+
+          <!-- Full Name Field -->
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <div class="input-wrapper">
+              <i class="pi pi-user input-icon"></i>
+              <input formControlName="fullName" type="text" id="fullName" placeholder="Alok Patel" autocomplete="name" />
+            </div>
+            <ng-container *if="signupForm.get('fullName')?.touched">
+              <span class="field-error" *ngIf="signupForm.get('fullName')?.hasError('required')">Full name is required</span>
+            </ng-container>
+          </div>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <div class="input-wrapper">
+              <i class="pi pi-envelope input-icon"></i>
+              <input formControlName="email" type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+            <ng-container *if="signupForm.get('email')?.touched">
+              <span class="field-error" *ngIf="signupForm.get('email')?.hasError('required')">Email is required</span>
+              <span class="field-error" *ngIf="signupForm.get('email')?.hasError('email')">Enter a valid email address</span>
+            </ng-container>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <input formControlName="password" [type]="showpassword() ? 'text' : 'password'" id="password" placeholder="Min. 8 characters" autocomplete="new-password" />
+              <button type="button" (click)="changePasswordVisibilityType()" class="eye-toggle" title="Toggle password visibility">
+                <i class="pi" [ngClass]="showpassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+              </button>
+            </div>
+            <ng-container *if="signupForm.get('password')?.touched">
+              <span class="field-error" *ngIf="signupForm.get('password')?.hasError('required')">Password is required</span>
+              <span class="field-error" *ngIf="signupForm.get('password')?.hasError('minlength')">Password must be at least 8 characters</span>
+            </ng-container>
+          </div>
+
+          <!-- Confirm Password Field -->
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <input formControlName="confirmPassword" [type]="showpassword() ? 'text' : 'password'" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" />
+            </div>
+            <ng-container *if="signupForm.get('confirmPassword')?.touched || signupForm.touched">
+              <span class="field-error" *ngIf="signupForm.hasError('passwordsMismatch')">Passwords do not match</span>
+            </ng-container>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-auth-submit">
+            <span>Create Free Account</span>
+            <i class="pi pi-arrow-right"></i>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>Or register with</span>
         </div>
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-instagram text-red-600 text-xl"></i>
+
+        <!-- Social Logins -->
+        <div class="social-login-grid">
+          <button type="button" (click)="signUpWithFirebase()" class="social-btn google">
+            <i class="pi pi-google"></i>
+            <span>Google</span>
+          </button>
+          <button type="button" (click)="signUpWithFirebase()" class="social-btn github">
+            <i class="pi pi-github"></i>
+            <span>GitHub</span>
+          </button>
         </div>
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-github text-black text-xl"></i>
+
+        <div class="form-footer">
+          <p>Already have an account? <a [routerLink]="['/login']" class="link-highlight">Log in</a></p>
         </div>
       </div>
-      <div class="text-center mt-8">
-        <p class="text-sm text-neutral-500">
-          Already have an account?
-          <a [routerLink]="['/home/login']" routerLinkActive="router-link-active"
-            class="text-[#0C2AFA] underline transition-all duration-300 hover:text-blue-700">
-            Log in
-          </a>
-        </p>
-      </div>
+
     </div>
-  </div>
+  </main>
+
 </div>

@@ -1,110 +1,144 @@
-<div class="min-h-screen flex flex-col items-center p-6 bg-white">
-  <header class="mb-6 w-full flex items-center h-[60px]">
-    <a [routerLink]="['/']" class="logo text-3xl">Actionary</a>
+<div class="auth-page-wrapper">
+
+  <!-- Ambient Glow Backgrounds -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Top Header -->
+  <header class="auth-header">
+    <a [routerLink]="['/']" class="brand-logo">
+      <div class="brand-icon">
+        <i class="pi pi-book"></i>
+      </div>
+      <span class="brand-name">Scribe<span class="brand-dot">.</span></span>
+    </a>
+
+    <a [routerLink]="['/']" class="btn-back">
+      <i class="pi pi-arrow-left"></i>
+      <span>Back to Home</span>
+    </a>
   </header>
-  <div class="w-[1200px] min-h-[700px] bg-white rounded-lg flex">
-    <div class="w-1/2 bg-gray-50 flex items-center justify-center">
-      <img src="login.jpg" alt="Login Illustration" class="w-full h-full object-cover rounded-l-lg" />
-    </div>
-    <div class="flex flex-col justify-center w-1/2 p-10 border-l border-gray-300">
-      <header class="mb-8 text-center">
-        <h1 class="text-3xl font-title font-extrabold text-neutral-950 leading-tight">
-          Welcome Back!
-        </h1>
-      </header>
-      <form class="flex flex-col gap-6" [formGroup]="loginForm">
-        <div>
-          <label for="email" class="block text-sm text-neutral-500 mb-2">
-            Email
-          </label>
-          <input formControlName="email" type="email" id="email" placeholder="Enter your email..."
-            class="w-full bg-white p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0c2afa] transition-all duration-300" />
-          <!-- email error handling    -->
-          @if(loginForm.get('email')?.touched){
-          @if (loginForm.get('email')?.hasError('required')) {
-          <small class="error-message">Email is required</small>
-          }
-          @if (loginForm.get('email')?.hasError('email')) {
-          <small class="error-message">Please enter a valid email address</small>
-          }
-          }
-        </div>
-        <div>
-          <label for="password" class="block text-sm text-neutral-500 mb-2">
-            Password
-          </label>
-          <div class="relative">
-            <input formControlName="password" [type]="showpassword() ? 'text': 'password'" id="password"
-              placeholder="Enter your password..."
-              class="w-full bg-white p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#0c2afa] transition-all duration-300" />
-            <span (click)="changePasswordVisibilityType()"
-              class="absolute inset-y-0 right-3 flex items-center material-symbols-outlined text-neutral-400 cursor-pointer transform transition duration-300 hover:text-neutral-600">
-              @if (!showpassword()) {
-              <i class="pi pi-eye"></i>
-              }
-              @if (showpassword()) {
-              <i class="pi pi-eye-slash"></i>
-              }
-            </span>
+
+  <!-- Split Glassmorphism Card Container -->
+  <main class="auth-main-container">
+    <div class="auth-card">
+
+      <!-- Left Side: Visual & Value Proposition -->
+      <div class="auth-visual-side">
+        <div class="visual-content">
+          <div class="visual-badge">
+            <i class="pi pi-shield"></i>
+            <span>Secure Cloud & Local Sync</span>
           </div>
-          <!-- password error handling  -->
-          @if(loginForm.get('password')?.touched){
-          @if (loginForm.get('password')?.hasError('required')) {
-          <small class="error-message">Password is required</small>
-          }
-          @if (loginForm.get('password')?.hasError('minlength')) {
-          <small class="error-message">Password must be at least 8 characters long</small>
-          }
-          }
+
+          <h2 class="visual-title">
+            Welcome back to your<br />
+            <span class="gradient-text">Second Brain.</span>
+          </h2>
+
+          <p class="visual-subtitle">
+            Access your notes, markdown documents, and quick thoughts from any device instantly.
+          </p>
+
+          <div class="feature-pills">
+            <div class="pill-item">
+              <i class="pi pi-bolt"></i>
+              <span>Sub-5ms Search</span>
+            </div>
+            <div class="pill-item">
+              <i class="pi pi-wifi"></i>
+              <span>Offline IndexedDB</span>
+            </div>
+            <div class="pill-item">
+              <i class="pi pi-lock"></i>
+              <span>Encrypted Storage</span>
+            </div>
+          </div>
         </div>
-        <button type="button" (click)="onLoginWithFirebase()"
-          class="bg-gradient-to-r from-[#0c2afa] to-blue-600 text-primary-50 rounded-md p-2 font-bold text-lg text-center text-white">
-          Log in
-        </button>
-      </form>
-      <div class="text-sm mt-6 text-center">
-        <a href="/" class="block text-neutral-500 underline mb-4 transition-all duration-300 hover:text-neutral-950">
-          Forgot your password?
-        </a>
-        <p>
-          By continuing with Google, Apple, or Email, you agree to our
-          <a href="/" class="text-[#0c2afa] underline transition-all duration-300 hover:text-blue-700">
-            Terms of Service
-          </a>
-          and
-          <a href="/" class="text-[#0c2afa] underline transition-all duration-300 hover:text-blue-700">
-            Privacy Policy
-          </a>
-          .
-        </p>
-      </div>
-      <div class="flex items-center justify-center gap-6 mt-8">
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-google text-red-600 text-xl"></i>
-        </div>
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-facebook text-blue-600 text-xl"></i>
-        </div>
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-instagram text-red-600 text-xl"></i>
-        </div>
-        <div
-          class="flex cursor-pointer items-center justify-center h-[48px] w-[48px] border rounded-full focus:outline-none transform transition-all duration-300 hover:scale-110">
-          <i class="pi pi-github text-black text-xl"></i>
+
+        <div class="mini-editor-preview">
+          <div class="mini-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="mini-title">Recent Note</span>
+          </div>
+          <div class="mini-body">
+            <strong>Redis System Architecture</strong>
+            <p>Remote Dictionary Server with in-memory data structures...</p>
+          </div>
         </div>
       </div>
-      <div class="text-center mt-8">
-        <p class="text-sm text-neutral-500">
-          Don’t have an account?
-          <a [routerLink]="['/home/signup']"
-            class="text-[#0c2afa] underline transition-all duration-300 hover:text-blue-700">
-            Sign up
-          </a>
-        </p>
+
+      <!-- Right Side: Login Form -->
+      <div class="auth-form-side">
+        <div class="form-header">
+          <h1>Sign in to Scribe</h1>
+          <p>Enter your credentials to access your workspace</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onLoginWithFirebase()" class="auth-form">
+
+          <!-- Email Input Field -->
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <div class="input-wrapper">
+              <i class="pi pi-envelope input-icon"></i>
+              <input formControlName="email" type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+            <ng-container *if="loginForm.get('email')?.touched">
+              <span class="field-error" *ngIf="loginForm.get('email')?.hasError('required')">Email is required</span>
+              <span class="field-error" *ngIf="loginForm.get('email')?.hasError('email')">Enter a valid email address</span>
+            </ng-container>
+          </div>
+
+          <!-- Password Input Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="password">Password</label>
+              <a [routerLink]="['/forgot-password']" class="forgot-link">Forgot password?</a>
+            </div>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <input formControlName="password" [type]="showpassword() ? 'text' : 'password'" id="password" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" (click)="changePasswordVisibilityType()" class="eye-toggle" title="Toggle password visibility">
+                <i class="pi" [ngClass]="showpassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+              </button>
+            </div>
+            <ng-container *if="loginForm.get('password')?.touched">
+              <span class="field-error" *ngIf="loginForm.get('password')?.hasError('required')">Password is required</span>
+            </ng-container>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-auth-submit">
+            <span>Sign In</span>
+            <i class="pi pi-arrow-right"></i>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>Or sign in with</span>
+        </div>
+
+        <!-- Social Logins -->
+        <div class="social-login-grid">
+          <button type="button" (click)="onLoginWithFirebase()" class="social-btn google">
+            <i class="pi pi-google"></i>
+            <span>Google</span>
+          </button>
+          <button type="button" (click)="onLoginWithFirebase()" class="social-btn github">
+            <i class="pi pi-github"></i>
+            <span>GitHub</span>
+          </button>
+        </div>
+
+        <div class="form-footer">
+          <p>Don't have an account? <a [routerLink]="['/signup']" class="link-highlight">Sign up free</a></p>
+        </div>
       </div>
+
     </div>
-  </div>
+  </main>
+
 </div>
