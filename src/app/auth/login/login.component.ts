@@ -46,14 +46,14 @@ export class LoginComponent {
         this.tokenService.setSession(token, profile);
         if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
         this.utilService.showSuccess('Login successful! Welcome to Scribe Reader Mode.');
-        this.router.navigate(['/new/reader/feed']);
+        this.router.navigate(['/reader/feed']);
       },
       error: () => {
         this.loading.set(false);
         this.tokenService.setSession('dev_token', { uid: 'dev_user', email: payload.email, displayName: payload.email.split('@')[0] });
         if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
         this.utilService.showSuccess('Signed in! Reader Mode default activated.');
-        this.router.navigate(['/new/reader/feed']);
+        this.router.navigate(['/reader/feed']);
       }
     });
   }

@@ -33,6 +33,6 @@ export class TrendingComponent {
   constructor(private router: Router) {}
 
   openNote(id: string): void {
-    this.router.navigate(['/new/reader/notes', id]);
+    this.router.navigate(['/reader/notes', id]);
   }
 }

@@ -46,14 +46,14 @@ export class SignupComponent {
         this.tokenService.setSession(token, profile);
         if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
         this.utilService.showSuccess('Account created successfully! Welcome to Scribe.');
-        this.router.navigate(['/new/reader/feed']);
+        this.router.navigate(['/reader/feed']);
       },
       error: () => {
         this.loading.set(false);
         this.tokenService.setSession('dev_token', { uid: 'usr_new', email: payload.email, displayName: payload.displayName });
         if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
         this.utilService.showSuccess('Welcome to Scribe! Account registered.');
-        this.router.navigate(['/new/reader/feed']);
+        this.router.navigate(['/reader/feed']);
       }
     });
   }

@@ -7,7 +7,6 @@ import { MessageService } from 'primeng/api';
 })
 export class ActionaryUtilService {
   private readonly messageService = inject(MessageService);
-  private readonly spinner = inject(NgxSpinnerService);
   constructor() { }
 
   showSuccess(detail: string) {

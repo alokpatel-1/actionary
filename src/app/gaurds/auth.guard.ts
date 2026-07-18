@@ -17,7 +17,7 @@ export const authGuard: CanActivateFn = () => {
       sessionStorage.clear();
     }
     utilService.showError('Your session has expired. Please log in again to access your notes.');
-    router.navigate(['/new/auth/login']);
+    router.navigate(['/auth/login']);
   }
   return allowed;
 };
