@@ -1,0 +1,47 @@
+<div class="auth-page-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a routerLink="/" class="brand-logo">
+        <span class="brand-icon">📝</span>
+        <span class="brand-name">Scribe</span>
+      </a>
+      <h1>Create Account</h1>
+      <p>Start managing and publishing your notes seamlessly.</p>
+    </div>
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="signup-name">Full Name</label>
+        <div class="input-wrapper">
+          <i class="pi pi-user input-icon"></i>
+          <input id="signup-name" formControlName="displayName" type="text" placeholder="John Doe" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="pi pi-envelope input-icon"></i>
+          <input id="signup-email" formControlName="email" type="email" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-pass">Password</label>
+        <div class="input-wrapper">
+          <i class="pi pi-lock input-icon"></i>
+          <input id="signup-pass" formControlName="password" type="password" placeholder="••••••••" />
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading()">
+        <span *ngIf="!loading()">Create Account</span>
+        <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/new/auth/login" class="highlight-link">Sign In</a></p>
+    </div>
+  </div>
+</div>

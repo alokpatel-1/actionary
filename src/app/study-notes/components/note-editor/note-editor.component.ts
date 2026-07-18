@@ -72,7 +72,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   public noteService = inject(NoteService);
-  public studyNotes = inject(StudyNotesComponent);
+  public studyNotes = inject(StudyNotesComponent, { optional: true });
   private cdr = inject(ChangeDetectorRef);
   private confirmationService = inject(ConfirmationService);
   private destroy$ = new Subject<void>();
@@ -269,12 +269,16 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       }),
       switchMap(params => {
         const id = params.get('id');
-        if (id) {
+        if (id && id !== 'new') {
+          const editQuery = this.route.snapshot.queryParamMap.get('edit');
+          const isPublisherRoute = this.router.url.includes('/publisher/') || this.router.url.includes('/new/');
+          const shouldEdit = isPublisherRoute || editQuery === 'true' || editQuery !== 'false';
+
           return this.noteService.getNote(id).pipe(
             map(note => ({
               id,
               note,
-              edit: this.route.snapshot.queryParamMap.get('edit') === 'true'
+              edit: shouldEdit
             }))
           );
         }
@@ -294,8 +298,8 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.studyNotes.editorStatusTemplate.set(this.editorStatusTpl);
-    this.studyNotes.editorActionsTemplate.set(this.editorActionsTpl);
+    this.studyNotes?.editorStatusTemplate.set(this.editorStatusTpl);
+    this.studyNotes?.editorActionsTemplate.set(this.editorActionsTpl);
     this.cdr.detectChanges();
   }
 
@@ -484,8 +488,8 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    this.studyNotes.editorStatusTemplate.set(null);
-    this.studyNotes.editorActionsTemplate.set(null);
+    this.studyNotes?.editorStatusTemplate.set(null);
+    this.studyNotes?.editorActionsTemplate.set(null);
     this.editorInitGen++;
     if (this.editor) {
       this.editor.destroy();

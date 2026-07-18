@@ -1,0 +1,41 @@
+<div class="note-view-container">
+
+  <header class="reader-view-header">
+    <div class="header-inner">
+      <a routerLink="/new/reader/feed" class="btn-back">
+        <i class="pi pi-arrow-left"></i>
+        <span>Back to Feed</span>
+      </a>
+      <span class="read-only-badge"><i class="pi pi-lock"></i> READ ONLY</span>
+    </div>
+  </header>
+
+  <main class="article-body-wrapper" *ngIf="note() as n">
+    <div class="article-meta-header">
+      <div class="author-card">
+        <div class="avatar">S</div>
+        <div class="author-info">
+          <span class="author-name">Scribe Author</span>
+          <span class="pub-date">Published on {{ n.createdAt | date:'mediumDate' }} • {{ n.content | readingTime }} min read</span>
+        </div>
+      </div>
+
+      <h1 class="article-title">{{ n.title || 'Untitled Note' }}</h1>
+
+      <div class="tags-list" *ngIf="n.tags && n.tags.length">
+        <span class="tag" *ngFor="let t of n.tags">#{{ t }}</span>
+      </div>
+    </div>
+
+    <article class="article-content">
+      <div [innerHTML]="n.content"></div>
+    </article>
+  </main>
+
+  <div class="not-found" *ngIf="!note()">
+    <i class="pi pi-exclamation-circle"></i>
+    <p>Article not found or unavailable.</p>
+    <a routerLink="/new/reader/feed" class="btn-back-home">Return to Feed</a>
+  </div>
+
+</div>

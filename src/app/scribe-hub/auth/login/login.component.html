@@ -1,0 +1,45 @@
+<div class="auth-page-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a routerLink="/" class="brand-logo">
+        <span class="brand-icon">📝</span>
+        <span class="brand-name">Scribe</span>
+      </a>
+      <h1>Sign In</h1>
+      <p>Enter your credentials to access your notes workspace.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="form-group">
+        <label for="login-email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="pi pi-envelope input-icon"></i>
+          <input id="login-email" formControlName="email" type="email" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="login-pass">Password</label>
+          <a routerLink="/new/auth/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
+        <div class="input-wrapper">
+          <i class="pi pi-lock input-icon"></i>
+          <input id="login-pass" formControlName="password" [type]="showPassword() ? 'text' : 'password'" placeholder="••••••••" />
+          <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())">
+            <i class="pi" [class.pi-eye]="!showPassword()" [class.pi-eye-slash]="showPassword()"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading()">
+        <span *ngIf="!loading()">Sign In</span>
+        <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/new/auth/signup" class="highlight-link">Sign Up</a></p>
+    </div>
+  </div>
+</div>

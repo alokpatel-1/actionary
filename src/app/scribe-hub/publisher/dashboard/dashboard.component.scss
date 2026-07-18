@@ -1,0 +1,194 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.pub-header {
+  background: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    .brand-icon { font-size: 1.5rem; }
+    .brand-name { font-size: 1.45rem; font-weight: 800; color: #0f172a; }
+    .pub-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+
+    .btn-ghost {
+      color: #475569;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      &:hover { background: #f1f5f9; }
+    }
+
+    .btn-create {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #ffffff;
+      border: none;
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+  }
+}
+
+.dashboard-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .filter-pills {
+    display: flex;
+    gap: 0.5rem;
+
+    .pill-btn {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      padding: 0.45rem 0.95rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      &.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: #ffffff;
+      }
+    }
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    i { position: absolute; left: 0.85rem; color: #94a3b8; }
+    input {
+      padding: 0.55rem 1rem 0.55rem 2.4rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+      font-size: 0.9rem;
+      width: 260px;
+      &:focus { border-color: #6366f1; }
+    }
+  }
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+
+  .pub-note-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.25rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s, border-color 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: #6366f1;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      .status-badge {
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+
+        &.draft { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+        &.published { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+      }
+
+      .delete-icon-btn {
+        background: none;
+        border: none;
+        color: #cbd5e1;
+        cursor: pointer;
+        &:hover { color: #ef4444; }
+      }
+    }
+
+    .note-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0 0 0.5rem; }
+    .note-snippet { font-size: 0.88rem; color: #475569; line-height: 1.5; margin: 0 0 1rem; }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+  }
+}
+
+.empty-feed {
+  padding: 4rem 1rem;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+
+  .empty-icon { font-size: 2.5rem; color: #94a3b8; margin-bottom: 1rem; }
+  h3 { font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem; }
+  p { font-size: 0.95rem; color: #64748b; margin: 0 0 1.5rem; }
+  .btn-create { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; border: none; padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; cursor: pointer; }
+}

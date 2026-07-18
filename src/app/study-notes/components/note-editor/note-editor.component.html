@@ -55,6 +55,30 @@
   <!-- Content Wrapper for Medium-like centered column -->
   <div class="content-container">
 
+    <!-- Standalone Editor Toolbar when rendered outside StudyNotesComponent shell -->
+    <div class="standalone-editor-toolbar" *ngIf="!studyNotes">
+      <div class="toolbar-left">
+        <span class="save-dot saving" *ngIf="saving()"></span>
+        <span class="save-label" *ngIf="saving()">Saving…</span>
+        <span class="save-dot saved" *ngIf="!saving() && lastSaved()"></span>
+        <span class="save-label saved" *ngIf="!saving() && lastSaved()">Saved</span>
+        <span class="word-count-stat" *ngIf="wordCount() > 0">
+          {{ wordCount() }} words · {{ charCount() }} chars · {{ readingTime() }} min read
+        </span>
+      </div>
+
+      <div class="toolbar-right">
+        <button *ngIf="!isEditMode()" class="edit-btn-pill" (click)="enableEditMode()" title="Edit note">
+          <i class="pi pi-pencil"></i>
+          <span>Edit</span>
+        </button>
+        <button *ngIf="isEditMode()" class="save-btn-pill" (click)="save(true)" [disabled]="saving()" title="Save note">
+          <i class="pi" [ngClass]="saving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
+          <span>Save</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Tags & Status Row (edit mode only) -->
     <div class="meta-row" *ngIf="isEditMode() && tags().length > 0 || isEditMode()">
       <!-- Tags -->

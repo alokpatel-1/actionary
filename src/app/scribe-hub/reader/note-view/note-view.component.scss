@@ -1,0 +1,111 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.reader-view-header {
+  background: #ffffff;
+  border-bottom: 1px solid #eaeaea;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .header-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0.85rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .btn-back {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    &:hover { color: #0f172a; }
+  }
+
+  .read-only-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #059669;
+    background: rgba(5, 150, 105, 0.1);
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+  }
+}
+
+.article-body-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+}
+
+.article-meta-header {
+  margin-bottom: 2.5rem;
+
+  .author-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .author-info {
+      display: flex;
+      flex-direction: column;
+      .author-name { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+      .pub-date { font-size: 0.8rem; color: #64748b; }
+    }
+  }
+
+  .article-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+  }
+
+  .tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    .tag { font-size: 0.8rem; font-weight: 600; color: #059669; background: rgba(5, 150, 105, 0.08); padding: 0.2rem 0.6rem; border-radius: 6px; }
+  }
+}
+
+.article-content {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #334155;
+  font-family: Georgia, serif;
+}
+
+.not-found {
+  padding: 6rem 1.5rem;
+  text-align: center;
+  color: #64748b;
+  i { font-size: 3rem; margin-bottom: 1rem; }
+  .btn-back-home { display: inline-block; margin-top: 1rem; color: #6366f1; font-weight: 700; text-decoration: none; }
+}

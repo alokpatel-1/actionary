@@ -47,17 +47,21 @@ export class LandingPageComponent {
 
   navigateToApp(): void {
     if (this.firebaseService.isUserLoggedIn()) {
-      this.router.navigate(['/library']);
+      this.router.navigate(['/new/publisher/dashboard']);
     } else {
-      this.router.navigate(['/login']);
+      this.router.navigate(['/new/auth/login']);
     }
   }
 
   navigateToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/new/auth/login']);
   }
 
   navigateToSignup(): void {
-    this.router.navigate(['/signup']);
+    this.router.navigate(['/new/auth/signup']);
+  }
+
+  navigateToReader(): void {
+    this.router.navigate(['/new/reader/feed']);
   }
 }

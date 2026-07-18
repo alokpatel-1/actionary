@@ -588,6 +588,43 @@
 }
 
 /* ── Profile Dropdown from Reading Mode ── */
+.standalone-editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .edit-btn-pill, .save-btn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: #6366f1;
+    color: #ffffff;
+  }
+}
+
 .avatar-circle-wrapper {
   position: relative;
   margin-left: 0.5rem;

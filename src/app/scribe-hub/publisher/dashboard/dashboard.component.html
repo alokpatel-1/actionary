@@ -1,0 +1,83 @@
+<div class="publisher-dashboard-container">
+
+  <!-- Top Header Navigation -->
+  <header class="pub-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <span class="brand-icon">📝</span>
+        <span class="brand-name">Scribe</span>
+        <span class="pub-badge">PUBLISHER WORKSPACE</span>
+      </div>
+
+      <div class="header-actions">
+        <a routerLink="/new/reader/feed" class="btn-ghost">
+          <i class="pi pi-book"></i>
+          <span>Reader View</span>
+        </a>
+        <button (click)="createNewNote()" class="btn-create">
+          <i class="pi pi-plus"></i>
+          <span>New Note</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-content">
+    <!-- Filter & Search Bar -->
+    <div class="controls-row">
+      <div class="filter-pills">
+        <button [class.active]="activeFilter() === 'all'" (click)="activeFilter.set('all')" class="pill-btn">
+          All Notes ({{ notes().length }})
+        </button>
+        <button [class.active]="activeFilter() === 'drafts'" (click)="activeFilter.set('drafts')" class="pill-btn">
+          Drafts
+        </button>
+        <button [class.active]="activeFilter() === 'published'" (click)="activeFilter.set('published')" class="pill-btn">
+          Published
+        </button>
+      </div>
+
+      <div class="search-box">
+        <i class="pi pi-search"></i>
+        <input type="text"
+               placeholder="Search personal notes..."
+               [ngModel]="searchQuery()"
+               (ngModelChange)="searchQuery.set($event)" />
+      </div>
+    </div>
+
+    <!-- Notes Feed -->
+    <div class="notes-grid" *ngIf="filteredNotes().length > 0">
+      <div class="pub-note-card" *ngFor="let n of filteredNotes()" (click)="editNote(n.id)">
+        <div class="card-top">
+          <span class="status-badge" [class.draft]="(n.status === 'draft')" [class.published]="(n.status === 'published')">
+            {{ (n.status === 'published') ? 'PUBLISHED' : 'DRAFT' }}
+          </span>
+          <button class="delete-icon-btn" (click)="deleteNote(n.id, $event)" title="Delete Note">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+
+        <h3 class="note-title">{{ n.title || 'Untitled Note' }}</h3>
+        <p class="note-snippet">{{ n.content | excerpt:120 }}</p>
+
+        <div class="card-footer">
+          <span class="meta-date"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
+          <span class="meta-read">{{ n.content | readingTime }} min read</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-feed" *ngIf="filteredNotes().length === 0">
+      <i class="pi pi-file-o empty-icon"></i>
+      <h3>No notes found</h3>
+      <p>Create your first note in the Publisher workspace.</p>
+      <button class="btn-create" (click)="createNewNote()">
+        <i class="pi pi-plus"></i>
+        <span>Create Note</span>
+      </button>
+    </div>
+  </main>
+
+</div>

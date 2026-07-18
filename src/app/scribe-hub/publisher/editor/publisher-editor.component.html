@@ -1,0 +1,33 @@
+<div class="publisher-editor-page">
+
+  <!-- Publisher Top Action Bar -->
+  <header class="pub-editor-bar">
+    <div class="bar-inner">
+      <div class="left-group">
+        <a routerLink="/new/publisher/dashboard" class="btn-back">
+          <i class="pi pi-arrow-left"></i>
+          <span>Workspace</span>
+        </a>
+        <span class="pub-badge"><i class="pi pi-shield"></i> Publisher Editor</span>
+      </div>
+
+      <div class="right-group">
+        <button (click)="saveDraft()" class="btn-save-draft">
+          <i class="pi pi-save"></i>
+          <span>Save Draft</span>
+        </button>
+
+        <button (click)="publish()" class="btn-publish">
+          <i class="pi pi-send"></i>
+          <span>Publish Note</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Full Rich Note Editor Component -->
+  <div class="rich-editor-wrapper">
+    <app-note-editor></app-note-editor>
+  </div>
+
+</div>

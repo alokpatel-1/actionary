@@ -12,19 +12,19 @@
         <button (click)="scrollToSection('what-we-do')" class="nav-link">What We Do</button>
         <button (click)="scrollToSection('features')" class="nav-link">Features</button>
         <button (click)="scrollToSection('who-we-are')" class="nav-link">Who We Are</button>
-        <button (click)="scrollToSection('stats')" class="nav-link">Why Scribe</button>
+        <a [routerLink]="['/new/reader/feed']" class="nav-link">Reader Feed</a>
       </nav>
 
       <div class="nav-actions">
         <ng-container *ngIf="!firebaseService.isUserLoggedIn(); else loggedInView">
-          <a (click)="navigateToLogin()" [routerLink]="['/login']" class="btn-ghost">Log in</a>
-          <a (click)="navigateToSignup()" [routerLink]="['/signup']" class="btn-primary">
+          <a (click)="navigateToLogin()" [routerLink]="['/new/auth/login']" class="btn-ghost">Log in</a>
+          <a (click)="navigateToSignup()" [routerLink]="['/new/auth/signup']" class="btn-primary">
             <span>Get Started</span>
             <i class="pi pi-arrow-right"></i>
           </a>
         </ng-container>
         <ng-template #loggedInView>
-          <a [routerLink]="['/library']" class="btn-primary">
+          <a [routerLink]="['/new/publisher/dashboard']" class="btn-primary">
             <span>Open Workspace</span>
             <i class="pi pi-external-link"></i>
           </a>
@@ -450,8 +450,9 @@ GET user:100</code></pre>
         <div class="col">
           <span class="col-head">Company</span>
           <a (click)="scrollToSection('who-we-are')">Who We Are</a>
-          <a (click)="navigateToLogin()" [routerLink]="['/login']">Log In</a>
-          <a (click)="navigateToSignup()" [routerLink]="['/signup']">Sign Up</a>
+          <a (click)="navigateToLogin()" [routerLink]="['/new/auth/login']">Log In</a>
+          <a (click)="navigateToSignup()" [routerLink]="['/new/auth/signup']">Sign Up</a>
+          <a [routerLink]="['/new/reader/feed']">Reader Feed</a>
         </div>
         <div class="col">
           <span class="col-head">Legal</span>

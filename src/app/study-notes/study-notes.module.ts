@@ -41,6 +41,9 @@ class MockSpinnerService {
   providers: [
     ConfirmationService,
     { provide: NgxSpinnerService, useClass: MockSpinnerService }
+  ],
+  exports: [
+    NoteEditorComponent
   ]
 })
 export class StudyNotesModule { }
