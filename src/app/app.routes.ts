@@ -7,9 +7,9 @@ export const routes: Routes = [
   { path: 'new/trending', redirectTo: 'new/reader/trending', pathMatch: 'full' },
   { path: 'new/notes', redirectTo: 'new/publisher/dashboard', pathMatch: 'full' },
   { path: 'new/profile', redirectTo: 'new/auth/profile', pathMatch: 'full' },
-  { path: 'new/auth', loadChildren: () => import('./scribe-hub/auth/auth.module').then(m => m.AuthModule) },
-  { path: 'new/publisher', canActivate: [authGuard], loadChildren: () => import('./scribe-hub/publisher/publisher.module').then(m => m.PublisherModule) },
-  { path: 'new/reader', loadChildren: () => import('./scribe-hub/reader/reader.module').then(m => m.ReaderModule) },
+  { path: 'new/auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule) },
+  { path: 'new/publisher', canActivate: [authGuard], loadChildren: () => import('./publisher/publisher.module').then(m => m.PublisherModule) },
+  { path: 'new/reader', loadChildren: () => import('./reader/reader.module').then(m => m.ReaderModule) },
 
   // Fallback to Scribe Hub Modular Application
   { path: '', redirectTo: 'new/home', pathMatch: 'full' },

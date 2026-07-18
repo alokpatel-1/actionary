@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { AuthTokenService } from '../../core/auth/auth-token.service';
 import { Router } from '@angular/router';
-import { ActionaryUtilService } from '../../../services/actionary-util.service';
+import { ActionaryUtilService } from '../../services/actionary-util.service';
 import { SidebarService } from '../../shared/services/sidebar.service';
 import { ThemeService } from '../../shared/services/theme.service';
 

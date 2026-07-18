@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiHttpService } from '../../core/api/api-http.service';
 import { AuthTokenService } from '../../core/auth/auth-token.service';
-import { ActionaryUtilService } from '../../../services/actionary-util.service';
+import { ActionaryUtilService } from '../../services/actionary-util.service';
 
 @Component({
   selector: 'app-auth-signup',

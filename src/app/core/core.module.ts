@@ -22,7 +22,7 @@ import { AuthInterceptor } from './api/auth.interceptor';
 export class CoreModule {
   constructor(@Optional() @SkipSelf() parentModule: CoreModule) {
     if (parentModule) {
-      throw new Error('CoreModule is already loaded. Import it in root scribe-hub module only.');
+      throw new Error('CoreModule is already loaded. Import it in root app module only.');
     }
   }
 }

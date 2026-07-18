@@ -1,7 +1,7 @@
 import { Component, inject, ViewChild, AfterViewInit, ChangeDetectorRef, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionaryUtilService } from '../../../services/actionary-util.service';
-import { NoteEditorComponent } from '../../../study-notes/components/note-editor/note-editor.component';
+import { ActionaryUtilService } from '../../services/actionary-util.service';
+import { NoteEditorComponent } from '../../study-notes/components/note-editor/note-editor.component';
 
 @Component({
   selector: 'app-publisher-editor',

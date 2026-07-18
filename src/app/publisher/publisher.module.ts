@@ -8,7 +8,7 @@ import { PublisherComponent } from './publisher.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { PublisherEditorComponent } from './editor/publisher-editor.component';
 
-import { StudyNotesModule } from '../../study-notes/study-notes.module';
+import { StudyNotesModule } from '../study-notes/study-notes.module';
 
 @NgModule({
   declarations: [

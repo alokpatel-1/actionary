@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiHttpService } from '../../core/api/api-http.service';
-import { ActionaryUtilService } from '../../../services/actionary-util.service';
+import { ActionaryUtilService } from '../../services/actionary-util.service';
 
 @Component({
   selector: 'app-auth-forgot-password',
