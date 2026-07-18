@@ -1,5 +1,5 @@
 // Trigger recompile
-import { Component, EventEmitter, inject, Input, Output, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal, computed, HostListener, ElementRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -44,6 +44,11 @@ import { forkJoin, from } from 'rxjs';
         <ng-content select="[editor-actions]"></ng-content>
 
         <!-- Direct switch buttons inside the top bar -->
+        <button class="nav-switch-btn admin-btn" *ngIf="isAdmin()" routerLink="/admin" title="Admin Dashboard">
+          <i class="pi pi-shield" style="color: #ef4444;"></i>
+          <span style="color: #ef4444; font-weight: 700;">Admin</span>
+        </button>
+
         <button class="nav-switch-btn" *ngIf="isInEditor()" (click)="goToLibraryView()" title="Read content (Read Mode)">
           <i class="pi pi-book"></i>
           <span>Read Mode</span>
@@ -76,6 +81,10 @@ import { forkJoin, from } from 'rxjs';
               <div class="popover-name">{{ userName() }}</div>
               <div class="popover-email" *ngIf="userEmail()">{{ userEmail() }}</div>
             </div>
+            <a routerLink="/admin" class="dropdown-item admin" *ngIf="isAdmin()">
+              <i class="pi pi-shield" style="color: #ef4444;"></i>
+              <span style="color: #ef4444; font-weight: 700;">Admin Dashboard</span>
+            </a>
             <div class="dropdown-item archive" *ngIf="isInEditor()" (click)="openArchiveModal()">
               <i class="pi pi-trash"></i>
               <span>Trash / Archive</span>
@@ -1357,6 +1366,7 @@ export class LibraryNavbarComponent {
   userInitial = signal('A');
   userName = signal('User');
   userEmail = signal('');
+  isAdmin = computed(() => this.userEmail().toLowerCase() === 'alokpatel863@gmail.com');
   showProfileMenu = signal(false);
   isDarkMode = signal(typeof localStorage !== 'undefined' && localStorage.getItem('scribe-theme') === 'dark');
 

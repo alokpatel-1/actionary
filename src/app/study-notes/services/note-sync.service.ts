@@ -198,6 +198,17 @@ export class NoteSyncService {
     thoughtCol: CollectionReference<DocumentData> | null
   ): Promise<void> {
 
+    // Ensure user entry exists in root /users collection
+    const currentUid = this.uid;
+    if (currentUid) {
+      try {
+        const userDocRef = doc(this.firestore, `users/${currentUid}`);
+        const email = this.auth.currentUser?.email || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('email')?.replace(/"/g, '') : '');
+        const displayName = this.auth.currentUser?.displayName || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('displayName')?.replace(/"/g, '') : '');
+        setDoc(userDocRef, { email, displayName, lastSync: Date.now() }, { merge: true }).catch(() => {});
+      } catch (e) {}
+    }
+
     // ══════════════════════════════════════════
     // STEP 1: Fetch current remote state FIRST
     // ══════════════════════════════════════════
