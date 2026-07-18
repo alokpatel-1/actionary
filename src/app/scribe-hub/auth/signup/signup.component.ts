@@ -44,14 +44,16 @@ export class SignupComponent {
         const token = res.token || 'jwt_session_token';
         const profile = { uid: res.uid || 'usr_new', email: payload.email, displayName: payload.displayName };
         this.tokenService.setSession(token, profile);
-        this.utilService.showSuccess('Account created successfully!');
-        this.router.navigate(['/new/publisher/dashboard']);
+        if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
+        this.utilService.showSuccess('Account created successfully! Welcome to Scribe.');
+        this.router.navigate(['/new/reader/feed']);
       },
       error: () => {
         this.loading.set(false);
         this.tokenService.setSession('dev_token', { uid: 'usr_new', email: payload.email, displayName: payload.displayName });
+        if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
         this.utilService.showSuccess('Welcome to Scribe! Account registered.');
-        this.router.navigate(['/new/publisher/dashboard']);
+        this.router.navigate(['/new/reader/feed']);
       }
     });
   }

@@ -7,13 +7,17 @@ import { ReadingTimePipe } from './pipes/reading-time.pipe';
 import { ExcerptPipe } from './pipes/excerpt.pipe';
 import { AutofocusDirective } from './directives/autofocus.directive';
 import { ClickOutsideDirective } from './directives/click-outside.directive';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
 
 @NgModule({
   declarations: [
     ReadingTimePipe,
     ExcerptPipe,
     AutofocusDirective,
-    ClickOutsideDirective
+    ClickOutsideDirective,
+    ConfirmDialogComponent,
+    SidebarComponent
   ],
   imports: [
     CommonModule,
@@ -29,7 +33,9 @@ import { ClickOutsideDirective } from './directives/click-outside.directive';
     ReadingTimePipe,
     ExcerptPipe,
     AutofocusDirective,
-    ClickOutsideDirective
+    ClickOutsideDirective,
+    ConfirmDialogComponent,
+    SidebarComponent
   ]
 })
 export class SharedModule { }

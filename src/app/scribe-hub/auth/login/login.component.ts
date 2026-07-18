@@ -44,14 +44,16 @@ export class LoginComponent {
         const token = res.token || 'jwt_session_token';
         const profile = res.user || { uid: res.uid || 'usr_1', email: payload.email, displayName: res.displayName || payload.email.split('@')[0] };
         this.tokenService.setSession(token, profile);
-        this.utilService.showSuccess('Login successful! Welcome back.');
-        this.router.navigate(['/new/publisher/dashboard']);
+        if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
+        this.utilService.showSuccess('Login successful! Welcome to Scribe Reader Mode.');
+        this.router.navigate(['/new/reader/feed']);
       },
       error: () => {
         this.loading.set(false);
         this.tokenService.setSession('dev_token', { uid: 'dev_user', email: payload.email, displayName: payload.email.split('@')[0] });
-        this.utilService.showSuccess('Signed in successfully!');
-        this.router.navigate(['/new/publisher/dashboard']);
+        if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('active_mode', 'reader');
+        this.utilService.showSuccess('Signed in! Reader Mode default activated.');
+        this.router.navigate(['/new/reader/feed']);
       }
     });
   }

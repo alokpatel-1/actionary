@@ -1,16 +1,42 @@
 <div class="publisher-editor-page">
 
-  <!-- Publisher Top Action Bar -->
-  <header class="pub-editor-bar">
-    <div class="bar-inner">
+  <!-- Unified Top Header Navigation -->
+  <header class="app-top-nav">
+    <div class="nav-inner">
+      <!-- Left: Back to Workspace Link -->
       <div class="left-group">
         <a routerLink="/new/publisher/dashboard" class="btn-back">
           <i class="pi pi-arrow-left"></i>
           <span>Workspace</span>
         </a>
-        <span class="pub-badge"><i class="pi pi-shield"></i> Publisher Editor</span>
       </div>
 
+      <!-- Center: Premium Status & Word Count Badge -->
+      <div class="center-group" *ngIf="isReady() && noteEditor">
+        <div class="editor-status-pill">
+          <!-- Saving state -->
+          <span class="status-indicator saving" *ngIf="noteEditor.saving()">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Saving…</span>
+          </span>
+
+          <!-- Saved state -->
+          <span class="status-indicator saved" *ngIf="!noteEditor.saving()">
+            <i class="pi pi-check-circle"></i>
+            <span>Saved</span>
+          </span>
+
+          <span class="stat-sep">•</span>
+
+          <span class="stats-info">
+            <strong>{{ noteEditor.wordCount() }}</strong> words
+            <span class="dot-sep">·</span>
+            <strong>{{ noteEditor.readingTime() }}</strong> min read
+          </span>
+        </div>
+      </div>
+
+      <!-- Right: Action Buttons -->
       <div class="right-group">
         <button (click)="saveDraft()" class="btn-save-draft">
           <i class="pi pi-save"></i>

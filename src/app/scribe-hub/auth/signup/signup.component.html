@@ -1,47 +1,141 @@
 <div class="auth-page-wrapper">
-  <div class="auth-card">
-    <div class="auth-header">
-      <a routerLink="/" class="brand-logo">
-        <span class="brand-icon">📝</span>
-        <span class="brand-name">Scribe</span>
-      </a>
-      <h1>Create Account</h1>
-      <p>Start managing and publishing your notes seamlessly.</p>
+
+  <!-- Ambient Glow Backgrounds -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Top Header -->
+  <header class="auth-header">
+    <a routerLink="/" class="brand-logo">
+      <div class="brand-icon">
+        <i class="pi pi-book"></i>
+      </div>
+      <span class="brand-name">Scribe<span class="brand-dot">.</span></span>
+    </a>
+
+    <a routerLink="/" class="btn-back">
+      <i class="pi pi-arrow-left"></i>
+      <span>Back to Home</span>
+    </a>
+  </header>
+
+  <!-- Split Glassmorphism Card Container -->
+  <main class="auth-main-container">
+    <div class="auth-card">
+
+      <!-- Left Side: Visual & Value Proposition -->
+      <div class="auth-visual-side">
+        <div class="visual-content">
+          <div class="visual-badge">
+            <i class="pi pi-sparkles"></i>
+            <span>Create Your Free Account</span>
+          </div>
+
+          <h2 class="visual-title">
+            Start building your<br />
+            <span class="gradient-text">Personal Knowledge.</span>
+          </h2>
+
+          <p class="visual-subtitle">
+            Join thousands of writers, developers, and thinkers managing notes seamlessly.
+          </p>
+
+          <div class="feature-pills">
+            <div class="pill-item">
+              <i class="pi pi-book"></i>
+              <span>Reader Mode First</span>
+            </div>
+            <div class="pill-item">
+              <i class="pi pi-file-edit"></i>
+              <span>Publisher Workspace</span>
+            </div>
+            <div class="pill-item">
+              <i class="pi pi-cloud"></i>
+              <span>Instant Cloud Sync</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini-editor-preview">
+          <div class="mini-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="mini-title">New Note</span>
+          </div>
+          <div class="mini-body">
+            <strong>Getting Started with Scribe</strong>
+            <p>Organize markdown notes, thoughts, and published articles...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Signup Form -->
+      <div class="auth-form-side">
+        <div class="form-header">
+          <h1>Create your Scribe account</h1>
+          <p>Get started with free unlimited note-taking</p>
+        </div>
+
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+          <!-- Full Name Field -->
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <div class="input-wrapper">
+              <i class="pi pi-user input-icon"></i>
+              <input formControlName="displayName" type="text" id="name" placeholder="John Doe" autocomplete="name" />
+            </div>
+          </div>
+
+          <!-- Email Input Field -->
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <div class="input-wrapper">
+              <i class="pi pi-envelope input-icon"></i>
+              <input formControlName="email" type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+          </div>
+
+          <!-- Password Input Field -->
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <input formControlName="password" type="password" id="password" placeholder="••••••••" autocomplete="new-password" />
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn-auth-submit" [disabled]="loading()">
+            <span *ngIf="!loading()">Create Account</span>
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
+            <i *ngIf="!loading()" class="pi pi-arrow-right"></i>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>Or sign up with</span>
+        </div>
+
+        <!-- Social Logins -->
+        <div class="social-login-grid">
+          <button type="button" (click)="onSubmit()" class="social-btn google">
+            <i class="pi pi-google"></i>
+            <span>Google</span>
+          </button>
+          <button type="button" (click)="onSubmit()" class="social-btn github">
+            <i class="pi pi-github"></i>
+            <span>GitHub</span>
+          </button>
+        </div>
+
+        <div class="form-footer">
+          <p>Already have an account? <a routerLink="/new/auth/login" class="link-highlight">Sign In</a></p>
+        </div>
+      </div>
+
     </div>
+  </main>
 
-    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
-      <div class="form-group">
-        <label for="signup-name">Full Name</label>
-        <div class="input-wrapper">
-          <i class="pi pi-user input-icon"></i>
-          <input id="signup-name" formControlName="displayName" type="text" placeholder="John Doe" />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="signup-email">Email Address</label>
-        <div class="input-wrapper">
-          <i class="pi pi-envelope input-icon"></i>
-          <input id="signup-email" formControlName="email" type="email" placeholder="you@example.com" />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="signup-pass">Password</label>
-        <div class="input-wrapper">
-          <i class="pi pi-lock input-icon"></i>
-          <input id="signup-pass" formControlName="password" type="password" placeholder="••••••••" />
-        </div>
-      </div>
-
-      <button type="submit" class="btn-submit" [disabled]="loading()">
-        <span *ngIf="!loading()">Create Account</span>
-        <i *ngIf="loading()" class="pi pi-spin pi-spinner"></i>
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      <p>Already have an account? <a routerLink="/new/auth/login" class="highlight-link">Sign In</a></p>
-    </div>
-  </div>
 </div>

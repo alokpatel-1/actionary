@@ -47,7 +47,7 @@ export class LandingPageComponent {
 
   navigateToApp(): void {
     if (this.firebaseService.isUserLoggedIn()) {
-      this.router.navigate(['/new/publisher/dashboard']);
+      this.router.navigate(['/new/reader/feed']);
     } else {
       this.router.navigate(['/new/auth/login']);
     }

@@ -32,8 +32,11 @@ const CustomCodeBlock = CodeBlock.extend({
       btn.classList.add('copy-code-btn');
       btn.innerHTML = '<i class="pi pi-copy"></i>';
       btn.title = 'Copy code';
+      btn.type = 'button';
       
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         navigator.clipboard.writeText(node.textContent);
         btn.innerHTML = '<i class="pi pi-check" style="color: #4ade80;"></i>';
         setTimeout(() => {
@@ -70,7 +73,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('editorActions', { static: true }) editorActionsTpl!: TemplateRef<any>;
 
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  public router = inject(Router);
   public noteService = inject(NoteService);
   public studyNotes = inject(StudyNotesComponent, { optional: true });
   private cdr = inject(ChangeDetectorRef);
@@ -98,6 +101,10 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   charCount = signal(0);
   readingTime = computed(() => Math.max(1, Math.ceil(this.wordCount() / 200)));
 
+  // Image Insert Modal State
+  showImageModal = signal(false);
+  imageTab = signal<'url' | 'upload'>('url');
+  imageUrlInput = signal('');
 
   // Templates
   readonly templates = NOTE_TEMPLATES;
@@ -157,6 +164,35 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  // Clipboard paste: only intercept image files, never block text/code paste
+  @HostListener('paste', ['$event'])
+  handlePaste(event: ClipboardEvent): void {
+    if (!this.isEditMode() || !this.editor) return;
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    // Check if ANY item is an image file
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+        event.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) this.insertImageFromFile(file);
+        return;
+      }
+    }
+    // If no image file found, do nothing — let default text/code paste happen
+  }
+
+  private insertImageFromFile(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (dataUrl && this.editor) {
+        this.editor.chain().focus().setImage({ src: dataUrl }).run();
+      }
+    };
+    reader.readAsDataURL(file);
+  }
 
   applyTemplate(template: NoteTemplate): void {
     if (!this.editor) return;
@@ -164,6 +200,49 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.content.set(template.content);
     this.updateWordCount();
     setTimeout(() => this.editor.commands.focus('end'), 50);
+  }
+
+  insertTable(): void {
+    if (!this.editor) return;
+    this.editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  }
+
+  deleteTable(): void {
+    if (!this.editor) return;
+    this.editor.chain().focus().deleteTable().run();
+  }
+
+  deleteSelectedImage(): void {
+    if (!this.editor) return;
+    this.editor.chain().focus().deleteSelection().run();
+  }
+
+  openImageModal(): void {
+    this.imageUrlInput.set('');
+    this.imageTab.set('url');
+    this.showImageModal.set(true);
+  }
+
+  closeImageModal(): void {
+    this.showImageModal.set(false);
+  }
+
+  confirmImageUrl(): void {
+    const url = this.imageUrlInput().trim();
+    this.closeImageModal();
+    if (url && this.editor) {
+      this.editor.chain().focus().setImage({ src: url }).run();
+      this.content.set(this.editor.getHTML());
+      this.cdr.detectChanges();
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.closeImageModal();
+      this.insertImageFromFile(input.files[0]);
+    }
   }
 
   addTag(): void {
@@ -218,12 +297,9 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openVersionPanel(): void {
-    // Load versions from current note
     const noteId = this.noteId();
     if (!noteId) return;
-    this.noteService.getNote(noteId).pipe(
-      (obs) => obs
-    ).subscribe(note => {
+    this.noteService.getNote(noteId).subscribe(note => {
       if (note) {
         this.versions.set(note.versions || []);
         this.showVersionPanel.set(true);
@@ -444,12 +520,12 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
             underline: false,
           }),
           CustomCodeBlock,
+          Image.configure({ allowBase64: true }),
+          TiptapTable.configure({ resizable: true }),
           Underline,
           TextStyle,
           Color.configure({ types: ['textStyle'] }),
           Link.configure({ openOnClick: false }),
-          Image,
-          TiptapTable.configure({ resizable: true }),
           TableRow,
           TableCell,
           TableHeader,
@@ -524,8 +600,6 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
 
   focusEditor(event: Event): void {
     if (!this.isEditMode() || !this.editor) return;
-    
-    // If the click is on the editor-area or content wrapper itself (and not inside the text), focus the end of the text
     const target = event.target as HTMLElement;
     if (target.classList.contains('editor-area') || target.classList.contains('tiptap-editor-wrapper')) {
       this.editor.commands.focus('end');
@@ -558,7 +632,6 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editor.chain().focus().unsetColor().unsetMark('textStyle').run();
   }
 
-  /** Keep mousedown from clearing the text selection before color commands run. */
   keepEditorSelection(event: Event): void {
     event.preventDefault();
   }
@@ -572,7 +645,6 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private isBlankNote(): boolean {
     const titleVal = (this.title() || '').trim();
     const contentVal = (this.content() || '').trim();
-    // Strip HTML tags to see if there is actual content text
     const textContent = contentVal.replace(/<[^>]*>?/gm, ' ').trim();
 
     const isTitleBlank = !titleVal || titleVal.toLowerCase() === 'untitled note';
@@ -620,7 +692,11 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
           this.isNew.set(false);
           finishSave();
           this.noteSession++;
-          this.router.navigate(['/notes', 'edit', note.id], { replaceUrl: true, queryParams: { edit: 'true' } });
+          if (this.router.url.includes('/new/publisher/') || this.router.url.includes('/new/')) {
+            this.router.navigate(['/new/publisher/editor', note.id], { replaceUrl: true });
+          } else {
+            this.router.navigate(['/notes', 'edit', note.id], { replaceUrl: true, queryParams: { edit: 'true' } });
+          }
         },
         error: (err) => {
           console.error('[Note Save]', err);
@@ -643,35 +719,5 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         }
       });
     }
-  }
-
-  triggerManualSync(): void {
-    if (this.noteService.syncService.syncStatus() !== 'started') {
-      this.noteService.syncService.sync().subscribe();
-    }
-  }
-
-  deleteNote(): void {
-    this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this note?',
-      header: 'Delete Note',
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-danger',
-      rejectButtonStyleClass: 'p-button-text',
-      accept: () => {
-        if (this.isNew()) {
-          this.router.navigate(['/notes']);
-        } else {
-          this.noteService.deleteNote(this.noteId()!).subscribe(() => {
-            this.router.navigate(['/notes']);
-          });
-        }
-      }
-    });
-  }
-
-  goToReadMode(): void {
-    if (this.isNew()) return;
-    this.router.navigate(['/library/read', this.noteId()]);
   }
 }

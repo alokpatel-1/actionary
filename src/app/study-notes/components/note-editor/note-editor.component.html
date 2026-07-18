@@ -25,15 +25,6 @@
         <span class="sync-badge failed" *ngIf="noteService.sync.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.sync.syncError()">
           <i class="pi pi-exclamation-circle"></i>
         </span>
-        <button class="bar-btn manual-sync-btn"
-                (click)="triggerManualSync()"
-                [disabled]="noteService.sync.syncStatus() === 'started'"
-                title="Sync now">
-          <i class="pi"
-             [class.pi-refresh]="noteService.sync.syncStatus() !== 'started'"
-             [class.pi-spin]="noteService.sync.syncStatus() === 'started'"
-             [class.pi-spinner]="noteService.sync.syncStatus() === 'started'"></i>
-        </button>
       </div>
 
       <button *ngIf="!isEditMode()" class="edit-btn-pill" (click)="enableEditMode()" title="Edit note">
@@ -44,10 +35,6 @@
         <i class="pi" [ngClass]="saving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
         <span>Save</span>
       </button>
-      <button class="bar-btn" *ngIf="!isNew()" (click)="goToReadMode()" title="Read Mode">
-        <i class="pi pi-book"></i>
-        <span>Read Mode</span>
-      </button>
     </div>
   </ng-template>
 
@@ -56,7 +43,7 @@
   <div class="content-container">
 
     <!-- Standalone Editor Toolbar when rendered outside StudyNotesComponent shell -->
-    <div class="standalone-editor-toolbar" *ngIf="!studyNotes">
+    <div class="standalone-editor-toolbar" *ngIf="!studyNotes && !router.url.includes('/publisher/') && !router.url.includes('/new/')">
       <div class="toolbar-left">
         <span class="save-dot saving" *ngIf="saving()"></span>
         <span class="save-label" *ngIf="saving()">Saving…</span>
@@ -65,17 +52,6 @@
         <span class="word-count-stat" *ngIf="wordCount() > 0">
           {{ wordCount() }} words · {{ charCount() }} chars · {{ readingTime() }} min read
         </span>
-      </div>
-
-      <div class="toolbar-right">
-        <button *ngIf="!isEditMode()" class="edit-btn-pill" (click)="enableEditMode()" title="Edit note">
-          <i class="pi pi-pencil"></i>
-          <span>Edit</span>
-        </button>
-        <button *ngIf="isEditMode()" class="save-btn-pill" (click)="save(true)" [disabled]="saving()" title="Save note">
-          <i class="pi" [ngClass]="saving() ? 'pi-spin pi-spinner' : 'pi-save'"></i>
-          <span>Save</span>
-        </button>
       </div>
     </div>
 
@@ -134,44 +110,31 @@
     <div class="editor-area" *ngIf="editor" (click)="focusEditor($event)">
       
       <!-- Bubble Menu (Shown on highlight) -->
-      <div tiptapBubbleMenu [editor]="editor" class="bubble-menu" *ngIf="isEditMode()">
-        <button (click)="editor.chain().focus().toggleBold().run()" [class.is-active]="editor.isActive('bold')"><strong style="font-weight: 700;">B</strong></button>
-        <button (click)="editor.chain().focus().toggleItalic().run()" [class.is-active]="editor.isActive('italic')"><em style="font-style: italic;">I</em></button>
-        <button (click)="editor.chain().focus().toggleUnderline().run()" [class.is-active]="editor.isActive('underline')"><u style="text-decoration: underline;">U</u></button>
-        <div class="divider"></div>
-        <div class="text-color-group" title="Text color">
-          <div class="text-color-swatches">
-            <button *ngFor="let c of textColors"
-                    type="button"
-                    class="swatch text-color-swatch"
-                    [class.default-swatch]="c.color === null"
-                    [style.color]="c.color || null"
-                    [class.is-active]="isTextColorActive(c.color)"
-                    (mousedown)="keepEditorSelection($event)"
-                    (click)="setTextColor(c.color)"
-                    [title]="c.label">
-              <span *ngIf="c.color === null" class="default-swatch-label">Aa</span>
-              <span *ngIf="c.color !== null">A</span>
-            </button>
-          </div>
-        </div>
+      <div tiptapBubbleMenu [editor]="editor" class="bubble-menu" *ngIf="isEditMode()" (mousedown)="keepEditorSelection($event)">
+        <button (click)="editor.chain().focus().toggleBold().run()" [class.is-active]="editor.isActive('bold')" title="Bold"><strong style="font-weight: 700;">B</strong></button>
+        <button (click)="editor.chain().focus().toggleItalic().run()" [class.is-active]="editor.isActive('italic')" title="Italic"><em style="font-style: italic;">I</em></button>
+        <button (click)="editor.chain().focus().toggleUnderline().run()" [class.is-active]="editor.isActive('underline')" title="Underline"><u style="text-decoration: underline;">U</u></button>
         <div class="divider"></div>
         <button (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" [class.is-active]="editor.isActive('heading', { level: 1 })">H1</button>
         <button (click)="editor.chain().focus().toggleHeading({ level: 2 }).run()" [class.is-active]="editor.isActive('heading', { level: 2 })">H2</button>
         <div class="divider"></div>
-        <button (click)="editor.chain().focus().toggleBlockquote().run()" [class.is-active]="editor.isActive('blockquote')"><i class="pi pi-comment"></i></button>
-        <button (click)="editor.chain().focus().toggleCode().run()" [class.is-active]="editor.isActive('code')"><i class="pi pi-code"></i></button>
+        <button (click)="editor.chain().focus().toggleBlockquote().run()" [class.is-active]="editor.isActive('blockquote')" title="Quote / Callout"><i class="pi pi-comment"></i></button>
+        <button (click)="editor.chain().focus().toggleCodeBlock().run()" [class.is-active]="editor.isActive('codeBlock')" title="Code Snippet"><i class="pi pi-code"></i></button>
+        <button (click)="insertTable()" title="Insert Table"><i class="pi pi-table"></i></button>
+        <button (click)="deleteTable()" *ngIf="editor.isActive('table')" title="Delete Table" style="color: #f87171;"><i class="pi pi-trash"></i></button>
+        <button (click)="openImageModal()" title="Insert Image"><i class="pi pi-image"></i></button>
+        <button (click)="deleteSelectedImage()" *ngIf="editor.isActive('image')" title="Delete Image" style="color: #f87171;"><i class="pi pi-trash"></i></button>
       </div>
 
       <!-- Floating Menu (Shown on empty line) -->
       <div tiptapFloatingMenu [editor]="editor" class="floating-menu" *ngIf="isEditMode()">
-        <button class="plus-btn" (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" title="Heading 1 (Ctrl+Alt+1)">H1</button>
-        <button class="plus-btn" (click)="editor.chain().focus().toggleBulletList().run()" title="Bullet List (Ctrl+Shift+8)"><i class="pi pi-list"></i></button>
-        <button class="plus-btn" (click)="editor.chain().focus().toggleBlockquote().run()" title="Blockquote (Ctrl+Shift+B)"><i class="pi pi-comment"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleHeading({ level: 1 }).run()" title="Heading 1">H1</button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleBulletList().run()" title="Bullet List"><i class="pi pi-list"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleBlockquote().run()" title="Quote / Callout"><i class="pi pi-comment"></i></button>
+        <button class="plus-btn" (click)="editor.chain().focus().toggleCodeBlock().run()" title="Code Snippet"><i class="pi pi-code"></i></button>
+        <button class="plus-btn" (click)="insertTable()" title="Insert Table"><i class="pi pi-table"></i></button>
+        <button class="plus-btn" (click)="openImageModal()" title="Insert Image"><i class="pi pi-image"></i></button>
         <button class="plus-btn" (click)="editor.chain().focus().setHorizontalRule().run()" title="Divider"><i class="pi pi-minus"></i></button>
-        <button class="plus-btn" (click)="editor.chain().focus().toggleCodeBlock().run()" title="Code Block (Ctrl+Alt+C)"><i class="pi pi-code"></i></button>
-        <button type="button" class="plus-btn" (mousedown)="keepEditorSelection($event)" (click)="setTextColor(textColors[3].color)" title="Text color"><span class="color-icon" [style.color]="textColors[3].color">A</span></button>
-        <button type="button" class="plus-btn" (mousedown)="keepEditorSelection($event)" (click)="setTextColor(null)" title="Default text color"><span class="color-icon default-color-icon">Aa</span></button>
       </div>
 
       <!-- Main Editor Content -->
@@ -181,4 +144,55 @@
   </div>
 </div>
 
+<!-- Insert Image Modal Dialog -->
+<div class="image-modal-backdrop" *ngIf="showImageModal()" (click)="closeImageModal()">
+  <div class="image-modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <i class="pi pi-image"></i>
+        <span>Insert Image</span>
+      </div>
+      <button class="btn-close" (click)="closeImageModal()">&times;</button>
+    </div>
 
+    <!-- Tab Switcher -->
+    <div class="modal-tabs">
+      <button [class.active]="imageTab() === 'url'" (click)="imageTab.set('url')">
+        <i class="pi pi-link"></i> URL
+      </button>
+      <button [class.active]="imageTab() === 'upload'" (click)="imageTab.set('upload')">
+        <i class="pi pi-upload"></i> Upload
+      </button>
+    </div>
+
+    <!-- URL Tab -->
+    <div class="modal-body" *ngIf="imageTab() === 'url'">
+      <div class="form-group">
+        <label>Image Web Address (URL)</label>
+        <input type="text"
+               [ngModel]="imageUrlInput()"
+               (ngModelChange)="imageUrlInput.set($event)"
+               placeholder="https://images.unsplash.com/photo-..."
+               (keydown.enter)="confirmImageUrl()" />
+      </div>
+      <div class="modal-actions">
+        <button (click)="closeImageModal()" class="btn-cancel">Cancel</button>
+        <button (click)="confirmImageUrl()" class="btn-confirm">Insert Image</button>
+      </div>
+    </div>
+
+    <!-- Upload Tab -->
+    <div class="modal-body" *ngIf="imageTab() === 'upload'">
+      <div class="file-upload-dropzone" (click)="fileInput.click()">
+        <i class="pi pi-cloud-upload upload-icon"></i>
+        <strong>Click to choose an image</strong>
+        <span class="dropzone-hint">or paste from clipboard (⌘V / Ctrl+V)</span>
+        <span class="dropzone-formats">PNG, JPG, WEBP, GIF supported</span>
+        <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none;" />
+      </div>
+      <div class="modal-actions">
+        <button (click)="closeImageModal()" class="btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

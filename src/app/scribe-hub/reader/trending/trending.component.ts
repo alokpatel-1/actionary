@@ -1,27 +1,18 @@
-import { Component, signal, computed, inject, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { ReaderNote } from '../feed/feed.component';
 import { SidebarService } from '../../shared/services/sidebar.service';
 
-export interface ReaderNote {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  createdAt: number;
-}
-
 @Component({
-  selector: 'app-reader-feed',
+  selector: 'app-reader-trending',
   standalone: false,
-  templateUrl: './feed.component.html',
-  styleUrl: './feed.component.scss'
+  templateUrl: './trending.component.html',
+  styleUrl: './trending.component.scss'
 })
-export class FeedComponent {
+export class TrendingComponent {
   public sidebarService = inject(SidebarService);
 
-  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
-
-  publishedNotes = signal<ReaderNote[]>([
+  trendingNotes = signal<ReaderNote[]>([
     { id: '1', title: 'System Architecture Overview', content: 'In-depth breakdown of MEAN stack modular architecture, clean layering, state signals, and decoupled data models for enterprise web apps.', tags: ['architecture', 'mean'], createdAt: Date.now() - 86400000 },
     { id: '2', title: 'TypeScript 5.4 Advanced Features', content: 'Comprehensive guide exploring narrowing in closure functions, NoInfer utility type, Object.groupBy helper, and reactive signal workflows.', tags: ['typescript', 'frontend'], createdAt: Date.now() - 172800000 },
     { id: '3', title: 'Building Reactive State with Angular Signals', content: 'Learn how computed signals, effects, and writable signals eliminate zone.js overhead and streamline Angular state management.', tags: ['angular', 'frontend'], createdAt: Date.now() - 259200000 },
@@ -39,52 +30,9 @@ export class FeedComponent {
     { id: '15', title: 'Node.js Event Loop & Asynchronous I/O', content: 'Understanding microtask queues, process.nextTick, libuv thread pool, and non-blocking I/O execution mechanics in Node.js.', tags: ['mean', 'backend'], createdAt: Date.now() - 1296000000 }
   ]);
 
-  searchQuery = signal('');
-  selectedTag = signal<string | null>(null);
-  showTagPanel = signal(false);
-  viewMode = signal<'card' | 'list'>('card');
-
-  allTags = computed(() => {
-    const set = new Set<string>();
-    this.publishedNotes().forEach(n => (n.tags || []).forEach(t => set.add(t)));
-    return Array.from(set);
-  });
-
-  filteredNotes = computed(() => {
-    let list = this.publishedNotes();
-    const tag = this.selectedTag();
-    if (tag) {
-      list = list.filter(n => (n.tags || []).includes(tag));
-    }
-    const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return list;
-    return list.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q));
-  });
-
   constructor(private router: Router) {}
-
-  @HostListener('window:keydown', ['$event'])
-  handleKeyboardShortcut(event: KeyboardEvent): void {
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-      event.preventDefault();
-      this.searchInput?.nativeElement?.focus();
-    }
-  }
 
   openNote(id: string): void {
     this.router.navigate(['/new/reader/notes', id]);
-  }
-
-  toggleTagPanel(): void {
-    this.showTagPanel.update(v => !v);
-  }
-
-  selectTag(tag: string | null): void {
-    this.selectedTag.set(this.selectedTag() === tag ? null : tag);
-    this.showTagPanel.set(false);
-  }
-
-  closeTagPanel(): void {
-    this.showTagPanel.set(false);
   }
 }

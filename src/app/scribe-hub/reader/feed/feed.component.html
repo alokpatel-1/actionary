@@ -1,55 +1,84 @@
-<div class="reader-feed-container">
+<div class="scribe-page-layout">
 
-  <!-- Top Header Navigation -->
-  <header class="reader-header">
-    <div class="header-inner">
-      <div class="brand-group">
-        <span class="brand-icon">📝</span>
-        <span class="brand-name">Scribe</span>
-        <span class="reader-badge">READER FEED</span>
-      </div>
+  <!-- Unified Application Sidebar -->
+  <app-sidebar></app-sidebar>
 
-      <div class="header-actions">
-        <a routerLink="/new/publisher/dashboard" class="btn-publisher">
-          <i class="pi pi-file-edit"></i>
-          <span>Publisher Workspace</span>
-        </a>
-      </div>
-    </div>
-  </header>
+  <!-- Main Feed Content Area -->
+  <main class="page-main-content">
 
-  <!-- Main Feed Area -->
-  <main class="feed-content">
-    <div class="hero-intro">
-      <h1>Discover Notes & Insights</h1>
-      <p>Read published notes, articles, and knowledge guides shared by authors.</p>
-    </div>
-
-    <!-- Search & Filter Controls -->
+    <!-- Sticky Top Search, Filter & View Controls Bar -->
     <div class="controls-bar">
-      <div class="search-box">
-        <i class="pi pi-search"></i>
-        <input type="text"
-               placeholder="Search articles and notes..."
-               [ngModel]="searchQuery()"
-               (ngModelChange)="searchQuery.set($event)" />
-      </div>
+      <div class="controls-top">
+        <div class="left-controls-group">
+          <button *ngIf="sidebarService.isSidebarCollapsed()" (click)="sidebarService.toggleSidebar()" class="btn-expand-sidebar" title="Show Sidebar">
+            <i class="pi pi-bars"></i>
+          </button>
 
-      <div class="tag-filters" *ngIf="allTags().length > 0">
-        <button [class.active]="selectedTag() === null" (click)="selectTag(null)" class="tag-btn">
-          All Topics
-        </button>
-        <button *ngFor="let t of allTags()" [class.active]="selectedTag() === t" (click)="selectTag(t)" class="tag-btn">
-          #{{ t }}
-        </button>
+          <!-- Search Input Box with Keyboard Shortcut -->
+          <div class="search-box">
+            <i class="pi pi-search search-icon"></i>
+            <input #searchInput
+                   type="text"
+                   placeholder="Search articles and notes..."
+                   [ngModel]="searchQuery()"
+                   (ngModelChange)="searchQuery.set($event)" />
+            <kbd class="search-shortcut" title="Press ⌘K or Ctrl+K to search">⌘K</kbd>
+          </div>
+        </div>
+
+        <div class="right-controls-group">
+          <!-- Filter Menu Panel Dropdown Toggle -->
+          <div class="filter-panel-wrapper" appClickOutside (clickOutside)="closeTagPanel()">
+            <button (click)="toggleTagPanel()" class="btn-filter-panel" [class.active]="showTagPanel() || selectedTag() !== null">
+              <i class="pi pi-sliders-h"></i>
+              <span>Topics</span>
+              <span class="active-badge" *ngIf="selectedTag()">1</span>
+              <i class="pi pi-chevron-down caret-icon" [class.rotated]="showTagPanel()"></i>
+            </button>
+
+            <!-- Floating Topic Filter Menu Panel Popover -->
+            <div class="tag-menu-panel" *ngIf="showTagPanel()">
+              <div class="panel-header">
+                <span class="panel-title"><i class="pi pi-filter"></i> Filter by Topic</span>
+                <button *ngIf="selectedTag()" (click)="selectTag(null)" class="btn-clear-filter">Clear Filter</button>
+              </div>
+
+              <div class="tag-pills-grid">
+                <button [class.active]="selectedTag() === null" (click)="selectTag(null)" class="panel-tag-btn">
+                  All Topics
+                </button>
+                <button *ngFor="let t of allTags()" [class.active]="selectedTag() === t" (click)="selectTag(t)" class="panel-tag-btn">
+                  #{{ t }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- View Mode Switcher -->
+          <div class="view-mode-toggle">
+            <button [class.active]="viewMode() === 'card'" (click)="viewMode.set('card')" class="view-btn" title="Grid Card View">
+              <i class="pi pi-th-large"></i>
+              <span>Grid</span>
+            </button>
+            <button [class.active]="viewMode() === 'list'" (click)="viewMode.set('list')" class="view-btn" title="List View">
+              <i class="pi pi-list"></i>
+              <span>List</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Feed Grid -->
-    <div class="feed-grid" *ngIf="filteredNotes().length > 0">
+    <!-- Active Filter Strip -->
+    <div class="active-filter-strip" *ngIf="selectedTag()">
+      <span class="filter-lbl">Filtered by topic: <strong>#{{ selectedTag() }}</strong></span>
+      <button (click)="selectTag(null)" class="btn-remove-tag"><i class="pi pi-times"></i> Clear</button>
+    </div>
+
+    <!-- Grid Card Layout (Default) -->
+    <div class="feed-grid" *ngIf="filteredNotes().length > 0 && viewMode() === 'card'">
       <article class="reader-card" *ngFor="let n of filteredNotes()" (click)="openNote(n.id)">
         <div class="card-header">
-          <span class="read-chip"><i class="pi pi-book"></i> Read Only</span>
           <span class="time-lbl">{{ n.content | readingTime }} min read</span>
         </div>
 
@@ -63,6 +92,29 @@
         <div class="card-footer">
           <span class="date-lbl"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
           <span class="read-more">Read Article <i class="pi pi-arrow-right"></i></span>
+        </div>
+      </article>
+    </div>
+
+    <!-- List View Layout -->
+    <div class="feed-list-container" *ngIf="filteredNotes().length > 0 && viewMode() === 'list'">
+      <article class="reader-list-item" *ngFor="let n of filteredNotes()" (click)="openNote(n.id)">
+        <div class="item-main">
+          <div class="item-meta">
+            <span class="date-lbl"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
+            <span class="time-lbl">{{ n.content | readingTime }} min read</span>
+          </div>
+
+          <h2 class="item-title">{{ n.title || 'Untitled Note' }}</h2>
+          <p class="item-snippet">{{ n.content | excerpt:220 }}</p>
+
+          <div class="tags-row" *ngIf="n.tags && n.tags.length > 0">
+            <span class="tag-pill" *ngFor="let t of n.tags">#{{ t }}</span>
+          </div>
+        </div>
+
+        <div class="item-action">
+          <span class="read-link">Read Article <i class="pi pi-arrow-right"></i></span>
         </div>
       </article>
     </div>

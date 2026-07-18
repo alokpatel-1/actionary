@@ -1,0 +1,42 @@
+<div class="scribe-page-layout">
+  
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Page Main Content Area -->
+  <main class="page-main-content">
+    <div class="trending-top-bar">
+      <button *ngIf="sidebarService.isSidebarCollapsed()" (click)="sidebarService.toggleSidebar()" class="btn-expand-sidebar" title="Show Sidebar">
+        <i class="pi pi-bars"></i>
+      </button>
+      <div class="hero-header-badge">
+        <i class="pi pi-bolt"></i>
+        <span>Popular Trending Content</span>
+      </div>
+    </div>
+
+    <!-- Feed Grid -->
+    <div class="trending-grid" *ngIf="trendingNotes().length > 0">
+      <article class="reader-card" *ngFor="let n of trendingNotes(); let i = index" (click)="openNote(n.id)">
+        <div class="rank-badge">#{{ i + 1 }} TRENDING</div>
+        
+        <div class="card-header">
+          <span class="time-lbl">{{ n.content | readingTime }} min read</span>
+        </div>
+
+        <h2 class="article-title">{{ n.title || 'Untitled Note' }}</h2>
+        <p class="article-snippet">{{ n.content | excerpt:150 }}</p>
+
+        <div class="tags-row" *ngIf="n.tags && n.tags.length > 0">
+          <span class="tag-pill" *ngFor="let t of n.tags">#{{ t }}</span>
+        </div>
+
+        <div class="card-footer">
+          <span class="date-lbl"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
+          <span class="read-more">Read Article <i class="pi pi-arrow-right"></i></span>
+        </div>
+      </article>
+    </div>
+  </main>
+
+</div>

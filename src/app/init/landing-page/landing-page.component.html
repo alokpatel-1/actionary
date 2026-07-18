@@ -16,19 +16,12 @@
       </nav>
 
       <div class="nav-actions">
-        <ng-container *ngIf="!firebaseService.isUserLoggedIn(); else loggedInView">
-          <a (click)="navigateToLogin()" [routerLink]="['/new/auth/login']" class="btn-ghost">Log in</a>
-          <a (click)="navigateToSignup()" [routerLink]="['/new/auth/signup']" class="btn-primary">
-            <span>Get Started</span>
-            <i class="pi pi-arrow-right"></i>
-          </a>
-        </ng-container>
-        <ng-template #loggedInView>
-          <a [routerLink]="['/new/publisher/dashboard']" class="btn-primary">
-            <span>Open Workspace</span>
-            <i class="pi pi-external-link"></i>
-          </a>
-        </ng-template>
+        <a [routerLink]="['/new/auth/login']" class="btn-ghost">Log in</a>
+        <a [routerLink]="['/new/auth/signup']" class="btn-signup">Sign up</a>
+        <a [routerLink]="['/new/reader/feed']" class="btn-primary">
+          <span>Open Scribe Reader</span>
+          <i class="pi pi-external-link"></i>
+        </a>
       </div>
     </div>
   </header>

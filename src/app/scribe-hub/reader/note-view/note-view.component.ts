@@ -1,5 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { SidebarService } from '../../shared/services/sidebar.service';
 
 export interface ReaderNote {
   id: string;
@@ -16,6 +17,7 @@ export interface ReaderNote {
   styleUrl: './note-view.component.scss'
 })
 export class NoteViewComponent implements OnInit {
+  public sidebarService = inject(SidebarService);
   note = signal<ReaderNote | null>(null);
 
   constructor(private route: ActivatedRoute) {}
@@ -26,7 +28,7 @@ export class NoteViewComponent implements OnInit {
       this.note.set({
         id,
         title: 'System Architecture Overview',
-        content: 'Notes on MEAN stack modular architecture and data structures...',
+        content: 'In-depth breakdown of MEAN stack modular architecture, clean layering, state signals, and decoupled data models for enterprise web apps.',
         tags: ['architecture', 'mean'],
         createdAt: Date.now() - 86400000
       });

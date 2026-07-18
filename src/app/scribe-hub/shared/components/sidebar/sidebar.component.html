@@ -1,0 +1,77 @@
+<aside class="app-sidebar" [class.collapsed]="sidebarService.isSidebarCollapsed()">
+  
+  <!-- Brand Logo & Collapse Toggle Header -->
+  <div class="sidebar-header">
+    <a routerLink="/new/reader/feed" class="sidebar-brand">
+      <span class="brand-icon">📝</span>
+      <span class="brand-name">Scribe<span class="brand-dot">.</span></span>
+    </a>
+    <button (click)="sidebarService.toggleSidebar()" class="btn-sidebar-collapse" title="Hide Sidebar">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+  </div>
+
+  <!-- Primary Create Action -->
+  <div class="sidebar-action">
+    <button (click)="createNewNote()" class="btn-sidebar-create">
+      <i class="pi pi-plus"></i>
+      <span>New Note</span>
+    </button>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav class="sidebar-nav">
+    <a routerLink="/new/reader/feed" routerLinkActive="active" class="nav-item">
+      <i class="pi pi-home nav-icon"></i>
+      <span>Home</span>
+    </a>
+
+    <a routerLink="/new/reader/trending" routerLinkActive="active" class="nav-item">
+      <i class="pi pi-bolt nav-icon"></i>
+      <span>Trending</span>
+    </a>
+
+    <a routerLink="/new/publisher/dashboard" routerLinkActive="active" class="nav-item">
+      <i class="pi pi-file-edit nav-icon"></i>
+      <span>Notes</span>
+    </a>
+  </nav>
+
+  <!-- User Profile Option Panel (Bottom Left) -->
+  <div class="sidebar-footer-wrapper" appClickOutside (clickOutside)="closeUserMenu()">
+    
+    <!-- Floating User Option Menu Popover Panel -->
+    <div class="user-menu-popover" *ngIf="showUserMenu()">
+      <a routerLink="/new/auth/profile" (click)="closeUserMenu()" class="menu-item">
+        <i class="pi pi-user"></i>
+        <span>Profile & Settings</span>
+      </a>
+
+      <button (click)="toggleTheme()" class="menu-item">
+        <i class="pi" [class.pi-sun]="themeService.currentTheme() === 'dark'" [class.pi-moon]="themeService.currentTheme() === 'light'"></i>
+        <span>{{ themeService.currentTheme() === 'dark' ? 'Dark Theme' : 'Light Theme' }}</span>
+      </button>
+
+      <div class="menu-divider"></div>
+
+      <button (click)="logout()" class="menu-item logout">
+        <i class="pi pi-sign-out"></i>
+        <span>Log Out</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer" (click)="toggleUserMenu()" title="Account Menu">
+      <div class="user-profile-info">
+        <div class="user-avatar">{{ (tokenService.userDisplayName() || 'U')[0].toUpperCase() }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ tokenService.userDisplayName() }}</span>
+          <span class="user-email">{{ tokenService.userEmail() || 'user@scribe.app' }}</span>
+        </div>
+      </div>
+      <button class="btn-user-more" title="Account Menu">
+        <i class="pi pi-ellipsis-v"></i>
+      </button>
+    </div>
+  </div>
+
+</aside>

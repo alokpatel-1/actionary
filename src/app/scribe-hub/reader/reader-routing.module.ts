@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ReaderComponent } from './reader.component';
 import { FeedComponent } from './feed/feed.component';
 import { NoteViewComponent } from './note-view/note-view.component';
+import { TrendingComponent } from './trending/trending.component';
 
 const routes: Routes = [
   {
@@ -11,6 +12,7 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'feed', pathMatch: 'full' },
       { path: 'feed', component: FeedComponent },
+      { path: 'trending', component: TrendingComponent },
       { path: 'notes/:id', component: NoteViewComponent }
     ]
   }

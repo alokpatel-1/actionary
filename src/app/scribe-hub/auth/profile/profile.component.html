@@ -1,23 +1,325 @@
-<div class="profile-page-wrapper">
-  <div class="profile-card">
-    <div class="profile-header">
-      <div class="user-avatar">
-        {{ tokenService.userDisplayName().substring(0,1).toUpperCase() }}
-      </div>
-      <h2>{{ tokenService.userDisplayName() }}</h2>
-      <p class="email">{{ tokenService.userEmail() }}</p>
-    </div>
+<div class="scribe-page-layout">
 
-    <div class="profile-actions">
-      <a routerLink="/new/publisher/dashboard" class="btn-action primary">
-        <i class="pi pi-file-edit"></i>
-        <span>Go to Notes Workspace</span>
-      </a>
+  <!-- Unified Application Sidebar -->
+  <app-sidebar></app-sidebar>
 
-      <button (click)="logout()" class="btn-action logout">
-        <i class="pi pi-sign-out"></i>
-        <span>Log Out</span>
+  <!-- Main Content Area -->
+  <main class="page-main-content">
+    <div class="profile-top-bar" *ngIf="sidebarService.isSidebarCollapsed()">
+      <button (click)="sidebarService.toggleSidebar()" class="btn-expand-sidebar" title="Show Sidebar">
+        <i class="pi pi-bars"></i>
+        <span>Show Sidebar</span>
       </button>
     </div>
-  </div>
+    
+    <!-- Ultra-Premium Profile Hero Header Card -->
+    <div class="profile-hero-card">
+      <div class="cover-banner">
+        <div class="mesh-overlay"></div>
+        <div class="banner-badge">
+          <i class="pi pi-shield"></i>
+          <span>PRO AUTHOR WORKSPACE</span>
+        </div>
+      </div>
+
+      <div class="profile-header-body">
+        <div class="profile-identity-row">
+          <div class="avatar-container">
+            <div class="avatar-glow"></div>
+            <div class="user-avatar">
+              {{ (tokenService.userDisplayName() || 'U')[0].toUpperCase() }}
+              <span class="online-indicator" title="Active Author Session"></span>
+            </div>
+          </div>
+
+          <div class="user-details-group">
+            <div class="name-badge-row">
+              <h2 class="hero-user-name">{{ tokenService.userDisplayName() }}</h2>
+              <span class="verified-badge" title="Verified Content Author">
+                <i class="pi pi-check-circle"></i>
+                <span>Verified Author</span>
+              </span>
+            </div>
+            <p class="user-email-lbl">{{ tokenService.userEmail() || 'user@scribe.app' }}</p>
+          </div>
+        </div>
+
+        <!-- Premium Author Stats Row -->
+        <div class="profile-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrap notes-icon">
+              <i class="pi pi-file-edit"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-num">12</span>
+              <span class="stat-label">Published Notes</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap views-icon">
+              <i class="pi pi-eye"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-num">1.4k</span>
+              <span class="stat-label">Article Views</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap rating-icon">
+              <i class="pi pi-star-fill"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-num">4.9</span>
+              <span class="stat-label">Author Rating</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sleek Segmented Tab Navigation Bar -->
+    <div class="settings-tabs-bar">
+      <button [class.active]="activeTab() === 'general'" (click)="setTab('general')" class="tab-btn">
+        <i class="pi pi-user"></i>
+        <span>General Profile</span>
+      </button>
+
+      <button [class.active]="activeTab() === 'security'" (click)="setTab('security')" class="tab-btn">
+        <i class="pi pi-shield"></i>
+        <span>Security & Password</span>
+      </button>
+
+      <button [class.active]="activeTab() === 'appearance'" (click)="setTab('appearance')" class="tab-btn">
+        <i class="pi pi-palette"></i>
+        <span>Appearance & Theme</span>
+      </button>
+    </div>
+
+    <!-- Tab 1: General Profile Form -->
+    <div class="settings-card-panel" *ngIf="activeTab() === 'general'">
+      <div class="panel-header">
+        <div class="header-icon-badge">
+          <i class="pi pi-user-edit"></i>
+        </div>
+        <div>
+          <h3>Personal Profile</h3>
+          <p>Update your public author identity, display name, and bio tagline</p>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="form-group">
+          <label for="name">Display Name</label>
+          <div class="input-wrapper">
+            <i class="pi pi-user input-icon"></i>
+            <input id="name"
+                   type="text"
+                   [ngModel]="displayName()"
+                   (ngModelChange)="displayName.set($event)"
+                   placeholder="Your Full Name" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i class="pi pi-envelope input-icon"></i>
+            <input id="email"
+                   type="email"
+                   [ngModel]="email()"
+                   (ngModelChange)="email.set($event)"
+                   placeholder="you@example.com" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Author Bio & Tagline</label>
+          <textarea id="bio"
+                    rows="3"
+                    [ngModel]="bio()"
+                    (ngModelChange)="bio.set($event)"
+                    placeholder="Write a brief intro about yourself..."></textarea>
+        </div>
+
+        <div class="panel-footer">
+          <button (click)="saveProfile()" class="btn-primary-action" [disabled]="isSaving()">
+            <i class="pi" [class.pi-spin]="isSaving()" [class.pi-spinner]="isSaving()" [class.pi-check]="!isSaving()"></i>
+            <span>{{ isSaving() ? 'Saving...' : 'Save Profile Changes' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Security & Change Password -->
+    <div class="settings-card-panel" *ngIf="activeTab() === 'security'">
+      <div class="panel-header">
+        <div class="header-icon-badge security">
+          <i class="pi pi-key"></i>
+        </div>
+        <div>
+          <h3>Security & Passwords</h3>
+          <p>Manage secret login passwords, tokens, and active session security</p>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <!-- Change Password Sub-Section with Eye Toggles -->
+        <div class="sub-section">
+          <h4>Change Login Password</h4>
+
+          <div class="form-group">
+            <label for="curr-pass">Current Password</label>
+            <div class="input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <input id="curr-pass"
+                     [type]="showCurrentPassword() ? 'text' : 'password'"
+                     [ngModel]="currentPassword()"
+                     (ngModelChange)="currentPassword.set($event)"
+                     placeholder="••••••••" />
+              <button type="button" class="btn-toggle-eye" (click)="toggleCurrentPassword()" title="Toggle Password Visibility">
+                <i class="pi" [class.pi-eye]="!showCurrentPassword()" [class.pi-eye-slash]="showCurrentPassword()"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="new-pass">New Password</label>
+            <div class="input-wrapper">
+              <i class="pi pi-shield input-icon"></i>
+              <input id="new-pass"
+                     [type]="showNewPassword() ? 'text' : 'password'"
+                     [ngModel]="newPassword()"
+                     (ngModelChange)="newPassword.set($event)"
+                     placeholder="••••••••" />
+              <button type="button" class="btn-toggle-eye" (click)="toggleNewPassword()" title="Toggle Password Visibility">
+                <i class="pi" [class.pi-eye]="!showNewPassword()" [class.pi-eye-slash]="showNewPassword()"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="conf-pass">Confirm New Password</label>
+            <div class="input-wrapper">
+              <i class="pi pi-check-circle input-icon"></i>
+              <input id="conf-pass"
+                     [type]="showConfirmPassword() ? 'text' : 'password'"
+                     [ngModel]="confirmPassword()"
+                     (ngModelChange)="confirmPassword.set($event)"
+                     placeholder="••••••••" />
+              <button type="button" class="btn-toggle-eye" (click)="toggleConfirmPassword()" title="Toggle Password Visibility">
+                <i class="pi" [class.pi-eye]="!showConfirmPassword()" [class.pi-eye-slash]="showConfirmPassword()"></i>
+              </button>
+            </div>
+          </div>
+
+          <button (click)="changePassword()" class="btn-primary-action" [disabled]="isChangingPassword()">
+            <i class="pi" [class.pi-spin]="isChangingPassword()" [class.pi-spinner]="isChangingPassword()" [class.pi-lock]="!isChangingPassword()"></i>
+            <span>{{ isChangingPassword() ? 'Updating Password...' : 'Update Password' }}</span>
+          </button>
+        </div>
+
+        <!-- Active Token Info -->
+        <div class="sub-section">
+          <h4>Session Security Info</h4>
+          
+          <div class="security-row">
+            <div class="row-info">
+              <strong>User ID Token</strong>
+              <span class="mono">{{ tokenService.currentUserProfile()?.uid || 'usr_session_token' }}</span>
+            </div>
+            <span class="status-chip active">Active</span>
+          </div>
+
+          <div class="security-row">
+            <div class="row-info">
+              <strong>Account Authentication</strong>
+              <span>Session stored safely</span>
+            </div>
+            <span class="status-chip secure"><i class="pi pi-lock"></i> Encrypted</span>
+          </div>
+        </div>
+
+        <!-- Danger Zone Section -->
+        <div class="danger-zone">
+          <h4>Danger Zone</h4>
+          <p>Sign out of your active Scribe session or permanently delete your account.</p>
+
+          <div class="danger-actions-row">
+            <button (click)="logout()" class="btn-logout-danger">
+              <i class="pi pi-sign-out"></i>
+              <span>Log Out</span>
+            </button>
+
+            <button (click)="openDeleteAccountModal()" class="btn-delete-account">
+              <i class="pi pi-trash"></i>
+              <span>Delete Account</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Appearance & Theme -->
+    <div class="settings-card-panel" *ngIf="activeTab() === 'appearance'">
+      <div class="panel-header">
+        <div class="header-icon-badge appearance">
+          <i class="pi pi-palette"></i>
+        </div>
+        <div>
+          <h3>Appearance & Theme</h3>
+          <p>Customize interface theme and viewing experience</p>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="theme-cards-grid">
+          
+          <div class="theme-preview-card"
+               [class.active]="themeService.currentTheme() === 'light'"
+               (click)="themeService.setTheme('light')">
+            <div class="preview-box light-preview">
+              <div class="preview-header"></div>
+              <div class="preview-lines">
+                <span></span><span></span>
+              </div>
+            </div>
+            <div class="card-footer-info">
+              <i class="pi pi-sun"></i>
+              <strong>Light Mode</strong>
+            </div>
+          </div>
+
+          <div class="theme-preview-card"
+               [class.active]="themeService.currentTheme() === 'dark'"
+               (click)="themeService.setTheme('dark')">
+            <div class="preview-box dark-preview">
+              <div class="preview-header"></div>
+              <div class="preview-lines">
+                <span></span><span></span>
+              </div>
+            </div>
+            <div class="card-footer-info">
+              <i class="pi pi-moon"></i>
+              <strong>Dark Mode</strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Delete Account Confirmation Dialog -->
+  <app-confirm-dialog
+    [isOpen]="showDeleteAccountModal()"
+    [title]="'Delete Account Permanently'"
+    [message]="'Are you sure you want to permanently delete your account? All your personal notes, drafts, and settings will be removed permanently.'"
+    [confirmText]="'Permanently Delete Account'"
+    (confirm)="confirmDeleteAccount()"
+    (cancel)="closeDeleteAccountModal()">
+  </app-confirm-dialog>
+
 </div>

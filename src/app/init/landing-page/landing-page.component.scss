@@ -162,6 +162,22 @@
       }
     }
 
+    .btn-signup {
+      color: #4f46e5;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      background: rgba(79, 70, 229, 0.05);
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(79, 70, 229, 0.12);
+      }
+    }
+
     .btn-primary {
       background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
       color: #ffffff;

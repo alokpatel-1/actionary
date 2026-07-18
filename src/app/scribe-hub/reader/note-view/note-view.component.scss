@@ -1,24 +1,47 @@
-:host {
-  display: block;
+.scribe-page-layout {
+  display: flex;
   min-height: 100vh;
   background-color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.reader-view-header {
-  background: #ffffff;
-  border-bottom: 1px solid #eaeaea;
+.page-main-content {
+  flex: 1;
+  max-width: 900px;
+  padding: 0 2.5rem 6rem;
+}
+
+.reader-top-nav {
   position: sticky;
   top: 0;
   z-index: 100;
+  background: #ffffff;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 
-  .header-inner {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0.85rem 1.5rem;
+  .btn-expand-sidebar {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #6366f1;
+      color: #ffffff;
+      border-color: #6366f1;
+    }
   }
 
   .btn-back {
@@ -31,21 +54,10 @@
     gap: 0.4rem;
     &:hover { color: #0f172a; }
   }
-
-  .read-only-badge {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #059669;
-    background: rgba(5, 150, 105, 0.1);
-    padding: 0.2rem 0.65rem;
-    border-radius: 9999px;
-  }
 }
 
 .article-body-wrapper {
   max-width: 800px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem 6rem;
 }
 
 .article-meta-header {

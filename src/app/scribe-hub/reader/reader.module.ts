@@ -7,12 +7,14 @@ import { ReaderRoutingModule } from './reader-routing.module';
 import { ReaderComponent } from './reader.component';
 import { FeedComponent } from './feed/feed.component';
 import { NoteViewComponent } from './note-view/note-view.component';
+import { TrendingComponent } from './trending/trending.component';
 
 @NgModule({
   declarations: [
     ReaderComponent,
     FeedComponent,
-    NoteViewComponent
+    NoteViewComponent,
+    TrendingComponent
   ],
   imports: [
     CommonModule,

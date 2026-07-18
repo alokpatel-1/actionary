@@ -1,61 +1,104 @@
-<div class="publisher-dashboard-container">
+<div class="scribe-page-layout">
 
-  <!-- Top Header Navigation -->
-  <header class="pub-header">
-    <div class="header-inner">
-      <div class="brand-group">
-        <span class="brand-icon">📝</span>
-        <span class="brand-name">Scribe</span>
-        <span class="pub-badge">PUBLISHER WORKSPACE</span>
-      </div>
+  <!-- Unified Application Sidebar -->
+  <app-sidebar></app-sidebar>
 
-      <div class="header-actions">
-        <a routerLink="/new/reader/feed" class="btn-ghost">
-          <i class="pi pi-book"></i>
-          <span>Reader View</span>
-        </a>
-        <button (click)="createNewNote()" class="btn-create">
-          <i class="pi pi-plus"></i>
-          <span>New Note</span>
-        </button>
-      </div>
-    </div>
-  </header>
+  <!-- Page Main Content Area -->
+  <main class="page-main-content">
 
-  <main class="dashboard-content">
-    <!-- Filter & Search Bar -->
+    <!-- Tab Navigation Bar (Draft vs Published), Search & Filter Controls -->
     <div class="controls-row">
-      <div class="filter-pills">
-        <button [class.active]="activeFilter() === 'all'" (click)="activeFilter.set('all')" class="pill-btn">
-          All Notes ({{ notes().length }})
+      <div class="main-tabs">
+        <button *ngIf="sidebarService.isSidebarCollapsed()" (click)="sidebarService.toggleSidebar()" class="btn-expand-sidebar" title="Show Sidebar">
+          <i class="pi pi-bars"></i>
         </button>
-        <button [class.active]="activeFilter() === 'drafts'" (click)="activeFilter.set('drafts')" class="pill-btn">
-          Drafts
+        <button [class.active]="activeTab() === 'draft'" (click)="activeTab.set('draft')" class="tab-btn">
+          <i class="pi pi-file-edit"></i>
+          <span>Draft Notes ({{ draftCount() }})</span>
         </button>
-        <button [class.active]="activeFilter() === 'published'" (click)="activeFilter.set('published')" class="pill-btn">
-          Published
+        <button [class.active]="activeTab() === 'published'" (click)="activeTab.set('published')" class="tab-btn">
+          <i class="pi pi-send"></i>
+          <span>Published ({{ publishedCount() }})</span>
         </button>
       </div>
 
-      <div class="search-box">
-        <i class="pi pi-search"></i>
-        <input type="text"
-               placeholder="Search personal notes..."
-               [ngModel]="searchQuery()"
-               (ngModelChange)="searchQuery.set($event)" />
+      <div class="controls-right">
+        <!-- Search Box -->
+        <div class="search-box">
+          <i class="pi pi-search"></i>
+          <input #searchInput
+                 type="text"
+                 placeholder="Search notes..."
+                 [ngModel]="searchQuery()"
+                 (ngModelChange)="searchQuery.set($event)" />
+          <kbd class="search-shortcut" title="Press ⌘K or Ctrl+K to search">⌘K</kbd>
+        </div>
+
+        <!-- Filter Menu Panel Dropdown Toggle -->
+        <div class="filter-panel-wrapper" appClickOutside (clickOutside)="closeTagPanel()">
+          <button (click)="toggleTagPanel()" class="btn-filter-panel" [class.active]="showTagPanel() || selectedTag() !== null">
+            <i class="pi pi-sliders-h"></i>
+            <span>Topics</span>
+            <span class="active-badge" *ngIf="selectedTag()">1</span>
+            <i class="pi pi-chevron-down caret-icon" [class.rotated]="showTagPanel()"></i>
+          </button>
+
+          <!-- Floating Topic Filter Menu Panel Popover -->
+          <div class="tag-menu-panel" *ngIf="showTagPanel()">
+            <div class="panel-header">
+              <span class="panel-title"><i class="pi pi-filter"></i> Filter by Topic</span>
+              <button *ngIf="selectedTag()" (click)="selectTag(null)" class="btn-clear-filter">Clear Filter</button>
+            </div>
+
+            <div class="tag-pills-grid">
+              <button [class.active]="selectedTag() === null" (click)="selectTag(null)" class="panel-tag-btn">
+                All Topics
+              </button>
+              <button *ngFor="let t of allTags()" [class.active]="selectedTag() === t" (click)="selectTag(t)" class="panel-tag-btn">
+                #{{ t }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="view-mode-toggle">
+          <button [class.active]="viewMode() === 'card'" (click)="viewMode.set('card')" class="view-btn" title="Grid View">
+            <i class="pi pi-th-large"></i>
+            <span>Grid</span>
+          </button>
+          <button [class.active]="viewMode() === 'list'" (click)="viewMode.set('list')" class="view-btn" title="List View">
+            <i class="pi pi-list"></i>
+            <span>List</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Notes Feed -->
-    <div class="notes-grid" *ngIf="filteredNotes().length > 0">
+    <!-- Active Filter Strip -->
+    <div class="active-filter-strip" *ngIf="selectedTag()">
+      <span class="filter-lbl">Filtered by topic: <strong>#{{ selectedTag() }}</strong></span>
+      <button (click)="selectTag(null)" class="btn-remove-tag"><i class="pi pi-times"></i> Clear</button>
+    </div>
+
+    <!-- Grid Layout -->
+    <div class="notes-grid" *ngIf="filteredNotes().length > 0 && viewMode() === 'card'">
       <div class="pub-note-card" *ngFor="let n of filteredNotes()" (click)="editNote(n.id)">
         <div class="card-top">
           <span class="status-badge" [class.draft]="(n.status === 'draft')" [class.published]="(n.status === 'published')">
             {{ (n.status === 'published') ? 'PUBLISHED' : 'DRAFT' }}
           </span>
-          <button class="delete-icon-btn" (click)="deleteNote(n.id, $event)" title="Delete Note">
-            <i class="pi pi-trash"></i>
-          </button>
+          <div class="card-actions-top">
+            <button class="action-chip unpublish" *ngIf="n.status === 'published'" (click)="unpublishNote(n.id, $event)" title="Unpublish (Move to Draft)">
+              <i class="pi pi-undo"></i> Unpublish
+            </button>
+            <button class="action-chip publish" *ngIf="n.status === 'draft'" (click)="publishNote(n.id, $event)" title="Publish Note">
+              <i class="pi pi-send"></i> Publish
+            </button>
+            <button class="delete-icon-btn" (click)="deleteNote(n.id, $event)" title="Delete Note">
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
         </div>
 
         <h3 class="note-title">{{ n.title || 'Untitled Note' }}</h3>
@@ -68,16 +111,57 @@
       </div>
     </div>
 
+    <!-- List Layout -->
+    <div class="notes-list-container" *ngIf="filteredNotes().length > 0 && viewMode() === 'list'">
+      <div class="pub-note-list-item" *ngFor="let n of filteredNotes()" (click)="editNote(n.id)">
+        <div class="item-main">
+          <div class="item-meta">
+            <span class="status-badge" [class.draft]="(n.status === 'draft')" [class.published]="(n.status === 'published')">
+              {{ (n.status === 'published') ? 'PUBLISHED' : 'DRAFT' }}
+            </span>
+            <span class="meta-date"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
+            <span class="meta-read">{{ n.content | readingTime }} min read</span>
+          </div>
+
+          <h3 class="note-title">{{ n.title || 'Untitled Note' }}</h3>
+          <p class="note-snippet">{{ n.content | excerpt:180 }}</p>
+        </div>
+
+        <div class="item-actions">
+          <button class="action-chip unpublish" *ngIf="n.status === 'published'" (click)="unpublishNote(n.id, $event)" title="Unpublish (Move to Draft)">
+            <i class="pi pi-undo"></i> Unpublish
+          </button>
+          <button class="action-chip publish" *ngIf="n.status === 'draft'" (click)="publishNote(n.id, $event)" title="Publish Note">
+            <i class="pi pi-send"></i> Publish
+          </button>
+          <button class="delete-icon-btn" (click)="deleteNote(n.id, $event)" title="Delete Note">
+            <i class="pi pi-trash"></i>
+          </button>
+          <span class="edit-link">Edit <i class="pi pi-pencil"></i></span>
+        </div>
+      </div>
+    </div>
+
     <!-- Empty State -->
     <div class="empty-feed" *ngIf="filteredNotes().length === 0">
       <i class="pi pi-file-o empty-icon"></i>
-      <h3>No notes found</h3>
-      <p>Create your first note in the Publisher workspace.</p>
+      <h3>No {{ activeTab() }} notes found</h3>
+      <p>Start writing by creating a new note.</p>
       <button class="btn-create" (click)="createNewNote()">
         <i class="pi pi-plus"></i>
         <span>Create Note</span>
       </button>
     </div>
   </main>
+
+  <!-- Reusable Action Confirmation Dialog (Delete, Publish & Unpublish) -->
+  <app-confirm-dialog
+    [isOpen]="confirmDialog().isOpen"
+    [title]="dialogTitle()"
+    [message]="dialogMessage()"
+    [confirmText]="dialogConfirmText()"
+    (confirm)="handleConfirmAction()"
+    (cancel)="cancelConfirmDialog()">
+  </app-confirm-dialog>
 
 </div>
