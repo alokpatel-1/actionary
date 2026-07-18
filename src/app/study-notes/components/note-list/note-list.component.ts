@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../../services/note.service';
-import { NoteSyncService } from '../../services/note-sync.service';
 import { Note, NoteFolder } from '../../models/note.model';
 
 @Component({
@@ -14,8 +13,6 @@ export class NoteListComponent implements OnInit {
   private noteService = inject(NoteService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  readonly syncService = inject(NoteSyncService);
-
   notes = signal<Note[]>([]);
   folders = signal<NoteFolder[]>([]);
   selectedFolderId = signal<string | null>(null);
@@ -39,7 +36,6 @@ export class NoteListComponent implements OnInit {
       this.selectedFolderId.set(folderId);
       this.loadNotes();
     });
-    this.syncService.tryAutoSync();
   }
 
   loadFolders(): void {

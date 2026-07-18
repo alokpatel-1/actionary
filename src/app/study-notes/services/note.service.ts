@@ -1,7 +1,5 @@
 import { Injectable, inject, signal, effect } from '@angular/core';
-import { Auth } from '@angular/fire/auth';
 import { NoteIdbService } from './note-idb.service';
-import { NoteSyncService } from './note-sync.service';
 import { Note, NoteCreate, NoteFolder, QuickThought, DEFAULT_FOLDER, DEFAULT_FOLDERS, normalizeIcon } from '../models/note.model';
 import { v4 as uuidv4 } from 'uuid';
 import { Observable, from, BehaviorSubject, forkJoin, of } from 'rxjs';
@@ -12,13 +10,6 @@ import { map, switchMap, tap } from 'rxjs/operators';
 })
 export class NoteService {
   private idb = inject(NoteIdbService);
-  public syncService = inject(NoteSyncService);
-
-  get sync() {
-    return this.syncService;
-  }
-  
-  private auth = inject(Auth);
 
   private notesUpdated$ = new BehaviorSubject<void>(undefined);
   activeFolderId = signal<string | null>(null);
@@ -26,11 +17,7 @@ export class NoteService {
 
   constructor() {
     console.log('[Note Service] Constructor initialized');
-    this.syncService.syncCompleted$.subscribe(() => {
-      console.log('[Note Service] Sync completed event received, triggering refresh');
-      this.triggerRefresh();
-      this.cleanupOldArchivedNotes().subscribe();
-    });
+    this.cleanupOldArchivedNotes().subscribe();
   }
 
   private cleanupOldArchivedNotes(): Observable<void> {
@@ -55,8 +42,7 @@ export class NoteService {
   }
 
   private get currentUserId(): string | null {
-    return this.auth.currentUser?.uid ??
-      (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('localId') : null);
+    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('localId') : null;
   }
 
   private filterByUser(notes: Note[]): Note[] {
@@ -84,7 +70,6 @@ export class NoteService {
       userId: uid ?? undefined
     };
     return from(this.idb.addNote(note)).pipe(
-      tap(() => this.syncService.tryAutoSync()),
       tap(() => this.triggerRefresh()),
       map(() => note)
     );
@@ -110,8 +95,7 @@ export class NoteService {
           versions
         };
         return from(this.idb.addNote(updated)).pipe(
-          tap(() => this.syncService.tryAutoSync()),
-          tap(() => this.triggerRefresh()),
+              tap(() => this.triggerRefresh()),
           map(() => updated)
         );
       })
@@ -148,8 +132,7 @@ export class NoteService {
           synced: false
         };
         return from(this.idb.addNote(duplicated)).pipe(
-          tap(() => this.syncService.tryAutoSync()),
-          tap(() => this.triggerRefresh()),
+              tap(() => this.triggerRefresh()),
           map(() => duplicated)
         );
       })
@@ -163,7 +146,7 @@ export class NoteService {
   permanentlyDeleteNote(id: string): Observable<void> {
     return from(this.idb.deleteNote(id)).pipe(
       tap(() => this.triggerRefresh()),
-      switchMap(() => this.syncService.deleteRemote(id))
+      map(() => void 0)
     );
   }
 
@@ -222,7 +205,6 @@ export class NoteService {
           tap(() => this.triggerRefresh())
         );
       }),
-      tap(() => this.syncService.tryAutoSync())
     );
   }
 
@@ -254,7 +236,6 @@ export class NoteService {
     return from(
       this.idb.putFolder(newFolder).then(() => this.idb.addNote(defaultNote))
     ).pipe(
-      tap(() => this.syncService.tryAutoSync()),
       tap(() => this.triggerRefresh()),
       map(() => newFolder)
     );
@@ -262,7 +243,6 @@ export class NoteService {
 
   updateFolder(folder: NoteFolder): Observable<void> {
     return from(this.idb.putFolder(folder)).pipe(
-      tap(() => this.syncService.tryAutoSync())
     );
   }
 
@@ -293,7 +273,7 @@ export class NoteService {
         })
       ]).then(() => this.idb.deleteFolder(id))
     ).pipe(
-      switchMap(() => this.syncService.deleteRemoteFolder(id))
+      map(() => void 0)
     );
   }
 
@@ -348,13 +328,12 @@ export class NoteService {
       synced: false
     };
     return from(this.idb.putThought(toSave)).pipe(
-      tap(() => this.syncService.tryAutoSync())
     );
   }
 
   deleteThought(id: string): Observable<void> {
     return from(this.idb.deleteThought(id)).pipe(
-      switchMap(() => this.syncService.deleteRemoteThought(id))
+      map(() => void 0)
     );
   }
 }

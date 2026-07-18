@@ -1,17 +1,13 @@
 <div class="notes-shell" [class.sidebar-expanded]="sidebarExpanded()" [class.sidebar-collapsed]="!sidebarExpanded()">
 
-  <!-- Full Screen Top Navbar -->
-  <app-library-navbar
-    [showSearch]="false"
-    [showBrand]="true"
-    [showToggle]="true"
-    (toggleSidebar)="toggleSidebar()">
-    <!-- Project center editor status & actions templates -->
+  <!-- Full Screen Top Navbar (Fallback) -->
+  <header class="fallback-navbar">
+    <div class="nav-brand">Actionary Notes</div>
     <div class="bar-center" editor-status>
       <ng-container *ngTemplateOutlet="editorStatusTemplate()"></ng-container>
       <ng-container *ngTemplateOutlet="editorActionsTemplate()"></ng-container>
     </div>
-  </app-library-navbar>
+  </header>
 
   <div class="shell-body">
 
@@ -396,39 +392,7 @@
     </div>
   </p-popover>
 
-  <!-- Floating Glassmorphic Sync Status Toast -->
-  <div class="floating-sync-card" [class.active]="noteService.syncService.syncStatus() === 'started' || showSyncSuccessToast()">
-    <div class="sync-card-content">
-      <!-- Loader for syncing state -->
-      <div class="sync-icon-wrapper" *ngIf="noteService.syncService.syncStatus() === 'started'">
-        <div class="sync-spinner-ring"></div>
-      </div>
-      <!-- Success check for completed state -->
-      <div class="sync-icon-wrapper success" *ngIf="noteService.syncService.syncStatus() === 'completed'">
-        <i class="pi pi-check"></i>
-      </div>
-      <!-- Failure check for failed state -->
-      <div class="sync-icon-wrapper failed" *ngIf="noteService.syncService.syncStatus() === 'failed'">
-        <i class="pi pi-times"></i>
-      </div>
 
-      <div class="sync-text-group">
-        <span class="sync-title">
-          <ng-container *ngIf="noteService.syncService.syncStatus() === 'started'">Syncing...</ng-container>
-          <ng-container *ngIf="noteService.syncService.syncStatus() === 'completed'">Notes Synced</ng-container>
-          <ng-container *ngIf="noteService.syncService.syncStatus() === 'failed'">Sync Failed</ng-container>
-        </span>
-        <span class="sync-subtitle">
-          <ng-container *ngIf="noteService.syncService.syncStatus() === 'started'">Saving changes to Firebase</ng-container>
-          <ng-container *ngIf="noteService.syncService.syncStatus() === 'completed'">All changes are up to date</ng-container>
-          <ng-container *ngIf="noteService.syncService.syncStatus() === 'failed'">{{ noteService.syncService.syncError() || 'Check connection' }}</ng-container>
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Full Screen Sync Blocking Backdrop -->
-  <div class="sync-backdrop" [class.active]="noteService.syncService.syncStatus() === 'started'"></div>
 
   <!-- Quick Thoughts Floating Action Button -->
   <button class="quick-thoughts-trigger" (click)="showQuickThoughts.set(true)" title="Quick Thoughts">

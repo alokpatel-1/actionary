@@ -3,12 +3,6 @@
   <div class="list-header">
     <h1 class="list-title">My Notes</h1>
     <div class="header-right">
-      <span class="sync-badge syncing" *ngIf="syncService.syncStatus() === 'started'">
-        <i class="pi pi-spin pi-spinner"></i> Syncing
-      </span>
-      <span class="sync-badge synced" *ngIf="syncService.syncStatus() === 'completed'">
-        <i class="pi pi-check-circle"></i> Synced
-      </span>
       <span class="note-count" *ngIf="hasNotes()">{{ notes().length }} notes</span>
     </div>
   </div>

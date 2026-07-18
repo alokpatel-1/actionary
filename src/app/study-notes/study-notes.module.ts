@@ -12,7 +12,6 @@ import { NoteFoldersComponent } from './components/note-folders/note-folders.com
 import { NoteSearchComponent } from './components/note-search/note-search.component';
 import { ConfirmationService } from 'primeng/api';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { LibraryNavbarComponent } from '../notes-library/components/library-navbar/library-navbar.component';
 
 class MockSpinnerService {
   show(): Promise<any> { return Promise.resolve(); }
@@ -35,8 +34,7 @@ class MockSpinnerService {
     TiptapEditorDirective,
     TiptapBubbleMenuDirective,
     TiptapFloatingMenuDirective,
-    NgxSpinnerModule,
-    LibraryNavbarComponent
+    NgxSpinnerModule
   ],
   providers: [
     ConfirmationService,

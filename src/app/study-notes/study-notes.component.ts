@@ -5,7 +5,6 @@ import { NoteService } from './services/note.service';
 import { NoteIdbService } from './services/note-idb.service';
 import { Note, NoteFolder, DEFAULT_FOLDERS, QuickThought } from './models/note.model';
 import { Popover } from 'primeng/popover';
-import { FirebaseAuthService } from '../firebase/firebase-auth.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,7 +18,6 @@ export class StudyNotesComponent implements OnInit {
   public noteService = inject(NoteService);
   private idb = inject(NoteIdbService);
   private router = inject(Router);
-  private firebaseAuthService = inject(FirebaseAuthService);
   private spinner = inject(NgxSpinnerService);
   showSyncSuccessToast = signal(false);
   private toastTimeout: any;
@@ -28,18 +26,6 @@ export class StudyNotesComponent implements OnInit {
   editorActionsTemplate = signal<TemplateRef<any> | null>(null);
 
   constructor() {
-    effect(() => {
-      const status = this.noteService.syncService.syncStatus();
-      if (status === 'completed') {
-        this.showSyncSuccessToast.set(true);
-        if (this.toastTimeout) clearTimeout(this.toastTimeout);
-        this.toastTimeout = setTimeout(() => {
-          this.showSyncSuccessToast.set(false);
-        }, 2500);
-      } else if (status === 'started' || status === 'failed') {
-        this.showSyncSuccessToast.set(false);
-      }
-    });
   }
   sidebarExpanded = signal(true);
   sidebarMobileOpen = signal(false);
@@ -328,8 +314,7 @@ export class StudyNotesComponent implements OnInit {
     this.loadUserProfile();
     this.loadQuickThoughts();
 
-    // On startup: pull latest from Firestore in the background (no blocking loader).
-    this.noteService.syncService.scheduleBackgroundSync(true);
+    this.noteService.triggerRefresh();
 
     // Subscribe to note refreshes
     this.noteService.getNotesRefreshObservable().subscribe(() => {
@@ -739,12 +724,10 @@ export class StudyNotesComponent implements OnInit {
   }
 
   logout(): void {
-    this.firebaseAuthService.signOut().then(() => {
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.clear();
-      }
-      this.router.navigate(['/home/auth/login']);
-    });
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.clear();
+    }
+    this.router.navigate(['/new/auth/login']);
   }
 
   getActiveNoteId(): string | null {
@@ -798,7 +781,7 @@ export class StudyNotesComponent implements OnInit {
   }
 
   triggerManualSync(): void {
-    this.noteService.syncService.sync().subscribe();
+    // Sync removed
   }
 
   openArchiveModal(): void {
@@ -896,8 +879,7 @@ export class StudyNotesComponent implements OnInit {
         this.selectedArchivedNotes.set(new Set());
         this.loadArchivedNotes();
         this.noteService.triggerRefresh();
-        // Sync restored notes to Firestore
-        this.noteService.syncService.sync().subscribe();
+        // Sync restored notes removed
       },
       error: (err) => {
         console.error('Error bulk restoring archived notes:', err);

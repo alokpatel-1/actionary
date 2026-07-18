@@ -14,18 +14,7 @@
 
   <ng-template #editorActions>
     <div class="bar-right">
-      <!-- Sync Status Group -->
-      <div class="editor-sync-group">
-        <span class="sync-badge syncing" *ngIf="noteService.sync.syncStatus() === 'started'" title="Syncing with Firebase...">
-          <i class="pi pi-spin pi-spinner"></i>
-        </span>
-        <span class="sync-badge synced" *ngIf="noteService.sync.syncStatus() === 'completed'" title="Synced with Firebase">
-          <i class="pi pi-check-circle"></i>
-        </span>
-        <span class="sync-badge failed" *ngIf="noteService.sync.syncStatus() === 'failed'" [title]="'Sync failed: ' + noteService.sync.syncError()">
-          <i class="pi pi-exclamation-circle"></i>
-        </span>
-      </div>
+
 
       <button *ngIf="!isEditMode()" class="edit-btn-pill" (click)="enableEditMode()" title="Edit note">
         <i class="pi pi-pencil"></i>
