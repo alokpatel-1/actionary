@@ -1,7 +1,7 @@
 <div class="mobile-login">
   <header class="mobile-auth-header">
-    <h1 class="app-name">Actionary</h1>
-    <p class="app-tagline">Track expenses. Stay in control.</p>
+    <h1 class="app-name">Scribe</h1>
+    <p class="app-tagline">Capture thoughts at the speed of mind.</p>
   </header>
   <div class="mobile-login-card">
     @if (showForgotPassword()) {
@@ -69,7 +69,7 @@
 
     <p class="mobile-login-footer">
       Don't have an account?
-      <a routerLink="/home/auth/signup">Sign up</a>
+      <a [routerLink]="['/home/signup']">Sign up</a>
     </p>
     }
   </div>

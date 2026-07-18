@@ -93,7 +93,7 @@ export class SignUpComponent implements OnInit {
                 console.log('@ response', response);
                 this.spinner.hide();
                 this.utilService.showSuccess('User registered successfully!');
-                this.router.navigate(['home/login']);
+                this.router.navigate(['/home/login']);
             },
             error: ({ error }) => {
                 this.spinner.hide();
