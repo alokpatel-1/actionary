@@ -299,11 +299,54 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  private loadedNoteSnapshot: {
+    title: string;
+    content: string;
+    folderId: string;
+    isPinned: boolean;
+    tags: string[];
+    status: string;
+  } | null = null;
+
+  private updateSnapshotAfterSave(): void {
+    this.loadedNoteSnapshot = {
+      title: (this.title() || '').trim(),
+      content: (this.content() || '').trim(),
+      folderId: this.folderId() || DEFAULT_FOLDER.id,
+      isPinned: !!this.isPinned(),
+      tags: (this.tags() || []).slice(),
+      status: this.status() || 'draft'
+    };
+  }
+
+  private hasContentChanged(): boolean {
+    if (this.isNew()) return true;
+    if (!this.loadedNoteSnapshot) return false;
+
+    const snapshot = this.loadedNoteSnapshot;
+    const currentTitle = (this.title() || '').trim();
+    if (currentTitle !== snapshot.title) return true;
+
+    const currentContent = (this.content() || '').trim();
+    if (currentContent !== snapshot.content) return true;
+
+    if (this.folderId() !== snapshot.folderId) return true;
+    if (this.isPinned() !== snapshot.isPinned) return true;
+    if (this.status() !== snapshot.status) return true;
+
+    const currentTags = (this.tags() || []).map(t => t.trim()).sort().join(',');
+    const snapshotTags = (snapshot.tags || []).map(t => t.trim()).sort().join(',');
+    if (currentTags !== snapshotTags) return true;
+
+    return false;
+  }
+
   private saveBeforeLeave(): void {
     if (this.saving() || this.isNew() || !this.noteId()) return;
 
     this.syncContentFromEditor();
     if (this.isBlankNote()) return;
+    if (!this.hasContentChanged()) return;
 
     const id = this.noteId()!;
     this.noteService.updateNote(id, {
@@ -311,7 +354,11 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       content: this.content(),
       folderId: this.folderId(),
       isPinned: this.isPinned()
-    }).subscribe();
+    }).subscribe({
+      next: () => {
+        this.updateSnapshotAfterSave();
+      }
+    });
   }
 
   private applyLoadedNote(data: {
@@ -328,12 +375,13 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isEditMode.set(edit);
       this.noteId.set(id);
       if (note) {
-        this.title.set(note.title);
-        this.content.set(note.content);
-        this.folderId.set(note.folderId);
-        this.isPinned.set(note.isPinned);
+        this.title.set(note.title || '');
+        this.content.set(note.content || '');
+        this.folderId.set(note.folderId || DEFAULT_FOLDER.id);
+        this.isPinned.set(!!note.isPinned);
         this.tags.set(note.tags || []);
         this.status.set(note.status || 'draft');
+        this.updateSnapshotAfterSave();
       } else {
         this.title.set('');
         this.content.set('');
@@ -341,6 +389,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
         this.isPinned.set(false);
         this.tags.set([]);
         this.status.set('draft');
+        this.loadedNoteSnapshot = null;
       }
       this.isLayoutReady = false;
       this.cdr.detectChanges();
@@ -357,6 +406,7 @@ export class NoteEditorComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isPinned.set(false);
       this.tags.set([]);
       this.status.set('draft');
+      this.loadedNoteSnapshot = null;
       this.cdr.detectChanges();
       this.initEditor();
       this.scrollToTop();
