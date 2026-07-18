@@ -27,7 +27,7 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   folders = signal<NoteFolder[]>([]);
   notes = signal<Note[]>([]);
   thoughts = signal<QuickThought[]>([]);
-  
+
   // Tab switcher
   activeTab = signal<'notes' | 'thoughts'>('notes');
   editingThought = signal<QuickThought | null>(null);
@@ -158,7 +158,7 @@ export class NotesLibraryComponent implements OnInit, OnDestroy {
   getPrimeIcon(icon: string): string {
     if (!icon) return 'pi pi-folder';
     if (icon.startsWith('pi ')) return icon;
-    
+
     const emojiMap: Record<string, string> = {
       '📁': 'pi pi-folder',
       '📂': 'pi pi-folder-open',

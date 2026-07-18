@@ -263,13 +263,7 @@
       <!-- Input -->
       <div class="lib-search-input-wrapper">
         <i class="pi pi-search lib-search-icon"></i>
-        <input type="text"
-               class="lib-search-input-box"
-               placeholder="Search notes..."
-               [ngModel]="searchModalQuery()"
-               (ngModelChange)="searchModalQuery.set($event)"
-               autofocus
-               id="lib-search-input">
+        <input type="text" class="lib-search-input-box" placeholder="Search notes..." [ngModel]="searchModalQuery()" (ngModelChange)="searchModalQuery.set($event)" autofocus id="lib-search-input">
         <button class="lib-search-clear" *ngIf="searchModalQuery()" (click)="searchModalQuery.set('')" title="Clear">
           <i class="pi pi-times"></i>
         </button>
@@ -287,9 +281,7 @@
           {{ searchModalQuery() ? 'Search Results' : 'Recent Notes' }}
         </div>
         <div class="lib-search-results-list">
-          <button *ngFor="let note of filteredNotesForSearch()"
-                  class="lib-search-result-item"
-                  (click)="selectNoteFromSearch(note)">
+          <button *ngFor="let note of filteredNotesForSearch()" class="lib-search-result-item" (click)="selectNoteFromSearch(note)">
             <i class="pi pi-comment"></i>
             <span class="lib-search-result-title">{{ note.title || 'Untitled' }}</span>
           </button>
