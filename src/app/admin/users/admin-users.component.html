@@ -1,0 +1,137 @@
+<div class="admin-dashboard-container">
+  <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1 class="page-title">User Management</h1>
+      <p class="page-subtitle">Manage user access, restrictions, and publishing privileges.</p>
+    </div>
+    
+    <div class="filters-bar" style="display: flex; gap: 1rem; align-items: center;">
+      <input type="text" class="form-control" placeholder="Search by name or email..." (input)="onSearch($event)" style="width: 250px;">
+      <select class="form-control action-select" (change)="onStatusFilterChange($event)">
+        <option value="ALL">All Statuses</option>
+        <option value="ACTIVE">Active</option>
+        <option value="SUSPENDED">Suspended</option>
+        <option value="BANNED">Banned</option>
+      </select>
+      
+      <button class="btn-action danger" *ngIf="selectedUsers().size > 0" (click)="openBulkConfirm()" style="animation: fadein 0.2s;">
+        <i class="pi pi-ban"></i> Suspend Selected ({{ selectedUsers().size }})
+      </button>
+    </div>
+  </div>
+
+  <div class="table-card glassmorphism">
+    
+    <ng-container *ngIf="isLoading()">
+      <app-skeleton-table [rows]="pageSize()" [cols]="5"></app-skeleton-table>
+    </ng-container>
+
+    <ng-container *ngIf="!isLoading()">
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" 
+                       [checked]="selectedUsers().size > 0 && selectedUsers().size === users().length"
+                       (change)="toggleAll($event)">
+              </th>
+              <th>User</th>
+              <th>Account Status</th>
+              <th>Permissions</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users()" [class.selected-row]="selectedUsers().has(user._id)">
+              <td>
+                <input type="checkbox" 
+                       [checked]="selectedUsers().has(user._id)" 
+                       (change)="toggleUserSelection(user._id, $event)">
+              </td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar blue">{{ user.name.charAt(0) }}</div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="name">{{ user.name }}</span>
+                    <span class="text-secondary" style="font-size: 0.8rem;">{{ user.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge" 
+                      [class.status-active]="user.status === 'ACTIVE'"
+                      [class.status-pending]="user.status === 'SUSPENDED'"
+                      [class.status-banned]="user.status === 'BANNED'">
+                  {{ user.status }}
+                </span>
+              </td>
+              <td>
+                <div class="permission-toggles">
+                  <label class="toggle-pill" [class.active]="user.permissions.includes('CREATE_NOTES')">
+                    <input type="checkbox" 
+                           [checked]="user.permissions.includes('CREATE_NOTES')" 
+                           (change)="togglePermission(user, 'CREATE_NOTES')">
+                    Create Notes
+                  </label>
+                  <label class="toggle-pill" [class.active]="user.permissions.includes('PUBLISH_NOTES')">
+                    <input type="checkbox" 
+                           [checked]="user.permissions.includes('PUBLISH_NOTES')" 
+                           (change)="togglePermission(user, 'PUBLISH_NOTES')">
+                    Publish
+                  </label>
+                </div>
+              </td>
+              <td class="text-secondary">{{ user.createdAt | date:'mediumDate' }}</td>
+              <td>
+                <div class="action-buttons" style="display: flex; gap: 0.5rem;">
+                  <button *ngIf="user.status !== 'ACTIVE'" 
+                          class="btn-icon success" 
+                          title="Set Active"
+                          (click)="openConfirm(user, 'ACTIVE')">
+                    <i class="pi pi-check-circle"></i>
+                  </button>
+                  <button *ngIf="user.status !== 'SUSPENDED'" 
+                          class="btn-icon warning" 
+                          title="Suspend Account"
+                          (click)="openConfirm(user, 'SUSPENDED')">
+                    <i class="pi pi-pause-circle"></i>
+                  </button>
+                  <button *ngIf="user.status !== 'BANNED'" 
+                          class="btn-icon danger" 
+                          title="Ban Account"
+                          (click)="openConfirm(user, 'BANNED')">
+                    <i class="pi pi-ban"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="users().length === 0">
+              <td colspan="5" style="text-align: center; padding: 2rem;">No users found matching your criteria.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--surface-border);">
+        <span class="text-secondary">Showing {{ (currentPage() - 1) * pageSize() + 1 }} to {{ min(currentPage() * pageSize(), totalRecords()) }} of {{ totalRecords() }} entries</span>
+        <div class="pagination-controls" style="display: flex; gap: 0.5rem;">
+          <button class="btn-action" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+          <button class="btn-action" [disabled]="(currentPage() * pageSize()) >= totalRecords()" (click)="nextPage()">Next</button>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  [confirmText]="confirmActionText"
+  (confirm)="executeConfirm()"
+  (cancel)="closeConfirm()">
+</app-confirm-dialog>
+

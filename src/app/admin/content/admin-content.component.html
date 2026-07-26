@@ -1,0 +1,114 @@
+<div class="admin-dashboard-container">
+  <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1 class="page-title">Content Moderation</h1>
+      <p class="page-subtitle">Review, moderate, and manage published notes.</p>
+    </div>
+
+    <div class="filters-bar" style="display: flex; gap: 1rem; align-items: center;">
+      <input type="text" class="form-control" placeholder="Search by title or author..." (input)="onSearch($event)" style="width: 250px;">
+      <select class="form-control action-select" (change)="onStatusFilterChange($event)">
+        <option value="ALL">All Statuses</option>
+        <option value="PUBLISHED">Published</option>
+        <option value="MODERATED">Moderated</option>
+      </select>
+      
+      <button class="btn-action danger" *ngIf="selectedNotes().size > 0" (click)="bulkModerate()" style="animation: fadein 0.2s;">
+        <i class="pi pi-shield"></i> Moderate Selected ({{ selectedNotes().size }})
+      </button>
+    </div>
+  </div>
+
+  <div class="table-card glassmorphism">
+    <ng-container *ngIf="isLoading()">
+      <app-skeleton-table [rows]="pageSize()" [cols]="5"></app-skeleton-table>
+    </ng-container>
+
+    <ng-container *ngIf="!isLoading()">
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" 
+                       [checked]="selectedNotes().size > 0 && selectedNotes().size === notes().length"
+                       (change)="toggleAll($event)">
+              </th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Status</th>
+              <th>Published Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let note of notes()" [class.selected-row]="selectedNotes().has(note._id)">
+              <td>
+                <input type="checkbox" 
+                       [checked]="selectedNotes().has(note._id)" 
+                       (change)="toggleNoteSelection(note._id, $event)">
+              </td>
+              <td class="font-medium">{{ note.title }}</td>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar purple">{{ note.owner.name.charAt(0) || 'U' }}</div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="name">{{ note.owner.name }}</span>
+                    <span class="text-secondary" style="font-size: 0.8rem;">{{ note.owner.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge" 
+                      [class.status-active]="note.status === 'PUBLISHED'"
+                      [class.status-banned]="note.status === 'MODERATED'">
+                  {{ note.status }}
+                </span>
+              </td>
+              <td class="text-secondary">{{ note.createdAt | date:'mediumDate' }}</td>
+              <td>
+                <div class="action-buttons">
+                  <a class="btn-icon primary" title="View Note" [routerLink]="['/admin/content', note._id]" target="_blank" style="display: inline-flex;">
+                    <i class="pi pi-eye"></i>
+                  </a>
+                  <button *ngIf="note.status === 'PUBLISHED'" 
+                          class="btn-icon danger" 
+                          title="Moderate Content"
+                          (click)="openModerateConfirm(note)">
+                    <i class="pi pi-shield"></i>
+                  </button>
+                  <button *ngIf="note.status === 'MODERATED'" 
+                          class="btn-icon success" 
+                          title="Restore Note"
+                          (click)="openRestoreConfirm(note)">
+                    <i class="pi pi-check-circle"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="notes().length === 0">
+              <td colspan="5" style="text-align: center; padding: 2rem;">No notes found matching your criteria.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--surface-border);">
+        <span class="text-secondary">Showing {{ (currentPage() - 1) * pageSize() + 1 }} to {{ min(currentPage() * pageSize(), totalRecords()) }} of {{ totalRecords() }} entries</span>
+        <div class="pagination-controls" style="display: flex; gap: 0.5rem;">
+          <button class="btn-action" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+          <button class="btn-action" [disabled]="(currentPage() * pageSize()) >= totalRecords()" (click)="nextPage()">Next</button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  [confirmText]="confirmActionText"
+  (confirm)="confirmModerate()"
+  (cancel)="closeConfirm()">
+</app-confirm-dialog>

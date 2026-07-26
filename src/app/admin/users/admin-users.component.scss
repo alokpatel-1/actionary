@@ -1,0 +1,73 @@
+.admin-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.03em;
+  }
+
+  .page-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+
+
+.permission-toggles {
+  display: flex;
+  gap: 0.5rem;
+  
+  .toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+
+    input {
+      display: none;
+    }
+
+    &.active {
+      background: rgba(99, 102, 241, 0.1);
+      color: #4f46e5;
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+  }
+}
+
+.action-select {
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  
+  &:focus {
+    border-color: #6366f1;
+  }
+}

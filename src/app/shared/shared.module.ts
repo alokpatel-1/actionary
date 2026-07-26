@@ -9,6 +9,7 @@ import { AutofocusDirective } from './directives/autofocus.directive';
 import { ClickOutsideDirective } from './directives/click-outside.directive';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { SkeletonTableComponent } from './components/skeleton-table/skeleton-table.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
     AutofocusDirective,
     ClickOutsideDirective,
     ConfirmDialogComponent,
-    SidebarComponent
+    SidebarComponent,
+    SkeletonTableComponent
   ],
   imports: [
     CommonModule,
@@ -35,7 +37,8 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
     AutofocusDirective,
     ClickOutsideDirective,
     ConfirmDialogComponent,
-    SidebarComponent
+    SidebarComponent,
+    SkeletonTableComponent
   ]
 })
 export class SharedModule { }

@@ -84,7 +84,7 @@
             <label for="email">Email address</label>
             <div class="input-wrapper">
               <i class="pi pi-envelope input-icon"></i>
-              <input formControlName="email" type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+              <input formControlName="email" type="email" id="email" placeholder="you@example.com" autocomplete="email" (keydown.enter)="onSubmit()" />
             </div>
           </div>
 
@@ -96,7 +96,7 @@
             </div>
             <div class="input-wrapper">
               <i class="pi pi-lock input-icon"></i>
-              <input formControlName="password" [type]="showPassword() ? 'text' : 'password'" id="password" placeholder="••••••••" autocomplete="current-password" />
+              <input formControlName="password" [type]="showPassword() ? 'text' : 'password'" id="password" placeholder="••••••••" autocomplete="current-password" (keydown.enter)="onSubmit()" />
               <button type="button" (click)="showPassword.set(!showPassword())" class="eye-toggle" title="Toggle password visibility">
                 <i class="pi" [class.pi-eye-slash]="showPassword()" [class.pi-eye]="!showPassword()"></i>
               </button>

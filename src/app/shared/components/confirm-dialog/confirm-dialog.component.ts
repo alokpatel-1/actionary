@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -26,6 +26,19 @@ export class ConfirmDialogComponent {
 
   onBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('dialog-overlay')) {
+      this.onCancel();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (!this.isOpen) return;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.onConfirm();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
       this.onCancel();
     }
   }

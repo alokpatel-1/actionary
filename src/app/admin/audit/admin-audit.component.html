@@ -1,0 +1,57 @@
+<div class="admin-dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1 class="page-title">Audit Logs</h1>
+      <p class="page-subtitle">Track moderation actions and security events.</p>
+    </div>
+  </div>
+
+  <div class="table-card glassmorphism">
+    
+    <ng-container *ngIf="isLoading()">
+      <app-skeleton-table [rows]="pageSize()" [cols]="4"></app-skeleton-table>
+    </ng-container>
+
+    <ng-container *ngIf="!isLoading()">
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>Details</th>
+              <th>Admin ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of logs()">
+              <td class="text-secondary">{{ log.timestamp | date:'medium' }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'status-active': log.action.includes('update'),
+                  'status-banned': log.action.includes('moderate')
+                }">
+                  {{ log.action }}
+                </span>
+              </td>
+              <td>{{ log.details }}</td>
+              <td class="text-secondary font-mono" style="font-size: 0.8rem;">{{ log.adminId }}</td>
+            </tr>
+            <tr *ngIf="logs().length === 0">
+              <td colspan="4" style="text-align: center; padding: 2rem;">No audit logs recorded yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--surface-border);">
+        <span class="text-secondary">Showing {{ (currentPage() - 1) * pageSize() + 1 }} to {{ min(currentPage() * pageSize(), totalRecords()) }} of {{ totalRecords() }} entries</span>
+        <div class="pagination-controls" style="display: flex; gap: 0.5rem;">
+          <button class="btn-action" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+          <button class="btn-action" [disabled]="(currentPage() * pageSize()) >= totalRecords()" (click)="nextPage()">Next</button>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

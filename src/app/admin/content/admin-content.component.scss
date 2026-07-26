@@ -1,0 +1,52 @@
+.admin-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.03em;
+  }
+
+  .page-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+
+  .btn-action {
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &.danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      &:hover { background: #ef4444; color: #fff; }
+    }
+
+    &.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      &:hover { background: #10b981; color: #fff; }
+    }
+  }

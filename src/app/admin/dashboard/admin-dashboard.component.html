@@ -1,0 +1,104 @@
+<div class="admin-dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1 class="page-title">Platform Overview</h1>
+      <p class="page-subtitle">Real-time statistics and recent activity across your network.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary">
+        <i class="pi pi-download"></i> Export Report
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="isLoading()">
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+      <div class="kpi-card glassmorphism" style="flex: 1; height: 100px; animation: shimmer 1.5s infinite;"></div>
+      <div class="kpi-card glassmorphism" style="flex: 1; height: 100px; animation: shimmer 1.5s infinite;"></div>
+      <div class="kpi-card glassmorphism" style="flex: 1; height: 100px; animation: shimmer 1.5s infinite;"></div>
+      <div class="kpi-card glassmorphism" style="flex: 1; height: 100px; animation: shimmer 1.5s infinite;"></div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!isLoading() && metrics()">
+    <!-- KPI Stat Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card glassmorphism clickable" routerLink="/admin/users">
+        <div class="kpi-icon-wrapper blue">
+          <i class="pi pi-users"></i>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Total Users</span>
+          <h2 class="kpi-value">{{ metrics().totalUsers }}</h2>
+          <span class="kpi-trend positive"><i class="pi pi-arrow-up"></i> +14% this month</span>
+        </div>
+      </div>
+
+      <div class="kpi-card glassmorphism clickable" routerLink="/admin/content">
+        <div class="kpi-icon-wrapper green">
+          <i class="pi pi-file-edit"></i>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Active Notes</span>
+          <h2 class="kpi-value">{{ metrics().activeNotes }}</h2>
+          <span class="kpi-trend positive"><i class="pi pi-arrow-up"></i> +21% this month</span>
+        </div>
+      </div>
+
+      <div class="kpi-card glassmorphism clickable" routerLink="/admin/content">
+        <div class="kpi-icon-wrapper orange">
+          <i class="pi pi-shield"></i>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Moderated Notes</span>
+          <h2 class="kpi-value">{{ metrics().moderatedNotes }}</h2>
+          <span class="kpi-trend negative"><i class="pi pi-arrow-up"></i> +2 this week</span>
+        </div>
+      </div>
+
+      <div class="kpi-card glassmorphism clickable" routerLink="/admin/users">
+        <div class="kpi-icon-wrapper red">
+          <i class="pi pi-ban"></i>
+        </div>
+        <div class="kpi-details">
+          <span class="kpi-label">Banned Users</span>
+          <h2 class="kpi-value">{{ metrics().bannedUsers }}</h2>
+          <span class="kpi-trend neutral"><i class="pi pi-minus"></i> Stable</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area: Charts & Tables -->
+    <div class="dashboard-content-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+      
+      <!-- Left Column: User Growth Chart -->
+      <div class="table-card glassmorphism" style="padding: 1.5rem;">
+        <div class="card-header" style="margin-bottom: 1rem;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-color);">User Growth Over Time</h3>
+        </div>
+        <div style="height: 300px;">
+          <canvas baseChart
+                  [data]="lineChartData"
+                  [options]="lineChartOptions"
+                  [type]="'line'">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Right Column: Content Status Chart -->
+      <div class="table-card glassmorphism" style="padding: 1.5rem;">
+        <div class="card-header" style="margin-bottom: 1rem;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-color);">Content Status Breakdown</h3>
+        </div>
+        <div style="height: 300px; display: flex; justify-content: center;">
+          <canvas baseChart
+                  [data]="doughnutChartData"
+                  [options]="doughnutChartOptions"
+                  [type]="'doughnut'">
+          </canvas>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>

@@ -23,12 +23,12 @@ export class AuthTokenService {
     this.currentToken.set(token);
     this.currentUserProfile.set(profile);
 
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem('auth_token', token);
-      sessionStorage.setItem('email', profile.email);
-      sessionStorage.setItem('displayName', profile.displayName);
-      sessionStorage.setItem('localId', profile.uid);
-      sessionStorage.setItem('user_profile', JSON.stringify(profile));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('email', profile.email);
+      localStorage.setItem('displayName', profile.displayName);
+      localStorage.setItem('localId', profile.uid);
+      localStorage.setItem('user_profile', JSON.stringify(profile));
     }
   }
 
@@ -36,29 +36,31 @@ export class AuthTokenService {
     this.currentToken.set(null);
     this.currentUserProfile.set(null);
 
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('auth_token');
-      sessionStorage.removeItem('user_profile');
-      sessionStorage.clear();
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_profile');
+      localStorage.removeItem('email');
+      localStorage.removeItem('displayName');
+      localStorage.removeItem('localId');
     }
   }
 
   private getStoredToken(): string | null {
-    if (typeof sessionStorage !== 'undefined') {
-      return sessionStorage.getItem('auth_token') || null;
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('auth_token') || null;
     }
     return null;
   }
 
   private getStoredProfile(): UserSessionProfile | null {
-    if (typeof sessionStorage !== 'undefined') {
-      const raw = sessionStorage.getItem('user_profile');
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('user_profile');
       if (raw) {
         try { return JSON.parse(raw); } catch (e) { return null; }
       }
-      const email = sessionStorage.getItem('email')?.replace(/"/g, '');
-      const uid = sessionStorage.getItem('localId')?.replace(/"/g, '');
-      const displayName = sessionStorage.getItem('displayName')?.replace(/"/g, '') || 'User';
+      const email = localStorage.getItem('email')?.replace(/"/g, '');
+      const uid = localStorage.getItem('localId')?.replace(/"/g, '');
+      const displayName = localStorage.getItem('displayName')?.replace(/"/g, '') || 'User';
       if (email || uid) {
         return { uid: uid || 'user_local', email: email || '', displayName };
       }
