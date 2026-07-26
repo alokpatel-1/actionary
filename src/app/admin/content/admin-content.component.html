@@ -36,7 +36,9 @@
               </th>
               <th>Title</th>
               <th>Author</th>
+              <th>Email</th>
               <th>Status</th>
+              <th>Created Date</th>
               <th>Published Date</th>
               <th>Actions</th>
             </tr>
@@ -49,15 +51,8 @@
                        (change)="toggleNoteSelection(note._id, $event)">
               </td>
               <td class="font-medium">{{ note.title }}</td>
-              <td>
-                <div class="user-cell">
-                  <div class="avatar purple">{{ note.owner.name.charAt(0) || 'U' }}</div>
-                  <div style="display: flex; flex-direction: column;">
-                    <span class="name">{{ note.owner.name }}</span>
-                    <span class="text-secondary" style="font-size: 0.8rem;">{{ note.owner.email }}</span>
-                  </div>
-                </div>
-              </td>
+              <td class="font-medium">{{ note.owner.name }}</td>
+              <td class="text-secondary">{{ note.owner.email }}</td>
               <td>
                 <span class="badge" 
                       [class.status-active]="note.status === 'PUBLISHED'"
@@ -66,6 +61,7 @@
                 </span>
               </td>
               <td class="text-secondary">{{ note.createdAt | date:'mediumDate' }}</td>
+              <td class="text-secondary">{{ (note.publishedAt | date:'mediumDate') || '—' }}</td>
               <td>
                 <div class="action-buttons">
                   <a class="btn-icon primary" title="View Note" [routerLink]="['/admin/content', note._id]" target="_blank" style="display: inline-flex;">
@@ -87,7 +83,7 @@
               </td>
             </tr>
             <tr *ngIf="notes().length === 0">
-              <td colspan="5" style="text-align: center; padding: 2rem;">No notes found matching your criteria.</td>
+              <td colspan="8" style="text-align: center; padding: 2rem;">No notes found matching your criteria.</td>
             </tr>
           </tbody>
         </table>

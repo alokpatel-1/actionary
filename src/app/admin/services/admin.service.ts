@@ -17,28 +17,34 @@ export interface AdminNote {
   owner: { name: string; email: string };
   status: 'DRAFT' | 'PUBLISHED' | 'MODERATED';
   createdAt: string;
+  publishedAt?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
-  private mockUsers: User[] = [
-    { _id: '1', name: 'John Doe', email: 'john@example.com', status: 'ACTIVE', permissions: ['READ_NOTES', 'CREATE_NOTES', 'PUBLISH_NOTES'], createdAt: '2023-01-15T10:00:00Z' },
-    { _id: '2', name: 'Alice Smith', email: 'alice@example.com', status: 'SUSPENDED', permissions: ['READ_NOTES'], createdAt: '2023-04-22T10:00:00Z' },
-    { _id: '3', name: 'Bob Johnson', email: 'bob@example.com', status: 'BANNED', permissions: [], createdAt: '2023-06-10T10:00:00Z' },
-    { _id: '4', name: 'Emma Wilson', email: 'emma.w@example.com', status: 'ACTIVE', permissions: ['READ_NOTES', 'CREATE_NOTES'], createdAt: '2023-07-01T10:00:00Z' },
-    { _id: '5', name: 'Michael Brown', email: 'mbrown@example.com', status: 'ACTIVE', permissions: ['READ_NOTES', 'PUBLISH_NOTES'], createdAt: '2023-08-05T10:00:00Z' },
-    { _id: '6', name: 'Sarah Davis', email: 'sarah.d@example.com', status: 'SUSPENDED', permissions: ['READ_NOTES'], createdAt: '2023-08-20T10:00:00Z' }
-  ];
+  private mockUsers: User[] = Array.from({ length: 115 }, (_, i) => ({
+    _id: (i + 1).toString(),
+    name: `Test User ${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    status: i % 12 === 0 ? 'BANNED' : (i % 7 === 0 ? 'SUSPENDED' : 'ACTIVE'),
+    permissions: i % 4 === 0 ? ['READ_NOTES'] : ['READ_NOTES', 'CREATE_NOTES', 'PUBLISH_NOTES'],
+    createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toISOString()
+  }));
 
-  private mockNotes: AdminNote[] = [
-    { _id: '101', title: 'Understanding Redis Architecture', owner: { name: 'John Doe', email: 'john@example.com' }, status: 'PUBLISHED', createdAt: '2023-08-12T10:00:00Z' },
-    { _id: '102', title: 'Why Angular 17 is a game changer', owner: { name: 'Alice Smith', email: 'alice@example.com' }, status: 'PUBLISHED', createdAt: '2023-08-14T10:00:00Z' },
-    { _id: '103', title: 'Inappropriate Content Example', owner: { name: 'Bob Johnson', email: 'bob@example.com' }, status: 'MODERATED', createdAt: '2023-08-15T10:00:00Z' },
-    { _id: '104', title: 'Getting started with Docker', owner: { name: 'Emma Wilson', email: 'emma.w@example.com' }, status: 'PUBLISHED', createdAt: '2023-08-18T10:00:00Z' },
-    { _id: '105', title: 'Spam note promoting crypto', owner: { name: 'Michael Brown', email: 'mbrown@example.com' }, status: 'MODERATED', createdAt: '2023-08-20T10:00:00Z' }
-  ];
+  private mockNotes: AdminNote[] = Array.from({ length: 150 }, (_, i) => {
+    const created = new Date(Date.now() - Math.floor(Math.random() * 10000000000));
+    const published = new Date(created.getTime() + Math.floor(Math.random() * 864000000));
+    return {
+      _id: (101 + i).toString(),
+      title: `Documentation Note ${i + 1} - Overview`,
+      owner: { name: `Test User ${i % 25 + 1}`, email: `user${i % 25 + 1}@example.com` },
+      status: i % 8 === 0 ? 'MODERATED' : 'PUBLISHED',
+      createdAt: created.toISOString(),
+      publishedAt: i % 8 === 0 ? undefined : published.toISOString()
+    };
+  });
 
   getUsers(page = 1, limit = 10, search = '', statusFilter = 'ALL'): Observable<any> {
     let filtered = this.mockUsers.filter(u => {

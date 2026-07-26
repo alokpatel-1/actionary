@@ -11,6 +11,12 @@ import { AuthTokenService } from '../../../core/auth/auth-token.service';
 export class AdminSidebarComponent {
   public tokenService = inject(AuthTokenService);
   private router = inject(Router);
+  
+  isCollapsed: boolean = true;
+
+  toggleSidebar(): void {
+    this.isCollapsed = !this.isCollapsed;
+  }
 
   logout(): void {
     this.tokenService.clearSession();

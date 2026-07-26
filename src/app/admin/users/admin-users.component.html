@@ -36,7 +36,8 @@
                        [checked]="selectedUsers().size > 0 && selectedUsers().size === users().length"
                        (change)="toggleAll($event)">
               </th>
-              <th>User</th>
+              <th>Name</th>
+              <th>Email</th>
               <th>Account Status</th>
               <th>Permissions</th>
               <th>Joined</th>
@@ -50,15 +51,8 @@
                        [checked]="selectedUsers().has(user._id)" 
                        (change)="toggleUserSelection(user._id, $event)">
               </td>
-              <td>
-                <div class="user-cell">
-                  <div class="avatar blue">{{ user.name.charAt(0) }}</div>
-                  <div style="display: flex; flex-direction: column;">
-                    <span class="name">{{ user.name }}</span>
-                    <span class="text-secondary" style="font-size: 0.8rem;">{{ user.email }}</span>
-                  </div>
-                </div>
-              </td>
+              <td class="font-medium">{{ user.name }}</td>
+              <td class="text-secondary">{{ user.email }}</td>
               <td>
                 <span class="badge" 
                       [class.status-active]="user.status === 'ACTIVE'"
@@ -108,7 +102,7 @@
               </td>
             </tr>
             <tr *ngIf="users().length === 0">
-              <td colspan="5" style="text-align: center; padding: 2rem;">No users found matching your criteria.</td>
+              <td colspan="7" style="text-align: center; padding: 2rem;">No users found matching your criteria.</td>
             </tr>
           </tbody>
         </table>
