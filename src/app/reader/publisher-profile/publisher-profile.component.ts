@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SidebarService } from '../../shared/services/sidebar.service';
 import { ReaderNote } from '../../shared/models/note.model';
+import { ActionaryUtilService } from '../../services/actionary-util.service';
 
 export interface PublisherProfile {
   id: string;
@@ -27,6 +28,7 @@ export interface PublisherProfile {
 })
 export class PublisherProfileComponent implements OnInit {
   public sidebarService = inject(SidebarService);
+  private utilService = inject(ActionaryUtilService);
   
   publisher = signal<PublisherProfile | null>(null);
   publisherNotes = signal<ReaderNote[]>([]);
@@ -81,19 +83,33 @@ export class PublisherProfileComponent implements OnInit {
         isFollowing: true,
         followersCount: curr.followersCount + 1
       } : null);
+      this.utilService.showSuccess(`You are now following ${p.name}!`);
     }
   }
 
   confirmUnfollow(): void {
+    const p = this.publisher();
     this.publisher.update(curr => curr ? {
       ...curr,
       isFollowing: false,
       followersCount: curr.followersCount - 1
     } : null);
     this.showUnfollowConfirmModal.set(false);
+    if (p) {
+      this.utilService.showInfo(`You unfollowed ${p.name}.`);
+    }
   }
 
   cancelUnfollow(): void {
     this.showUnfollowConfirmModal.set(false);
+  }
+
+  shareProfile(): void {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      this.utilService.showSuccess('Profile link copied to clipboard!');
+    }).catch(() => {
+      this.utilService.showError('Failed to copy link.');
+    });
   }
 }

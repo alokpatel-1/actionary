@@ -155,6 +155,8 @@ body {
   .btn-action, .btn-c-action {
     color: #94a3b8 !important;
     border-color: #334155 !important;
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s, color 0.2s !important;
+    &:active { transform: scale(0.92) !important; }
     &:hover { background: #1e293b !important; color: #f8fafc !important; }
     &.active { background: rgba(99,102,241,0.2) !important; color: #818cf8 !important; border-color: #6366f1 !important; }
   }

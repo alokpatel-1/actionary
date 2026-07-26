@@ -27,9 +27,14 @@
             <div class="profile-info-col">
               <div class="profile-title-row">
                 <h1 class="profile-name">{{ pub.name }}</h1>
-                <button class="btn-follow" [class.following]="pub.isFollowing" (click)="toggleFollow()">
-                  {{ pub.isFollowing ? 'Following' : 'Follow' }}
-                </button>
+                <div class="profile-actions-group" style="display: flex; gap: 0.5rem;">
+                  <button class="btn-follow" [class.following]="pub.isFollowing" (click)="toggleFollow()">
+                    {{ pub.isFollowing ? 'Following' : 'Follow' }}
+                  </button>
+                  <button class="btn-share" (click)="shareProfile()" style="background: transparent; border: 1px solid #cbd5e1; border-radius: 20px; padding: 0.4rem 0.8rem; cursor: pointer; color: #475569; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a'" onmouseout="this.style.background='transparent'; this.style.color='#475569'">
+                    <i class="pi pi-share-alt"></i> Share
+                  </button>
+                </div>
               </div>
               <p class="profile-bio">{{ pub.bio }}</p>
               <div class="profile-meta">
