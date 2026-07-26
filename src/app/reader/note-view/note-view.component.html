@@ -21,7 +21,14 @@
     <!-- Article Content Body -->
     <div class="article-body-wrapper" *ngIf="note() as n">
       <div class="article-meta-header">
-        <div class="author-card">
+        <div class="author-card" *ngIf="n.publisherId" [routerLink]="['/reader/publisher', n.publisherId]" style="cursor: pointer;">
+          <img [src]="n.publisherAvatar || 'assets/default-avatar.png'" class="avatar" alt="Publisher">
+          <div class="author-info">
+            <span class="author-name">{{ n.publisherName }}</span>
+            <span class="pub-date">Published on {{ n.createdAt | date:'mediumDate' }} • {{ n.content | readingTime }} min read</span>
+          </div>
+        </div>
+        <div class="author-card" *ngIf="!n.publisherId">
           <div class="avatar">S</div>
           <div class="author-info">
             <span class="author-name">Scribe Author</span>
@@ -39,6 +46,71 @@
       <article class="article-content">
         <div [innerHTML]="n.content"></div>
       </article>
+
+      <div class="article-engagement-bar">
+        <button class="btn-action" [class.active]="n.currentUserAction === 'liked'" (click)="likeNote()">
+          <i class="pi pi-thumbs-up"></i>
+          <span>{{ n.likes || 0 }}</span>
+        </button>
+        <button class="btn-action" [class.active]="n.currentUserAction === 'disliked'" (click)="dislikeNote()">
+          <i class="pi pi-thumbs-down"></i>
+          <span>{{ n.dislikes || 0 }}</span>
+        </button>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Comments Section -->
+      <section class="comments-section">
+        <h3 class="section-title">Comments ({{ n.comments?.length || 0 }})</h3>
+        
+        <div class="new-comment-box">
+          <textarea [(ngModel)]="newCommentText" placeholder="Share your thoughts..."></textarea>
+          <div class="box-actions">
+            <button class="btn-submit-comment" (click)="addComment()" [disabled]="!newCommentText().trim()">Comment</button>
+          </div>
+        </div>
+
+        <div class="comments-list">
+          <ng-template #commentNode let-c="comment">
+            <div class="comment-card">
+              <div class="c-header" [routerLink]="['/reader/publisher', c.userId]" style="cursor: pointer; display: inline-flex;">
+                <img [src]="c.userAvatar" class="c-avatar" alt="Avatar">
+                <div class="c-header-info">
+                  <span class="c-name">{{ c.userName }}</span>
+                  <span class="c-date">{{ c.createdAt | date:'medium' }}</span>
+                </div>
+              </div>
+              <div class="c-body">{{ c.content }}</div>
+              <div class="c-actions">
+                <button class="btn-c-action" [class.active]="c.currentUserAction === 'liked'" (click)="likeComment(c.id)"><i class="pi pi-thumbs-up"></i> {{ c.likes }}</button>
+                <button class="btn-c-action" [class.active]="c.currentUserAction === 'disliked'" (click)="dislikeComment(c.id)"><i class="pi pi-thumbs-down"></i> {{ c.dislikes }}</button>
+                <button class="btn-c-action" (click)="setReplyTo(c.id)"><i class="pi pi-reply"></i> Reply</button>
+              </div>
+              
+              <!-- Reply Input Box -->
+              <div class="reply-input-box" *ngIf="replyingToCommentId() === c.id">
+                <textarea [(ngModel)]="replyText" placeholder="Write a reply..."></textarea>
+                <div class="reply-actions">
+                  <button class="btn-cancel" (click)="cancelReply()">Cancel</button>
+                  <button class="btn-submit" (click)="addReply(c.id)" [disabled]="!replyText().trim()">Reply</button>
+                </div>
+              </div>
+
+              <!-- Nested Replies -->
+              <div class="c-replies" *ngIf="c.replies?.length">
+                <ng-container *ngFor="let r of c.replies">
+                  <ng-container *ngTemplateOutlet="commentNode; context: {comment: r}"></ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </ng-template>
+
+          <ng-container *ngFor="let comment of n.comments">
+            <ng-container *ngTemplateOutlet="commentNode; context: {comment: comment}"></ng-container>
+          </ng-container>
+        </div>
+      </section>
     </div>
 
     <!-- Not Found State -->

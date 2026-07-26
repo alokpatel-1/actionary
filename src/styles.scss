@@ -86,6 +86,24 @@ body {
     .user-name { color: #f8fafc !important; }
     .user-email { color: #64748b !important; }
     .btn-sidebar-collapse { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+    
+    .sidebar-footer-wrapper { border-top-color: #1e293b !important; }
+    .sidebar-footer {
+      &:hover { background: #1e293b !important; }
+      .btn-user-more { color: #94a3b8 !important; &:hover { color: #f8fafc !important; } }
+    }
+    .user-menu-popover {
+      background: #0f172a !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4) !important;
+      .menu-item {
+        color: #e2e8f0 !important;
+        i { color: #94a3b8 !important; }
+        &:hover { background: #1e293b !important; color: #f8fafc !important; i { color: #818cf8 !important; } }
+        &.logout { color: #ef4444 !important; i { color: #ef4444 !important; } &:hover { background: rgba(239, 68, 68, 0.15) !important; } }
+      }
+      .menu-divider { background: #1e293b !important; }
+    }
   }
 
   .controls-bar, .controls-row, .trending-top-bar, .reader-top-nav {
@@ -114,6 +132,33 @@ body {
     .article-snippet, .item-snippet, .note-snippet, p { color: #94a3b8 !important; }
   }
 
+  /* Note View Typography & Comments */
+  .article-title, .section-title, .author-name, .c-name, .hero-user-name, .summary-name, .settings-title {
+    color: #f8fafc !important;
+  }
+  .article-content, .c-body {
+    color: #cbd5e1 !important;
+  }
+  .pub-date, .c-date, .summary-email, .user-email-lbl {
+    color: #94a3b8 !important;
+  }
+  .comment-card, .summary-card, .panel-body {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+  }
+  .theme-preview-card {
+    &.active {
+      border-color: #6366f1 !important;
+      .card-footer-info { color: #818cf8 !important; }
+    }
+  }
+  .btn-action, .btn-c-action {
+    color: #94a3b8 !important;
+    border-color: #334155 !important;
+    &:hover { background: #1e293b !important; color: #f8fafc !important; }
+    &.active { background: rgba(99,102,241,0.2) !important; color: #818cf8 !important; border-color: #6366f1 !important; }
+  }
+
   .tag-menu-panel {
     background: #0f172a !important;
     border-color: #1e293b !important;
@@ -121,10 +166,11 @@ body {
     .panel-tag-btn { background: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
   }
 
-  .form-group input, .form-group textarea {
+  .form-group input, .form-group textarea, .new-comment-box textarea, .reply-input-box textarea {
     background: #1e293b !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
+    &::placeholder { color: #64748b !important; }
   }
 
   /* Library pages */

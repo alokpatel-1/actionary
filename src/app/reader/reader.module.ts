@@ -8,13 +8,15 @@ import { ReaderComponent } from './reader.component';
 import { FeedComponent } from './feed/feed.component';
 import { NoteViewComponent } from './note-view/note-view.component';
 import { TrendingComponent } from './trending/trending.component';
+import { PublisherProfileComponent } from './publisher-profile/publisher-profile.component';
 
 @NgModule({
   declarations: [
     ReaderComponent,
     FeedComponent,
     NoteViewComponent,
-    TrendingComponent
+    TrendingComponent,
+    PublisherProfileComponent
   ],
   imports: [
     CommonModule,

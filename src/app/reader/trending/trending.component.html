@@ -21,6 +21,10 @@
         <div class="rank-badge">#{{ i + 1 }} TRENDING</div>
         
         <div class="card-header">
+          <div class="publisher-info" *ngIf="n.publisherName" (click)="openPublisher($event, n.publisherId)">
+            <img [src]="n.publisherAvatar || 'assets/default-avatar.png'" class="publisher-avatar" alt="Publisher">
+            <span class="publisher-name">{{ n.publisherName }}</span>
+          </div>
           <span class="time-lbl">{{ n.content | readingTime }} min read</span>
         </div>
 

@@ -3,9 +3,8 @@ import { AuthTokenService } from '../../core/auth/auth-token.service';
 import { Router } from '@angular/router';
 import { ActionaryUtilService } from '../../services/actionary-util.service';
 import { SidebarService } from '../../shared/services/sidebar.service';
-import { ThemeService } from '../../shared/services/theme.service';
 
-export type ProfileTab = 'general' | 'security' | 'appearance';
+export type ProfileTab = 'general' | 'security' | 'social';
 
 @Component({
   selector: 'app-auth-profile',
@@ -16,7 +15,6 @@ export type ProfileTab = 'general' | 'security' | 'appearance';
 export class ProfileComponent {
   public tokenService = inject(AuthTokenService);
   public sidebarService = inject(SidebarService);
-  public themeService = inject(ThemeService);
   private router = inject(Router);
   private utilService = inject(ActionaryUtilService);
 
@@ -27,6 +25,13 @@ export class ProfileComponent {
   email = signal(this.tokenService.userEmail() || 'user@scribe.app');
   bio = signal('Full-stack software engineer & technical writer sharing insights on Web Dev, TypeScript, and Distributed Systems.');
   isSaving = signal(false);
+
+  // Social Links Signals
+  twitterLink = signal('https://twitter.com/eadvp97');
+  githubLink = signal('https://github.com/eadvp97');
+  linkedinLink = signal('https://linkedin.com/in/eadvp97');
+  websiteLink = signal('https://alokpatel.dev');
+  isSavingSocial = signal(false);
 
   // Change Password Signals & Eye Visibility Toggles
   currentPassword = signal('');
@@ -61,6 +66,14 @@ export class ProfileComponent {
     setTimeout(() => {
       this.isSaving.set(false);
       this.utilService.showSuccess('Profile updated successfully!');
+    }, 600);
+  }
+
+  saveSocialProfile(): void {
+    this.isSavingSocial.set(true);
+    setTimeout(() => {
+      this.isSavingSocial.set(false);
+      this.utilService.showSuccess('Social links updated successfully!');
     }, 600);
   }
 

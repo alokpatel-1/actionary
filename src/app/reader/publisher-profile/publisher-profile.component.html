@@ -1,0 +1,100 @@
+<div class="scribe-page-layout">
+  
+  <!-- Unified Application Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Feed Content Area -->
+  <main class="page-main-content">
+    
+    <!-- Top Nav -->
+    <div class="profile-top-bar">
+      <button *ngIf="sidebarService.isSidebarCollapsed()" (click)="sidebarService.toggleSidebar()" class="btn-expand-sidebar" title="Show Sidebar">
+        <i class="pi pi-bars"></i>
+      </button>
+
+      <a routerLink="/reader/feed" class="btn-back">
+        <i class="pi pi-arrow-left"></i>
+        <span>Back to Feed</span>
+      </a>
+    </div>
+
+    <div class="publisher-profile-container" *ngIf="publisher() as pub">
+      <!-- Profile Hero Header -->
+      <div class="profile-hero-card">
+        <div class="profile-header-body">
+          <div class="profile-identity-row">
+            <img [src]="pub.avatar" class="profile-avatar" alt="Publisher Avatar">
+            <div class="profile-info-col">
+              <div class="profile-title-row">
+                <h1 class="profile-name">{{ pub.name }}</h1>
+                <button class="btn-follow" [class.following]="pub.isFollowing" (click)="toggleFollow()">
+                  {{ pub.isFollowing ? 'Following' : 'Follow' }}
+                </button>
+              </div>
+              <p class="profile-bio">{{ pub.bio }}</p>
+              <div class="profile-meta">
+                <span class="meta-item"><i class="pi pi-users"></i> {{ pub.followersCount | number }} Followers</span>
+                <span class="meta-item"><i class="pi pi-calendar"></i> Joined {{ pub.joinedDate | date:'mediumDate' }}</span>
+                <span class="meta-item"><i class="pi pi-file"></i> {{ publisherNotes().length }} Published Notes</span>
+              </div>
+              <div class="profile-social-links" *ngIf="pub.socialLinks && (pub.socialLinks.twitter || pub.socialLinks.github || pub.socialLinks.linkedin || pub.socialLinks.website)">
+                <a *ngIf="pub.socialLinks.twitter" [href]="pub.socialLinks.twitter" target="_blank" class="social-link"><i class="pi pi-twitter"></i></a>
+                <a *ngIf="pub.socialLinks.github" [href]="pub.socialLinks.github" target="_blank" class="social-link"><i class="pi pi-github"></i></a>
+                <a *ngIf="pub.socialLinks.linkedin" [href]="pub.socialLinks.linkedin" target="_blank" class="social-link"><i class="pi pi-linkedin"></i></a>
+                <a *ngIf="pub.socialLinks.website" [href]="pub.socialLinks.website" target="_blank" class="social-link"><i class="pi pi-globe"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="published-notes-section">
+        <h3 class="section-title">Published Notes</h3>
+
+        <div class="feed-grid" *ngIf="publisherNotes().length > 0">
+          <article class="reader-card" *ngFor="let n of publisherNotes()" (click)="openNote(n.id)">
+            <div class="card-header">
+              <div class="publisher-info">
+                <img [src]="pub.avatar" class="publisher-avatar" alt="Publisher">
+                <span class="publisher-name">{{ pub.name }}</span>
+              </div>
+              <span class="time-lbl">{{ n.content | readingTime }} min read</span>
+            </div>
+
+            <h2 class="article-title">{{ n.title || 'Untitled Note' }}</h2>
+            <p class="article-snippet">{{ n.content | excerpt:150 }}</p>
+
+            <div class="tags-row" *ngIf="n.tags && n.tags.length > 0">
+              <span class="tag-pill" *ngFor="let t of n.tags">#{{ t }}</span>
+            </div>
+
+            <div class="card-footer">
+              <span class="date-lbl"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
+              <span class="read-more">Read Article <i class="pi pi-arrow-right"></i></span>
+            </div>
+          </article>
+        </div>
+        
+        <div class="empty-state" *ngIf="publisherNotes().length === 0">
+          <i class="pi pi-folder-open empty-icon"></i>
+          <p>This publisher has no public notes yet.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="not-found" *ngIf="!publisher()">
+      <h2>Publisher not found</h2>
+      <a routerLink="/reader/feed">Return to Feed</a>
+    </div>
+
+  </main>
+  
+  <app-confirm-dialog
+    [isOpen]="showUnfollowConfirmModal()"
+    title="Unfollow Publisher"
+    [message]="'Are you sure you want to unfollow ' + (publisher()?.name || 'this publisher') + '? You will no longer see their updates in your personal feed.'"
+    confirmText="Unfollow"
+    (confirm)="confirmUnfollow()"
+    (cancel)="cancelUnfollow()">
+  </app-confirm-dialog>
+</div>

@@ -322,6 +322,17 @@
       margin-bottom: 0.6rem;
 
       .date-lbl, .time-lbl { color: #94a3b8; }
+      
+      .publisher-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        z-index: 10;
+        &:hover .publisher-name { color: #059669; text-decoration: underline; }
+        .publisher-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .publisher-name { font-weight: 600; color: #475569; transition: color 0.2s; }
+      }
     }
 
     .item-title {
@@ -389,11 +400,22 @@
 
     .card-header {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: center;
       font-size: 0.78rem;
       margin-bottom: 0.75rem;
       .time-lbl { color: #94a3b8; }
+      
+      .publisher-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        z-index: 10;
+        &:hover .publisher-name { color: #059669; text-decoration: underline; }
+        .publisher-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .publisher-name { font-weight: 600; color: #475569; transition: color 0.2s; }
+      }
     }
 
     .article-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem; line-height: 1.35; }

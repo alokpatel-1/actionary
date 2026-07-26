@@ -79,6 +79,10 @@
     <div class="feed-grid" *ngIf="filteredNotes().length > 0 && viewMode() === 'card'">
       <article class="reader-card" *ngFor="let n of filteredNotes()" (click)="openNote(n.id)">
         <div class="card-header">
+          <div class="publisher-info" *ngIf="n.publisherName" (click)="openPublisher($event, n.publisherId)">
+            <img [src]="n.publisherAvatar || 'assets/default-avatar.png'" class="publisher-avatar" alt="Publisher">
+            <span class="publisher-name">{{ n.publisherName }}</span>
+          </div>
           <span class="time-lbl">{{ n.content | readingTime }} min read</span>
         </div>
 
@@ -101,6 +105,10 @@
       <article class="reader-list-item" *ngFor="let n of filteredNotes()" (click)="openNote(n.id)">
         <div class="item-main">
           <div class="item-meta">
+            <div class="publisher-info" *ngIf="n.publisherName" (click)="openPublisher($event, n.publisherId)">
+              <img [src]="n.publisherAvatar || 'assets/default-avatar.png'" class="publisher-avatar" alt="Publisher">
+              <span class="publisher-name">{{ n.publisherName }}</span>
+            </div>
             <span class="date-lbl"><i class="pi pi-clock"></i> {{ n.createdAt | date:'mediumDate' }}</span>
             <span class="time-lbl">{{ n.content | readingTime }} min read</span>
           </div>

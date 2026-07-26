@@ -1,0 +1,270 @@
+.scribe-page-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.page-main-content {
+  flex: 1;
+  max-width: 1100px;
+  padding: 0 2.5rem 4rem;
+  margin: 0 auto;
+}
+
+.profile-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-top: 2rem;
+
+  .btn-expand-sidebar {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #6366f1;
+      color: #ffffff;
+      border-color: #6366f1;
+    }
+  }
+
+  .btn-back {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    &:hover { color: #0f172a; }
+  }
+}
+
+.profile-hero-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+  overflow: hidden;
+  margin-bottom: 3rem;
+  padding: 2.5rem;
+}
+
+.profile-identity-row {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  }
+
+  .profile-info-col {
+    flex: 1;
+
+    .profile-title-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 0.5rem;
+
+      .profile-name {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+      }
+      
+      .btn-follow {
+        background: #0f172a;
+        color: #fff;
+        border: 1px solid #0f172a;
+        padding: 0.4rem 1.25rem;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #1e293b;
+        }
+        
+        &.following {
+          background: transparent;
+          color: #0f172a;
+          
+          &:hover {
+            background: #f1f5f9;
+            color: #ef4444;
+            border-color: #ef4444;
+          }
+        }
+      }
+    }
+
+    .profile-bio {
+      font-size: 1rem;
+      color: #475569;
+      line-height: 1.5;
+      margin: 0 0 1rem;
+      max-width: 600px;
+    }
+
+    .profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      
+      .meta-item {
+        font-size: 0.9rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        
+        i { font-size: 1rem; color: #94a3b8; }
+      }
+    }
+
+    .profile-social-links {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+
+      .social-link {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #475569;
+        text-decoration: none;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #e2e8f0;
+          color: #0f172a;
+          transform: translateY(-2px);
+        }
+        
+        i { font-size: 1.1rem; }
+      }
+    }
+  }
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+/* Feed Grid Styles Copied from Feed Component */
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+
+  .reader-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    transition: transform 0.25s, border-color 0.25s;
+
+    &:hover {
+      transform: translateY(-3px);
+      border-color: rgba(5, 150, 105, 0.4);
+
+      .read-more { color: #059669; }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      margin-bottom: 0.75rem;
+      .time-lbl { color: #94a3b8; }
+      
+      .publisher-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        z-index: 10;
+        &:hover .publisher-name { color: #059669; text-decoration: underline; }
+        .publisher-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .publisher-name { font-weight: 600; color: #475569; transition: color 0.2s; }
+      }
+    }
+
+    .article-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem; line-height: 1.35; }
+    .article-snippet { font-size: 0.9rem; color: #475569; line-height: 1.6; margin: 0 0 1.25rem; }
+
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 1.25rem;
+
+      .tag-pill { font-size: 0.75rem; font-weight: 600; color: #059669; background: rgba(5, 150, 105, 0.08); padding: 0.15rem 0.5rem; border-radius: 4px; }
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
+
+      .read-more { font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.3rem; transition: color 0.2s; }
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  color: #64748b;
+  
+  .empty-icon {
+    font-size: 2.5rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+  }
+}
+
+.not-found {
+  text-align: center;
+  padding: 5rem;
+  h2 { color: #0f172a; }
+  a { color: #6366f1; text-decoration: none; font-weight: 600; }
+}
