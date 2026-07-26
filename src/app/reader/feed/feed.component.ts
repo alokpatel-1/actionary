@@ -72,7 +72,7 @@ export class FeedComponent {
   }
 
   openNote(id: string): void {
-    this.router.navigate(['/new/reader/notes', id]);
+    this.router.navigate(['/reader/notes', id]);
   }
 
   toggleTagPanel(): void {

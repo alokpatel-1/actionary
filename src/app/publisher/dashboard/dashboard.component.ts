@@ -114,11 +114,11 @@ export class DashboardComponent {
   }
 
   createNewNote(): void {
-    this.router.navigate(['/new/publisher/editor', 'new']);
+    this.router.navigate(['/publisher/editor', 'new']);
   }
 
   editNote(id: string): void {
-    this.router.navigate(['/new/publisher/editor', id]);
+    this.router.navigate(['/publisher/editor', id]);
   }
 
   publishNote(id: string, event: Event): void {

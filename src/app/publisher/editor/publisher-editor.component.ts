@@ -27,7 +27,7 @@ export class PublisherEditorComponent implements AfterViewInit {
       this.noteEditor.save(true);
     }
     this.utilService.showSuccess('Draft saved successfully.');
-    this.router.navigate(['/new/publisher/dashboard']);
+    this.router.navigate(['/publisher/dashboard']);
   }
 
   publish(): void {
@@ -36,6 +36,6 @@ export class PublisherEditorComponent implements AfterViewInit {
       this.noteEditor.save(true);
     }
     this.utilService.showSuccess('Note published to Reader Module!');
-    this.router.navigate(['/new/publisher/dashboard']);
+    this.router.navigate(['/publisher/dashboard']);
   }
 }

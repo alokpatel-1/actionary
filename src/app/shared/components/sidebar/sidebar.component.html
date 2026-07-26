@@ -2,7 +2,7 @@
   
   <!-- Brand Logo & Collapse Toggle Header -->
   <div class="sidebar-header">
-    <a routerLink="/new/reader/feed" class="sidebar-brand">
+    <a routerLink="/reader/feed" class="sidebar-brand">
       <span class="brand-icon">📝</span>
       <span class="brand-name">Scribe<span class="brand-dot">.</span></span>
     </a>
@@ -21,17 +21,17 @@
 
   <!-- Navigation Links -->
   <nav class="sidebar-nav">
-    <a routerLink="/new/reader/feed" routerLinkActive="active" class="nav-item">
+    <a routerLink="/reader/feed" routerLinkActive="active" class="nav-item">
       <i class="pi pi-home nav-icon"></i>
       <span>Home</span>
     </a>
 
-    <a routerLink="/new/reader/trending" routerLinkActive="active" class="nav-item">
+    <a routerLink="/reader/trending" routerLinkActive="active" class="nav-item">
       <i class="pi pi-bolt nav-icon"></i>
       <span>Trending</span>
     </a>
 
-    <a routerLink="/new/publisher/dashboard" routerLinkActive="active" class="nav-item">
+    <a routerLink="/publisher/dashboard" routerLinkActive="active" class="nav-item">
       <i class="pi pi-file-edit nav-icon"></i>
       <span>Notes</span>
     </a>
@@ -42,7 +42,7 @@
     
     <!-- Floating User Option Menu Popover Panel -->
     <div class="user-menu-popover" *ngIf="showUserMenu()">
-      <a routerLink="/new/auth/profile" (click)="closeUserMenu()" class="menu-item">
+      <a routerLink="/auth/profile" (click)="closeUserMenu()" class="menu-item">
         <i class="pi pi-user"></i>
         <span>Profile & Settings</span>
       </a>

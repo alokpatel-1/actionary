@@ -19,7 +19,7 @@ export class SidebarComponent {
   showUserMenu = signal(false);
 
   createNewNote(): void {
-    this.router.navigate(['/new/publisher/editor', 'new']);
+    this.router.navigate(['/publisher/editor', 'new']);
   }
 
   toggleUserMenu(): void {
@@ -37,6 +37,6 @@ export class SidebarComponent {
   logout(): void {
     this.showUserMenu.set(false);
     this.tokenService.clearSession();
-    this.router.navigate(['/new/auth/login']);
+    this.router.navigate(['/auth/login']);
   }
 }

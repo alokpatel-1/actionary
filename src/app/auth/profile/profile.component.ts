@@ -96,12 +96,12 @@ export class ProfileComponent {
     this.showDeleteAccountModal.set(false);
     this.tokenService.clearSession();
     this.utilService.showSuccess('Account permanently deleted.');
-    this.router.navigate(['/new/auth/signup']);
+    this.router.navigate(['/auth/signup']);
   }
 
   logout(): void {
     this.tokenService.clearSession();
     this.utilService.showSuccess('Logged out successfully.');
-    this.router.navigate(['/new/auth/login']);
+    this.router.navigate(['/auth/login']);
   }
 }
