@@ -1,0 +1,84 @@
+<div #receiptRoot class="a4" *ngIf="data">
+  <div class="page" [style.transform]="'scale(' + a4Scale + ')'">
+    <!-- Header -->
+    <div class="logo">Uber</div>
+    <div class="a date">{{ calc.formatReceiptDateLong(data.receiptDate) }}</div>
+    <div class="hr" style="top: 210px"></div>
+
+    <div class="a h1">Here's your receipt for your ride, {{ data.passengerName }}</div>
+    <div class="a sub">We hope you enjoyed your ride this {{ data.rideTimeOfDay }}.</div>
+
+    <!-- Total -->
+    <div class="a t-label">Total</div>
+    <div class="a num t-amt">{{ calc.formatInr(data.total) }}</div>
+    <div class="hr" style="top: 482px; background: #444"></div>
+
+    <!-- Charges -->
+    <div class="a trip-l">Trip charge</div>
+    <div class="a trip-v">{{ calc.formatInr(data.tripCharge) }}</div>
+    <div class="hr" style="top: 591px"></div>
+
+    <div class="a sub-l">Subtotal</div>
+    <div class="a num sub-v">{{ calc.formatInr(data.subtotal) }}</div>
+    <div class="a up-l">UP interstate charges</div>
+    <div class="a up-v">{{ calc.formatInr(data.interstateCharges) }}</div>
+    <div class="a pr-l">Promotion</div>
+    <div class="a pr-v">{{ calc.formatInr(data.promotion, true) }}</div>
+    <div class="hr" style="top: 776px"></div>
+    <div class="hr" style="top: 847px"></div>
+
+    <!-- Payments -->
+    <div class="a pay-h">Payments</div>
+    <img
+      *ngIf="!cashIconFailed"
+      class="cash-i"
+      src="receipt/icon.png"
+      alt=""
+      (error)="onCashIconError()"
+    />
+    <svg
+      *ngIf="cashIconFailed"
+      class="cash-i"
+      viewBox="0 0 50 36"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <rect width="50" height="36" fill="#cdeab8" />
+      <rect x="6" y="6" width="38" height="24" rx="3" fill="none" stroke="#2f8a2f" stroke-width="1.8" />
+      <circle cx="25" cy="18" r="6.5" fill="none" stroke="#2f8a2f" stroke-width="1.8" />
+      <circle cx="12" cy="18" r="1.5" fill="#2f8a2f" />
+      <circle cx="38" cy="18" r="1.5" fill="#2f8a2f" />
+    </svg>
+    <div class="a cash-l">{{ data.paymentMethod }}</div>
+    <div class="a cash-d">{{ calc.formatTripDateTime(data.receiptDate, data.pickupTime) }}</div>
+    <div class="a num cash-v">{{ calc.formatInr(data.paymentsAmount) }}</div>
+
+    <div class="a link">
+      <a href="javascript:void(0)">Visit the trip page</a> for more information, including invoices (where available)
+    </div>
+    <div class="a gst">
+      The total of<span class="n">{{ calc.formatInr(data.total) }}</span> has a GST of<span class="n">{{ calc.formatInr(data.gstAmount) }}</span> included.
+    </div>
+
+    <!-- Ride details -->
+    <div class="hr-wide"></div>
+    <div class="a driver">You rode with {{ data.driverName }}</div>
+    <div class="a plate">License Plate: {{ data.licensePlate }}</div>
+
+    <div class="a veh">{{ data.vehicleType }}</div>
+    <div class="a mins">min(s)</div>
+    <div class="a meta">{{ data.distanceKm.toFixed(2) }} kilometres | {{ data.durationMin }}</div>
+
+    <div class="sq" style="top: 1435px"></div>
+    <div class="vline"></div>
+    <div class="sq" style="top: 1489px"></div>
+    <div class="a t1">{{ data.pickupTime }}</div>
+    <div class="a ad1">{{ data.pickupAddress }}</div>
+    <div class="a t2">{{ data.dropoffTime }}</div>
+    <div class="a ad2">{{ data.dropoffAddress }}</div>
+
+    <div class="a foot">
+      Fares are inclusive of GST. Please download the tax invoice from the trip detail page for a full tax breakdown.
+    </div>
+  </div>
+</div>

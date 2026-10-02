@@ -1,0 +1,299 @@
+<p-toast position="top-right" />
+<p-confirmDialog></p-confirmDialog>
+
+<div class="rg-page">
+  <header class="rg-header">
+    <div class="rg-title-block">
+      <a routerLink="/" class="rg-back"><i class="pi pi-arrow-left"></i> Home</a>
+      <h1>Ride Receipt Generator</h1>
+      <p>Create Uber-format receipts with row-wise data. Preview and download one or many.</p>
+    </div>
+    <div class="rg-actions">
+      <p-button type="button" label="Add row" icon="pi pi-plus" (onClick)="addRow()" [outlined]="true" [disabled]="exporting" />
+      <p-button
+        type="button"
+        label="Download all"
+        icon="pi pi-folder"
+        (onClick)="downloadAll()"
+        [loading]="exporting"
+        [disabled]="exporting"
+        severity="help"
+      />
+    </div>
+  </header>
+
+  <div class="rg-layout">
+    <section class="rg-rows">
+      <article
+        class="rg-row"
+        *ngFor="let row of rows; let rowIndex = index; trackBy: trackRow"
+        [class.rg-row-active]="previewRow.id === row.id"
+        (click)="selectForPreview(row)"
+      >
+        <div class="rg-row-head">
+          <div class="rg-row-title">
+            <span class="rg-row-label">Row {{ rowIndex + 1 }}</span>
+            <span class="rg-row-name">{{ row.passengerName }}</span>
+          </div>
+          <div class="rg-row-actions" (click)="$event.stopPropagation()">
+            <p-button
+              type="button"
+              label="Duplicate"
+              icon="pi pi-copy"
+              (onClick)="duplicateRow(row)"
+              [outlined]="true"
+              severity="secondary"
+              size="small"
+              [disabled]="exporting"
+            />
+            <p-button
+              type="button"
+              label="Download"
+              icon="pi pi-download"
+              (onClick)="downloadRow(row)"
+              size="small"
+              [loading]="exporting"
+              [disabled]="exporting"
+            />
+            <p-button
+              type="button"
+              label="Delete"
+              icon="pi pi-trash"
+              (onClick)="confirmDeleteRow(row)"
+              [outlined]="true"
+              severity="danger"
+              size="small"
+              [disabled]="exporting"
+            />
+          </div>
+        </div>
+
+        <div class="rg-fields">
+          <label class="rg-field">
+            <span>Passenger</span>
+            <input pInputText [(ngModel)]="row.passengerName" (ngModelChange)="touch(row)" class="rg-input" />
+          </label>
+
+          <label class="rg-field" (click)="$event.stopPropagation()">
+            <span>Date</span>
+            <p-datepicker
+              [ngModel]="dateModel(row)"
+              (ngModelChange)="onDateChange(row, $event)"
+              [disabledDays]="disabledDays"
+              dateFormat="M d, yy"
+              [showIcon]="true"
+              appendTo="body"
+              [baseZIndex]="12000"
+              styleClass="rg-datepicker"
+              panelStyleClass="rg-date-panel"
+              [panelStyle]="{ minWidth: '280px', zIndex: 12000 }"
+              inputStyleClass="rg-input rg-date-input"
+            />
+          </label>
+
+          <label class="rg-field" (click)="$event.stopPropagation()">
+            <span>Time of day</span>
+            <p-select
+              [options]="timeOptions"
+              [(ngModel)]="row.rideTimeOfDay"
+              (ngModelChange)="touch(row)"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              styleClass="rg-select"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>Driver</span>
+            <span class="rg-driver-cell">
+              <input pInputText [(ngModel)]="row.driverName" (ngModelChange)="touch(row)" class="rg-input" />
+              <button type="button" class="rg-icon-btn" (click)="regenerateDriver(row); $event.stopPropagation()" title="Regenerate name">
+                <i class="pi pi-refresh"></i>
+              </button>
+            </span>
+          </label>
+
+          <label class="rg-field" (click)="$event.stopPropagation()">
+            <span>Vehicle</span>
+            <p-select
+              [options]="vehicleOptions"
+              [(ngModel)]="row.vehicleType"
+              (ngModelChange)="touch(row)"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              styleClass="rg-select"
+            />
+          </label>
+
+          <label class="rg-field" (click)="$event.stopPropagation()">
+            <span>Payment</span>
+            <p-select
+              [options]="paymentOptions"
+              [(ngModel)]="row.paymentMethod"
+              (ngModelChange)="touch(row)"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              styleClass="rg-select"
+            />
+          </label>
+
+          <label class="rg-field" (click)="$event.stopPropagation()">
+            <span>Pickup time</span>
+            <p-datepicker
+              [ngModel]="timeModel(row, 'pickupTime')"
+              (ngModelChange)="onTimeChange(row, 'pickupTime', $event)"
+              [timeOnly]="true"
+              hourFormat="12"
+              [showIcon]="true"
+              iconDisplay="input"
+              appendTo="body"
+              [baseZIndex]="12000"
+              styleClass="rg-datepicker"
+              panelStyleClass="rg-date-panel"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field" (click)="$event.stopPropagation()">
+            <span>Dropoff time</span>
+            <p-datepicker
+              [ngModel]="timeModel(row, 'dropoffTime')"
+              (ngModelChange)="onTimeChange(row, 'dropoffTime', $event)"
+              [timeOnly]="true"
+              hourFormat="12"
+              [showIcon]="true"
+              iconDisplay="input"
+              appendTo="body"
+              [baseZIndex]="12000"
+              styleClass="rg-datepicker"
+              panelStyleClass="rg-date-panel"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>Distance (km)</span>
+            <p-inputNumber
+              [(ngModel)]="row.distanceKm"
+              (ngModelChange)="touch(row)"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="rg-number"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>Duration (min)</span>
+            <p-inputNumber
+              [(ngModel)]="row.durationMin"
+              (ngModelChange)="touch(row)"
+              [min]="1"
+              styleClass="rg-number"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>License plate</span>
+            <input pInputText [(ngModel)]="row.licensePlate" (ngModelChange)="touch(row)" class="rg-input" />
+          </label>
+
+          <label class="rg-field">
+            <span>Trip charge</span>
+            <p-inputNumber
+              [(ngModel)]="row.tripCharge"
+              (ngModelChange)="onTripChargeChange(row)"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="rg-number"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>Interstate charges</span>
+            <p-inputNumber
+              [(ngModel)]="row.interstateCharges"
+              (ngModelChange)="touch(row)"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="rg-number"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>Promotion</span>
+            <p-inputNumber
+              [(ngModel)]="row.promotion"
+              (ngModelChange)="touch(row)"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="rg-number"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>Total</span>
+            <p-inputNumber
+              [(ngModel)]="row.total"
+              (ngModelChange)="onTotalChange(row)"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              styleClass="rg-number"
+              inputStyleClass="rg-input"
+            />
+          </label>
+
+          <label class="rg-field">
+            <span>GST (auto)</span>
+            <input class="rg-input rg-readonly-input" [value]="formatInr(row.gstAmount)" readonly />
+          </label>
+
+          <label class="rg-field rg-field-wide">
+            <span>Pickup address</span>
+            <textarea
+              pTextarea
+              [(ngModel)]="row.pickupAddress"
+              (ngModelChange)="touch(row)"
+              rows="3"
+              class="rg-textarea"
+            ></textarea>
+          </label>
+
+          <label class="rg-field rg-field-wide">
+            <span>Dropoff address</span>
+            <textarea
+              pTextarea
+              [(ngModel)]="row.dropoffAddress"
+              (ngModelChange)="touch(row)"
+              rows="3"
+              class="rg-textarea"
+            ></textarea>
+          </label>
+        </div>
+      </article>
+    </section>
+
+    <aside class="rg-preview-panel">
+      <div class="rg-preview-label">
+        Live preview
+        <span *ngIf="previewRow">— {{ previewRow.passengerName }}</span>
+      </div>
+      <div class="rg-preview-scroll">
+        <div class="rg-preview-scale">
+          <app-receipt-preview #preview [data]="previewRow" [attr.data-tick]="previewTick" />
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

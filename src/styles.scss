@@ -126,3 +126,8 @@ body {
   line-height: 1.6;
   word-break: break-word;
 }
+
+.rg-date-panel {
+  z-index: 12000 !important;
+  min-width: 280px;
+}
