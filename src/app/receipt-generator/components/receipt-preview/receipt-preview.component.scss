@@ -1,0 +1,317 @@
+/* ---- A4 sheet (portrait) ---- */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+:host {
+  display: block;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.a4 {
+  position: relative;
+  width: 210mm;
+  height: 296mm; /* 1mm under 297mm so the browser never adds a blank 2nd page */
+  margin: 0 auto;
+  overflow: hidden;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+@media print {
+  .a4 {
+    margin: 0;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}
+
+/* On screen, show the A4 sheet with a light shadow; hidden when printing */
+@media screen {
+  .a4 {
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Page is built on the exact 1700 x 1700 pixel grid of the original image */
+.page {
+  position: relative;
+  width: 1700px;
+  height: 1700px;
+  background: #fff;
+  font-family: Arial, 'Liberation Sans', Helvetica, sans-serif;
+  color: #000;
+  transform-origin: top left;
+}
+
+/* Every text item is positioned by its vertical centre (top) and left/right edge */
+.a {
+  position: absolute;
+  white-space: nowrap;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.num {
+  font-family: 'DejaVu Sans', Verdana, 'Segoe UI', sans-serif;
+}
+
+/* Horizontal rules */
+.hr {
+  position: absolute;
+  left: 180px;
+  width: 1328px;
+  height: 2px;
+  background: #cfcfcf;
+}
+
+/* Header */
+.logo {
+  position: absolute;
+  left: 180px;
+  top: 102px;
+  font-size: 54px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  font-weight: 700;
+}
+
+.date {
+  right: 192px;
+  top: 135px;
+  font-size: 22px;
+  color: #555;
+}
+
+.h1 {
+  left: 180px;
+  top: 251px;
+  font-size: 41px;
+}
+
+.sub {
+  left: 180px;
+  top: 327px;
+  font-size: 21px;
+  color: #555;
+}
+
+/* Total */
+.t-label {
+  left: 180px;
+  top: 425px;
+  font-size: 31px;
+}
+
+.t-amt {
+  right: 179px;
+  top: 424px;
+  font-size: 31px;
+}
+
+/* Charges */
+.trip-l {
+  left: 180px;
+  top: 540px;
+  font-size: 20px;
+  color: #666;
+}
+
+.trip-v {
+  right: 195px;
+  top: 540px;
+  font-size: 19px;
+  color: #666;
+}
+
+.sub-l {
+  left: 180px;
+  top: 646px;
+  font-size: 21px;
+}
+
+.sub-v {
+  right: 184px;
+  top: 645px;
+  font-size: 20px;
+}
+
+.up-l {
+  left: 180px;
+  top: 685px;
+  font-size: 21px;
+  color: #666;
+}
+
+.up-v {
+  right: 192px;
+  top: 685px;
+  font-size: 18.5px;
+  color: #666;
+}
+
+.pr-l {
+  left: 180px;
+  top: 722px;
+  font-size: 21px;
+  color: #666;
+}
+
+.pr-v {
+  right: 193px;
+  top: 722px;
+  font-size: 18.5px;
+  color: #2e8b1e;
+}
+
+/* Payments */
+.pay-h {
+  left: 180px;
+  top: 909px;
+  font-size: 31px;
+}
+
+.cash-i {
+  position: absolute;
+  left: 182px;
+  top: 965px;
+  width: 50px;
+  height: 36px;
+  display: block;
+  object-fit: contain;
+}
+
+.cash-l {
+  left: 275px;
+  top: 973px;
+  font-size: 24px;
+}
+
+.cash-d {
+  left: 275px;
+  top: 1010px;
+  font-size: 24px;
+  color: #777;
+}
+
+.cash-v {
+  right: 182px;
+  top: 982px;
+  font-size: 27px;
+}
+
+.link {
+  left: 180px;
+  top: 1069px;
+  font-size: 21px;
+}
+
+.link a {
+  color: #0000ee;
+  text-decoration: underline;
+  cursor: default;
+}
+
+.gst {
+  left: 180px;
+  top: 1138px;
+  font-size: 21px;
+}
+
+.gst .n {
+  margin-left: 2px;
+}
+
+/* Ride details */
+.hr-wide {
+  position: absolute;
+  left: 159px;
+  width: 1370px;
+  top: 1207px;
+  height: 2px;
+  background: #cfcfcf;
+}
+
+.driver {
+  left: 180px;
+  top: 1273px;
+  font-size: 19.5px;
+}
+
+.plate {
+  left: 180px;
+  top: 1309px;
+  font-size: 17px;
+  color: #333;
+}
+
+.veh {
+  left: 180px;
+  top: 1370px;
+  font-size: 20.5px;
+}
+
+.mins {
+  left: 180px;
+  top: 1391px;
+  font-size: 20.5px;
+}
+
+.meta {
+  left: 303px;
+  top: 1368px;
+  font-size: 20.5px;
+  color: #444;
+}
+
+.sq {
+  position: absolute;
+  left: 180px;
+  width: 14px;
+  height: 14px;
+  background: #000;
+}
+
+.vline {
+  position: absolute;
+  left: 186px;
+  top: 1447px;
+  width: 2px;
+  height: 44px;
+  background: #000;
+}
+
+.t1 {
+  left: 254px;
+  top: 1437px;
+  font-size: 20.5px;
+}
+
+.ad1 {
+  left: 361px;
+  top: 1437px;
+  font-size: 20.5px;
+  color: #444;
+}
+
+.t2 {
+  left: 254px;
+  top: 1492px;
+  font-size: 20.5px;
+}
+
+.ad2 {
+  left: 354px;
+  top: 1492px;
+  font-size: 20.5px;
+  color: #444;
+}
+
+.foot {
+  left: 180px;
+  top: 1588px;
+  font-size: 20.5px;
+  color: #666;
+}

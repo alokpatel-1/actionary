@@ -3,9 +3,39 @@ import { authGuard } from './gaurds/auth.guard';
 import { adminGuard } from './gaurds/admin.guard';
 
 export const routes: Routes = [
-  { path: 'notes', canActivate: [authGuard], loadChildren: () => import('./study-notes/study-notes.module').then(m => m.StudyNotesModule) },
-  { path: 'library', canActivate: [authGuard], loadChildren: () => import('./notes-library/notes-library.module').then(m => m.NotesLibraryModule) },
-  { path: 'admin', canActivate: [authGuard, adminGuard], loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) },
-  { path: '', loadChildren: () => import('./init/init.module').then(m => m.InitModule) },
+  {
+    path: 'notes',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./study-notes/study-notes.module').then(
+        (m) => m.StudyNotesModule,
+      ),
+  },
+  {
+    path: 'receipt-generator',
+    loadChildren: () =>
+      import('./receipt-generator/receipt-generator.module').then(
+        (m) => m.ReceiptGeneratorModule,
+      ),
+  },
+  {
+    path: 'library',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./notes-library/notes-library.module').then(
+        (m) => m.NotesLibraryModule,
+      ),
+  },
+  {
+    path: 'admin',
+    canActivate: [authGuard, adminGuard],
+    loadChildren: () =>
+      import('./admin/admin.module').then((m) => m.AdminModule),
+  },
+
+  {
+    path: '',
+    loadChildren: () => import('./init/init.module').then((m) => m.InitModule),
+  },
   { path: '**', redirectTo: '', pathMatch: 'full' },
 ];

@@ -13,7 +13,14 @@ const routes: Routes = [
     path: '',
     component: InitComponent,
     children: [
-      { path: '', component: LandingPageComponent },
+      {
+        path: 'receipt-generator',
+        loadChildren: () =>
+          import('../receipt-generator/receipt-generator.module').then(
+            (m) => m.ReceiptGeneratorModule
+          ),
+      },
+      { path: '', pathMatch: 'full', component: LandingPageComponent },
       { path: 'home', component: LandingPageComponent },
       { path: 'login', component: SignInComponent },
       { path: 'signup', component: SignUpComponent },
@@ -22,7 +29,6 @@ const routes: Routes = [
       { path: 'auth/signup', component: MobileSignupComponent },
     ]
   },
-  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 
 @NgModule({
