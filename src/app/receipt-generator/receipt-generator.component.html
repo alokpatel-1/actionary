@@ -219,14 +219,8 @@
           </label>
 
           <label class="rg-field">
-            <span>Duration (min)</span>
-            <p-inputNumber
-              [(ngModel)]="row.durationMin"
-              (ngModelChange)="touch(row)"
-              [min]="1"
-              styleClass="rg-number"
-              inputStyleClass="rg-input"
-            />
+            <span>Duration (auto)</span>
+            <input class="rg-input rg-readonly-input" [value]="row.durationMin + ' min'" readonly />
           </label>
 
           <label class="rg-field">
