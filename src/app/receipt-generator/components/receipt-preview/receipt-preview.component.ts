@@ -30,4 +30,14 @@ export class ReceiptPreviewComponent {
   onCashIconError(): void {
     this.cashIconFailed = true;
   }
+
+  get hasPromotion(): boolean {
+    const p = this.data?.promotion;
+    return p != null && p !== 0 && !Number.isNaN(p);
+  }
+
+  get hasInterstate(): boolean {
+    const n = this.data?.interstateCharges;
+    return n != null && n !== 0 && !Number.isNaN(n);
+  }
 }
