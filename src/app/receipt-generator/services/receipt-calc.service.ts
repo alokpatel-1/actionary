@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { RideReceiptRow } from '../models/ride-receipt.model';
 import { randomIndianMaleName } from '../data/indian-male-names';
+import { randomNcrPlate } from '../data/ncr-plates';
 
 @Injectable({ providedIn: 'root' })
 export class ReceiptCalcService {
@@ -79,6 +80,7 @@ export class ReceiptCalcService {
       id,
       receiptDate: nextDate,
       driverName: randomIndianMaleName(prev.driverName),
+      licensePlate: randomNcrPlate(prev.licensePlate),
     });
   }
 

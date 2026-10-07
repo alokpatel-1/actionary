@@ -11,6 +11,7 @@ import { ReceiptCalcService } from './services/receipt-calc.service';
 import { ReceiptExportService } from './services/receipt-export.service';
 import { ReceiptPreviewComponent } from './components/receipt-preview/receipt-preview.component';
 import { randomIndianMaleName } from './data/indian-male-names';
+import { randomNcrPlate } from './data/ncr-plates';
 
 @Component({
   selector: 'app-receipt-generator',
@@ -37,6 +38,21 @@ export class ReceiptGeneratorComponent {
   }));
   /** PrimeNG DatePicker: Sunday=0, Saturday=6 */
   readonly disabledDays = [0, 6];
+
+  readonly clockHourOptions = Array.from({ length: 12 }, (_, i) => ({
+    label: String(i + 1),
+    value: i + 1,
+  }));
+
+  readonly clockMinuteOptions = Array.from({ length: 12 }, (_, i) => {
+    const m = i * 5;
+    return { label: String(m).padStart(2, '0'), value: m };
+  });
+
+  readonly clockMeridiemOptions = [
+    { label: 'AM', value: 'am' as const },
+    { label: 'PM', value: 'pm' as const },
+  ];
 
   constructor(
     private calc: ReceiptCalcService,
@@ -113,6 +129,57 @@ export class ReceiptGeneratorComponent {
     this.touch(row);
   }
 
+  regeneratePlate(row: RideReceiptRow): void {
+    row.licensePlate = randomNcrPlate(row.licensePlate);
+    this.touch(row);
+  }
+
+  swapAddresses(row: RideReceiptRow): void {
+    const pickup = row.pickupAddress;
+    row.pickupAddress = row.dropoffAddress;
+    row.dropoffAddress = pickup;
+    this.touch(row);
+  }
+
+  timeHour(row: RideReceiptRow, field: 'pickupTime' | 'dropoffTime'): number {
+    return this.parseTimeParts(row[field]).hour;
+  }
+
+  timeMinute(row: RideReceiptRow, field: 'pickupTime' | 'dropoffTime'): number {
+    return this.parseTimeParts(row[field]).minute;
+  }
+
+  timeMeridiem(row: RideReceiptRow, field: 'pickupTime' | 'dropoffTime'): 'am' | 'pm' {
+    return this.parseTimeParts(row[field]).meridiem;
+  }
+
+  onTimeHourChange(
+    row: RideReceiptRow,
+    field: 'pickupTime' | 'dropoffTime',
+    hour: number
+  ): void {
+    const parts = this.parseTimeParts(row[field]);
+    this.applyTimeParts(row, field, hour, parts.minute, parts.meridiem);
+  }
+
+  onTimeMinuteChange(
+    row: RideReceiptRow,
+    field: 'pickupTime' | 'dropoffTime',
+    minute: number
+  ): void {
+    const parts = this.parseTimeParts(row[field]);
+    this.applyTimeParts(row, field, parts.hour, minute, parts.meridiem);
+  }
+
+  onTimeMeridiemChange(
+    row: RideReceiptRow,
+    field: 'pickupTime' | 'dropoffTime',
+    meridiem: 'am' | 'pm'
+  ): void {
+    const parts = this.parseTimeParts(row[field]);
+    this.applyTimeParts(row, field, parts.hour, parts.minute, meridiem);
+  }
+
   onTotalChange(row: RideReceiptRow): void {
     Object.assign(row, this.calc.applyDerived(row));
     this.touch(row);
@@ -157,54 +224,39 @@ export class ReceiptGeneratorComponent {
     return date;
   }
 
-  timeModel(row: RideReceiptRow, field: 'pickupTime' | 'dropoffTime'): Date {
-    const extra = row as RideReceiptRow & Record<string, Date | string | undefined>;
-    const dateKey = `_${field}Date`;
-    const textKey = `_${field}Text`;
-    if (extra[dateKey] instanceof Date && extra[textKey] === row[field]) {
-      return extra[dateKey] as Date;
-    }
-    const date = this.parseTime(row[field]);
-    extra[dateKey] = date;
-    extra[textKey] = row[field];
-    return date;
-  }
-
-  onTimeChange(row: RideReceiptRow, field: 'pickupTime' | 'dropoffTime', value: Date | null): void {
-    if (!value) return;
-    const formatted = this.formatTime(value);
+  private applyTimeParts(
+    row: RideReceiptRow,
+    field: 'pickupTime' | 'dropoffTime',
+    hour: number,
+    minute: number,
+    meridiem: 'am' | 'pm'
+  ): void {
+    const minutes = String(minute).padStart(2, '0');
+    const formatted = `${hour}:${minutes} ${meridiem}`;
     if (formatted === row[field]) return;
     row[field] = formatted;
     const extra = row as RideReceiptRow & Record<string, Date | string | undefined>;
-    extra[`_${field}Date`] = value;
-    extra[`_${field}Text`] = formatted;
+    delete extra[`_${field}Date`];
+    delete extra[`_${field}Text`];
     this.touch(row);
   }
 
-  private parseTime(text: string): Date {
-    const date = new Date();
-    date.setSeconds(0, 0);
+  private parseTimeParts(text: string): {
+    hour: number;
+    minute: number;
+    meridiem: 'am' | 'pm';
+  } {
     const match = (text || '').trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
     if (!match) {
-      date.setHours(11, 30, 0, 0);
-      return date;
+      return { hour: 11, minute: 30, meridiem: 'am' };
     }
-    let hours = Number(match[1]);
-    const minutes = Number(match[2]);
-    const meridiem = match[3].toLowerCase();
-    if (meridiem === 'pm' && hours < 12) hours += 12;
-    if (meridiem === 'am' && hours === 12) hours = 0;
-    date.setHours(hours, minutes, 0, 0);
-    return date;
-  }
-
-  private formatTime(date: Date): string {
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const meridiem = hours >= 12 ? 'pm' : 'am';
-    hours = hours % 12;
-    if (hours === 0) hours = 12;
-    return `${hours}:${minutes} ${meridiem}`;
+    let hour = Number(match[1]);
+    if (hour < 1 || hour > 12) hour = 12;
+    let minute = Number(match[2]);
+    if (Number.isNaN(minute)) minute = 0;
+    minute = Math.min(55, Math.max(0, Math.round(minute / 5) * 5));
+    const meridiem = match[3].toLowerCase() === 'pm' ? 'pm' : 'am';
+    return { hour, minute, meridiem };
   }
 
   private dateToIso(d: Date): string {

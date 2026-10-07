@@ -149,13 +149,23 @@
 
 .rg-textarea {
   width: 100%;
-  min-height: 72px;
+  min-height: 88px;
   resize: vertical;
   font-size: 0.85rem;
-  padding: 0.5rem 0.6rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 8px;
   font-family: inherit;
+  line-height: 1.45;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
 }
 
 .rg-readonly-input {
@@ -222,6 +232,62 @@
   align-items: center;
   gap: 0.25rem;
   min-width: 120px;
+}
+
+.rg-time-parts {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.rg-time-parts ::ng-deep .rg-time-select {
+  min-width: 4.25rem;
+  flex: 1 1 4.25rem;
+}
+
+.rg-route {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: 0.15rem;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+}
+
+.rg-route-swap-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 1.35rem;
+
+  @media (max-width: 720px) {
+    padding-bottom: 0;
+  }
+}
+
+.rg-route-swap {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #e8eef6;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+
+  &:hover {
+    background: #dbe4f0;
+  }
 }
 
 .rg-icon-btn {

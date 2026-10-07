@@ -20,12 +20,16 @@
 
     <div class="a sub-l">Subtotal</div>
     <div class="a num sub-v">{{ calc.formatInr(data.subtotal) }}</div>
-    <div class="a up-l">UP interstate charges</div>
-    <div class="a up-v">{{ calc.formatInr(data.interstateCharges) }}</div>
-    <div class="a pr-l">Promotion</div>
-    <div class="a pr-v">{{ calc.formatInr(data.promotion, true) }}</div>
-    <div class="hr" style="top: 776px"></div>
-    <div class="hr" style="top: 847px"></div>
+    <ng-container *ngIf="hasInterstate">
+      <div class="a up-l">UP interstate charges</div>
+      <div class="a up-v">{{ calc.formatInr(data.interstateCharges) }}</div>
+    </ng-container>
+    <ng-container *ngIf="hasPromotion">
+      <div class="a pr-l" [style.top.px]="hasInterstate ? 722 : 685">Promotion</div>
+      <div class="a pr-v" [style.top.px]="hasInterstate ? 722 : 685">{{ calc.formatInr(data.promotion, true) }}</div>
+    </ng-container>
+    <div class="hr" [style.top.px]="hasInterstate ? 776 : 739"></div>
+    <div class="hr" [style.top.px]="hasInterstate ? 847 : 810"></div>
 
     <!-- Payments -->
     <div class="a pay-h">Payments</div>
@@ -50,7 +54,7 @@
       <circle cx="38" cy="18" r="1.5" fill="#2f8a2f" />
     </svg>
     <div class="a cash-l">{{ data.paymentMethod }}</div>
-    <div class="a cash-d">{{ calc.formatTripDateTime(data.receiptDate, data.pickupTime) }}</div>
+    <div class="a cash-d">{{ calc.formatTripDateTime(data.receiptDate, data.dropoffTime) }}</div>
     <div class="a num cash-v">{{ calc.formatInr(data.paymentsAmount) }}</div>
 
     <div class="a link">

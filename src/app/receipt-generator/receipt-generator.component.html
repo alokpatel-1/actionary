@@ -142,36 +142,68 @@
 
           <label class="rg-field" (click)="$event.stopPropagation()">
             <span>Pickup time</span>
-            <p-datepicker
-              [ngModel]="timeModel(row, 'pickupTime')"
-              (ngModelChange)="onTimeChange(row, 'pickupTime', $event)"
-              [timeOnly]="true"
-              hourFormat="12"
-              [showIcon]="true"
-              iconDisplay="input"
-              appendTo="body"
-              [baseZIndex]="12000"
-              styleClass="rg-datepicker"
-              panelStyleClass="rg-date-panel"
-              inputStyleClass="rg-input"
-            />
+            <div class="rg-time-parts">
+              <p-select
+                [options]="clockHourOptions"
+                [ngModel]="timeHour(row, 'pickupTime')"
+                (ngModelChange)="onTimeHourChange(row, 'pickupTime', $event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="rg-select rg-time-select"
+              />
+              <p-select
+                [options]="clockMinuteOptions"
+                [ngModel]="timeMinute(row, 'pickupTime')"
+                (ngModelChange)="onTimeMinuteChange(row, 'pickupTime', $event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="rg-select rg-time-select"
+              />
+              <p-select
+                [options]="clockMeridiemOptions"
+                [ngModel]="timeMeridiem(row, 'pickupTime')"
+                (ngModelChange)="onTimeMeridiemChange(row, 'pickupTime', $event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="rg-select rg-time-select"
+              />
+            </div>
           </label>
 
           <label class="rg-field" (click)="$event.stopPropagation()">
             <span>Dropoff time</span>
-            <p-datepicker
-              [ngModel]="timeModel(row, 'dropoffTime')"
-              (ngModelChange)="onTimeChange(row, 'dropoffTime', $event)"
-              [timeOnly]="true"
-              hourFormat="12"
-              [showIcon]="true"
-              iconDisplay="input"
-              appendTo="body"
-              [baseZIndex]="12000"
-              styleClass="rg-datepicker"
-              panelStyleClass="rg-date-panel"
-              inputStyleClass="rg-input"
-            />
+            <div class="rg-time-parts">
+              <p-select
+                [options]="clockHourOptions"
+                [ngModel]="timeHour(row, 'dropoffTime')"
+                (ngModelChange)="onTimeHourChange(row, 'dropoffTime', $event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="rg-select rg-time-select"
+              />
+              <p-select
+                [options]="clockMinuteOptions"
+                [ngModel]="timeMinute(row, 'dropoffTime')"
+                (ngModelChange)="onTimeMinuteChange(row, 'dropoffTime', $event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="rg-select rg-time-select"
+              />
+              <p-select
+                [options]="clockMeridiemOptions"
+                [ngModel]="timeMeridiem(row, 'dropoffTime')"
+                (ngModelChange)="onTimeMeridiemChange(row, 'dropoffTime', $event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="rg-select rg-time-select"
+              />
+            </div>
           </label>
 
           <label class="rg-field">
@@ -199,7 +231,17 @@
 
           <label class="rg-field">
             <span>License plate</span>
-            <input pInputText [(ngModel)]="row.licensePlate" (ngModelChange)="touch(row)" class="rg-input" />
+            <span class="rg-driver-cell">
+              <input pInputText [(ngModel)]="row.licensePlate" (ngModelChange)="touch(row)" class="rg-input" />
+              <button
+                type="button"
+                class="rg-icon-btn"
+                (click)="regeneratePlate(row); $event.stopPropagation()"
+                title="Regenerate NCR plate"
+              >
+                <i class="pi pi-refresh"></i>
+              </button>
+            </span>
           </label>
 
           <label class="rg-field">
@@ -216,7 +258,7 @@
           </label>
 
           <label class="rg-field">
-            <span>Interstate charges</span>
+            <span>Interstate charges (optional)</span>
             <p-inputNumber
               [(ngModel)]="row.interstateCharges"
               (ngModelChange)="touch(row)"
@@ -259,27 +301,41 @@
             <input class="rg-input rg-readonly-input" [value]="formatInr(row.gstAmount)" readonly />
           </label>
 
-          <label class="rg-field rg-field-wide">
-            <span>Pickup address</span>
-            <textarea
-              pTextarea
-              [(ngModel)]="row.pickupAddress"
-              (ngModelChange)="touch(row)"
-              rows="3"
-              class="rg-textarea"
-            ></textarea>
-          </label>
-
-          <label class="rg-field rg-field-wide">
-            <span>Dropoff address</span>
-            <textarea
-              pTextarea
-              [(ngModel)]="row.dropoffAddress"
-              (ngModelChange)="touch(row)"
-              rows="3"
-              class="rg-textarea"
-            ></textarea>
-          </label>
+          <div class="rg-route" (click)="$event.stopPropagation()">
+            <label class="rg-field">
+              <span>Pickup address</span>
+              <textarea
+                pTextarea
+                [(ngModel)]="row.pickupAddress"
+                (ngModelChange)="touch(row)"
+                rows="3"
+                class="rg-textarea"
+                placeholder="Pickup address"
+              ></textarea>
+            </label>
+            <div class="rg-route-swap-wrap">
+              <button
+                type="button"
+                class="rg-route-swap"
+                (click)="swapAddresses(row)"
+                title="Swap pickup and dropoff"
+                aria-label="Swap pickup and dropoff addresses"
+              >
+                <i class="pi pi-arrows-h" aria-hidden="true"></i>
+              </button>
+            </div>
+            <label class="rg-field">
+              <span>Dropoff address</span>
+              <textarea
+                pTextarea
+                [(ngModel)]="row.dropoffAddress"
+                (ngModelChange)="touch(row)"
+                rows="3"
+                class="rg-textarea"
+                placeholder="Dropoff address"
+              ></textarea>
+            </label>
+          </div>
         </div>
       </article>
     </section>
