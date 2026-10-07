@@ -235,6 +235,7 @@ export class ReceiptGeneratorComponent {
     const formatted = `${hour}:${minutes} ${meridiem}`;
     if (formatted === row[field]) return;
     row[field] = formatted;
+    row.durationMin = this.calc.durationMinutes(row.pickupTime, row.dropoffTime);
     const extra = row as RideReceiptRow & Record<string, Date | string | undefined>;
     delete extra[`_${field}Date`];
     delete extra[`_${field}Text`];

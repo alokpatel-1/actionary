@@ -20,8 +20,27 @@ export class ReceiptCalcService {
       subtotal: row.tripCharge,
       paymentsAmount: row.total,
       gstAmount: this.gstFromTotal(row.total),
+      durationMin: this.durationMinutes(row.pickupTime, row.dropoffTime),
       receiptDate: this.toWeekdayIso(row.receiptDate),
     };
+  }
+
+  /** Minutes from pickup to dropoff. If dropoff is earlier, the trip crosses midnight. */
+  durationMinutes(pickup: string, dropoff: string): number {
+    const start = this.clockMinutes(pickup);
+    const end = this.clockMinutes(dropoff);
+    if (start == null || end == null) return 0;
+    let diff = end - start;
+    if (diff < 0) diff += 24 * 60;
+    return diff;
+  }
+
+  private clockMinutes(text: string): number | null {
+    const match = (text || '').trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+    if (!match) return null;
+    let hour = Number(match[1]) % 12;
+    if (match[3].toLowerCase() === 'pm') hour += 12;
+    return hour * 60 + Number(match[2]);
   }
 
   /** Saturday = 6, Sunday = 0 — skip to next Monday. */
