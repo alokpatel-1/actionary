@@ -380,4 +380,220 @@
   }
 }
 
+.rg-bulk-dialog-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+:host ::ng-deep .rg-bulk-dialog.p-dialog {
+  width: 90vw !important;
+  max-width: 90vw !important;
+  height: 90vh !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+:host ::ng-deep .rg-bulk-dialog .p-dialog-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.rg-bulk-review {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.rg-bulk-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:host ::ng-deep .rg-bulk-table-wrap .p-datatable {
+  flex: 1 1 auto;
+}
+
+.rg-bulk-hint {
+  margin: 0 0 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.rg-bulk-time-cell {
+  min-width: 11rem;
+  vertical-align: top;
+}
+
+.rg-bulk-time-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  max-width: 11rem;
+}
+
+:host ::ng-deep .rg-bulk-time-select.p-select {
+  min-width: 3.25rem;
+  flex: 1 1 3.25rem;
+}
+
+:host ::ng-deep .rg-bulk-time-select .p-select-label {
+  padding: 0.25rem 0.35rem;
+  font-size: 0.75rem;
+}
+
+.rg-bulk-config {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.rg-bulk-config-hint {
+  margin-bottom: 0;
+}
+
+.rg-bulk-config-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .rg-bulk-config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rg-bulk-range-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rg-bulk-range--full {
+  grid-column: 1 / -1;
+}
+
+.rg-bulk-range-help {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.rg-bulk-dates-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.rg-bulk-label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.rg-bulk-ranges h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.rg-bulk-range-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.rg-bulk-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.rg-bulk-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #334155;
+  cursor: pointer;
+}
+
+:host ::ng-deep .rg-bulk-table {
+  font-size: 0.8rem;
+
+  .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    padding: 0.5rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: 0.35rem 0.4rem;
+    vertical-align: middle;
+  }
+}
+
+.rg-bulk-readonly {
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+:host ::ng-deep .rg-bulk-cell-input {
+  width: 5.5rem !important;
+  max-width: 100%;
+  font-size: 0.8rem !important;
+}
+
+.rg-bulk-text {
+  width: 6.5rem;
+  min-width: 0;
+}
+
+.rg-bulk-filename {
+  width: 10rem;
+  min-width: 8rem;
+}
+
+.rg-bulk-actions-col {
+  width: 5.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rg-bulk-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+}
+
+:host ::ng-deep .rg-bulk-calendar.p-datepicker {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
 /* Full-size A4 sheet behind the UI for faithful html2canvas capture */

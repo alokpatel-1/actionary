@@ -6,9 +6,10 @@ import { ImportsModule } from '../imports';
 import { ReceiptGeneratorRoutingModule } from './receipt-generator-routing.module';
 import { ReceiptGeneratorComponent } from './receipt-generator.component';
 import { ReceiptPreviewComponent } from './components/receipt-preview/receipt-preview.component';
+import { BulkCreateComponent } from './components/bulk-create/bulk-create.component';
 
 @NgModule({
-  declarations: [ReceiptGeneratorComponent, ReceiptPreviewComponent],
+  declarations: [ReceiptGeneratorComponent, ReceiptPreviewComponent, BulkCreateComponent],
   imports: [
     CommonModule,
     FormsModule,

@@ -1,4 +1,4 @@
-import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DatePickerMonthChangeEvent } from 'primeng/datepicker';
@@ -8,30 +8,32 @@ import {
   RIDE_TIME_OF_DAY_OPTIONS,
   PAYMENT_METHOD_OPTIONS,
   VEHICLE_TYPE_OPTIONS,
-} from './models/ride-receipt.model';
-import { BulkPreviewItem } from './models/bulk-receipt.model';
-import { ReceiptCalcService } from './services/receipt-calc.service';
-import { ReceiptExportService } from './services/receipt-export.service';
-import { ReceiptPreviewComponent } from './components/receipt-preview/receipt-preview.component';
-import { randomIndianMaleName } from './data/indian-male-names';
-import { randomNcrPlate } from './data/ncr-plates';
+} from '../../models/ride-receipt.model';
+import { BulkPreviewItem } from '../../models/bulk-receipt.model';
+import { ReceiptCalcService } from '../../services/receipt-calc.service';
+import { ReceiptExportService } from '../../services/receipt-export.service';
+import { ReceiptPreviewComponent } from '../receipt-preview/receipt-preview.component';
+import { randomIndianMaleName } from '../../data/indian-male-names';
+import { randomNcrPlate } from '../../data/ncr-plates';
 
 @Component({
-  selector: 'app-receipt-generator',
-  templateUrl: './receipt-generator.component.html',
-  styleUrl: './receipt-generator.component.scss',
+  selector: 'app-bulk-create',
+  templateUrl: './bulk-create.component.html',
+  styleUrl: './bulk-create.component.scss',
   standalone: false,
   providers: [MessageService, ConfirmationService],
 })
-export class ReceiptGeneratorComponent {
+export class BulkCreateComponent implements OnInit {
   @ViewChild('preview') preview!: ReceiptPreviewComponent;
 
   rows: RideReceiptRow[] = [];
   previewRow!: RideReceiptRow;
   exporting = false;
 
-  bulkDialogVisible = false;
-  bulkStep: 'config' | 'review' = 'config';
+  bulkDialogVisible = true;
+  showSettings = true;
+  showRegenerateConfirm = false;
+  pendingCollapseSettings = true;
   bulkSelectedDates: Date[] = [];
   bulkCalendarMonth = new Date();
   bulkPreviewRows: BulkPreviewItem[] = [];
@@ -48,19 +50,21 @@ export class ReceiptGeneratorComponent {
   bulkPromotionMax = 0;
   bulkAvgDurationMin = 40;
 
-  readonly bulkTableScrollHeight = 'calc(90vh - 11rem)';
+  get bulkTableScrollHeight(): string {
+    return this.showSettings ? 'calc(100vh - 34rem)' : 'calc(100vh - 12rem)';
+  }
 
   readonly timeOptions = RIDE_TIME_OF_DAY_OPTIONS;
-  readonly paymentOptions = PAYMENT_METHOD_OPTIONS.map((v) => ({
+  readonly paymentOptions = PAYMENT_METHOD_OPTIONS.map((v: string) => ({
     label: v,
     value: v,
   }));
-  readonly vehicleOptions = VEHICLE_TYPE_OPTIONS.map((v) => ({
+  readonly vehicleOptions = VEHICLE_TYPE_OPTIONS.map((v: string) => ({
     label: v,
     value: v,
   }));
-  /** PrimeNG DatePicker: Sunday=0, Saturday=6 */
-  readonly disabledDays = [0, 6];
+  /** PrimeNG DatePicker: empty array so no day is disabled */
+  readonly disabledDays: number[] = [];
 
   readonly clockHourOptions = Array.from({ length: 12 }, (_, i) => ({
     label: String(i + 1),
@@ -84,24 +88,146 @@ export class ReceiptGeneratorComponent {
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {
-    const first = this.calc.applyDerived(createSampleReceiptRow(this.newId()));
-    this.rows = [first];
-    this.previewRow = first;
+  }
+
+  ngOnInit(): void {
+    const state = history.state as { templateRow?: RideReceiptRow };
+    if (!state.templateRow) {
+      this.router.navigate(['/receipt-generator']);
+      return;
+    }
+
+    this.previewRow = state.templateRow;
+    this.rows = [this.previewRow];
+
+    const t = this.previewRow;
+    this.showSettings = true;
+    this.bulkPreviewRows = [];
+    this.bulkSelectedDates = [];
+    this.bulkCalendarMonth = new Date();
+    this.bulkTripMin = this.calc.truncate2(t.tripCharge * 0.85);
+    this.bulkTripMax = this.calc.truncate2(t.tripCharge * 1.15);
+    this.bulkDistanceMin = this.calc.truncate2(Math.max(1, t.distanceKm * 0.85));
+    this.bulkDistanceMax = this.calc.truncate2(t.distanceKm * 1.15);
+    this.bulkInterstateRanged = false;
+    this.bulkInterstateMin = t.interstateCharges;
+    this.bulkInterstateMax = t.interstateCharges;
+    this.bulkPromotionRanged = false;
+    this.bulkPromotionMin = 0;
+    this.bulkPromotionMax = 0;
+    this.bulkAvgDurationMin = t.durationMin || 40;
   }
 
   selectForPreview(row: RideReceiptRow): void {
     this.previewRow = row;
   }
 
-  openBulkDialog(): void {
+  toggleSettings(): void {
+    this.showSettings = !this.showSettings;
+  }
+
+  onPassengerNameChange(newName: string): void {
     if (this.previewRow) {
-      this.router.navigate(['/receipt-generator/bulk'], { state: { templateRow: this.previewRow } });
+      this.previewRow.passengerName = newName;
+    }
+    for (const item of this.bulkPreviewRows) {
+      item.row.passengerName = newName;
+      item.exportFilename = this.defaultExportBasename(item.row);
     }
   }
 
+  onPickupAddressChange(newAddress: string): void {
+    if (this.previewRow) {
+      this.previewRow.pickupAddress = newAddress;
+    }
+    for (const item of this.bulkPreviewRows) {
+      item.row.pickupAddress = newAddress;
+    }
+  }
+
+  onDropoffAddressChange(newAddress: string): void {
+    if (this.previewRow) {
+      this.previewRow.dropoffAddress = newAddress;
+    }
+    for (const item of this.bulkPreviewRows) {
+      item.row.dropoffAddress = newAddress;
+    }
+  }
+
+  onTemplateFieldChange(): void {
+    if (!this.previewRow) return;
+    for (const item of this.bulkPreviewRows) {
+      item.row.vehicleType = this.previewRow.vehicleType;
+      item.row.paymentMethod = this.previewRow.paymentMethod;
+      item.row.driverName = this.previewRow.driverName;
+    }
+  }
+
+  onTemplatePickupTimeChange(time24: string): void {
+    if (!this.previewRow) return;
+    this.onTime24Change(this.previewRow, 'pickupTime', time24, true);
+    for (const item of this.bulkPreviewRows) {
+      item.row.pickupTime = this.previewRow.pickupTime;
+      this.onBulkTimeFieldChange(item.row);
+    }
+  }
+
+  onTemplateDropoffTimeChange(time24: string): void {
+    if (!this.previewRow) return;
+    this.onTime24Change(this.previewRow, 'dropoffTime', time24, true);
+    for (const item of this.bulkPreviewRows) {
+      item.row.dropoffTime = this.previewRow.dropoffTime;
+      this.onBulkTimeFieldChange(item.row);
+    }
+  }
+
+  swapSettingsAddresses(): void {
+    if (!this.previewRow) return;
+    const temp = this.previewRow.pickupAddress;
+    this.previewRow.pickupAddress = this.previewRow.dropoffAddress;
+    this.previewRow.dropoffAddress = temp;
+
+    for (const item of this.bulkPreviewRows) {
+      const t = item.row.pickupAddress;
+      item.row.pickupAddress = item.row.dropoffAddress;
+      item.row.dropoffAddress = t;
+    }
+  }
+
+  swapRowAddresses(row: RideReceiptRow): void {
+    const temp = row.pickupAddress;
+    row.pickupAddress = row.dropoffAddress;
+    row.dropoffAddress = temp;
+  }
+
+  clearSelectedDates(): void {
+    this.bulkSelectedDates = [];
+  }
+
+  clearAllRows(): void {
+    if (!this.bulkPreviewRows.length) return;
+    this.confirmation.confirm({
+      header: 'Delete All Rows',
+      message: 'Are you sure you want to delete all generated rows from the table?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Yes, Delete All',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.bulkPreviewRows = [];
+        this.messages.add({
+          severity: 'info',
+          summary: 'Cleared',
+          detail: 'All rows removed from table.',
+        });
+      },
+    });
+  }
+
+  openBulkDialog(): void { }
+
   onBulkDialogHide(): void {
-    this.bulkStep = 'config';
-    this.bulkPreviewRows = [];
+    this.router.navigate(['/receipt-generator']);
   }
 
   onBulkMonthChange(event: DatePickerMonthChangeEvent): void {
@@ -129,15 +255,25 @@ export class ReceiptGeneratorComponent {
       .map((iso) => this.dateFromIso(iso));
   }
 
+  fillAllDaysInVisibleMonth(): void {
+    const y = this.bulkCalendarMonth.getFullYear();
+    const m = this.bulkCalendarMonth.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const isoSet = new Set(this.bulkSelectedDates.map((d) => this.dateToIso(d)));
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(y, m, day);
+      isoSet.add(this.dateToIso(d));
+    }
+    this.bulkSelectedDates = Array.from(isoSet)
+      .sort()
+      .map((iso) => this.dateFromIso(iso));
+  }
+
   bulkSelectedCount(): number {
     return this.bulkSelectedDates?.length ?? 0;
   }
 
-  backToBulkConfig(): void {
-    this.bulkStep = 'config';
-  }
-
-  generateBulkPreviewRows(): void {
+  generateBulkPreviewRows(collapseSettings = true): void {
     const rangeError = this.validateBulkRanges();
     if (rangeError) {
       this.messages.add({
@@ -151,35 +287,100 @@ export class ReceiptGeneratorComponent {
       this.messages.add({
         severity: 'warn',
         summary: 'Select dates',
-        detail: 'Pick at least one weekday to generate receipts.',
+        detail: 'Pick at least one date to generate receipts.',
       });
       return;
     }
 
+    if (this.bulkPreviewRows.length > 0) {
+      this.pendingCollapseSettings = collapseSettings;
+      this.showRegenerateConfirm = true;
+    } else {
+      this.executeGenerateBulkRows('replace', collapseSettings);
+    }
+  }
+
+  executeGenerateBulkRows(mode: 'replace' | 'appendMissing', collapseSettings = true): void {
+    this.showRegenerateConfirm = false;
     const dates = this.bulkSelectedDates.map((d) =>
-      this.calc.toWeekdayIso(this.dateToIso(d))
+      this.dateToIso(d)
     );
     const uniqueDates = [...new Set(dates)].sort();
 
-    const generated = this.calc.generateBulkRows({
-      template: this.previewRow,
-      dates: uniqueDates,
-      tripCharge: { min: this.bulkTripMin, max: this.bulkTripMax },
-      distanceKm: { min: this.bulkDistanceMin, max: this.bulkDistanceMax },
-      interstateCharges: this.bulkInterstateRanged
-        ? { min: this.bulkInterstateMin, max: this.bulkInterstateMax }
-        : undefined,
-      promotion: this.bulkPromotionRanged
-        ? { min: this.bulkPromotionMin, max: this.bulkPromotionMax }
-        : { min: 0, max: 0 },
-      avgDurationMin: this.bulkAvgDurationMin,
-      newId: () => this.newId(),
-    });
-    this.bulkPreviewRows = generated.map((row) => ({
-      row,
-      exportFilename: this.defaultExportBasename(row),
-    }));
-    this.bulkStep = 'review';
+    if (mode === 'replace') {
+      const generated = this.calc.generateBulkRows({
+        template: this.previewRow,
+        dates: uniqueDates,
+        tripCharge: { min: this.bulkTripMin, max: this.bulkTripMax },
+        distanceKm: { min: this.bulkDistanceMin, max: this.bulkDistanceMax },
+        interstateCharges: this.bulkInterstateRanged
+          ? { min: this.bulkInterstateMin, max: this.bulkInterstateMax }
+          : undefined,
+        promotion: this.bulkPromotionRanged
+          ? { min: this.bulkPromotionMin, max: this.bulkPromotionMax }
+          : { min: 0, max: 0 },
+        avgDurationMin: this.bulkAvgDurationMin,
+        newId: () => this.newId(),
+      });
+      this.bulkPreviewRows = generated.map((row: RideReceiptRow) => ({
+        row,
+        exportFilename: this.defaultExportBasename(row),
+      }));
+    } else {
+      const existingDateSet = new Set(
+        this.bulkPreviewRows.map((item) => item.row.receiptDate)
+      );
+      const missingDates = uniqueDates.filter((d) => !existingDateSet.has(d));
+
+      if (missingDates.length === 0) {
+        this.messages.add({
+          severity: 'info',
+          summary: 'No missing dates',
+          detail: 'All selected dates are already present in the table.',
+        });
+        if (collapseSettings) this.showSettings = false;
+        return;
+      }
+
+      const existingPlates = this.bulkPreviewRows
+        .map((item) => item.row.licensePlate)
+        .filter(Boolean);
+
+      const generated = this.calc.generateBulkRows({
+        template: this.previewRow,
+        dates: missingDates,
+        existingPlates,
+        tripCharge: { min: this.bulkTripMin, max: this.bulkTripMax },
+        distanceKm: { min: this.bulkDistanceMin, max: this.bulkDistanceMax },
+        interstateCharges: this.bulkInterstateRanged
+          ? { min: this.bulkInterstateMin, max: this.bulkInterstateMax }
+          : undefined,
+        promotion: this.bulkPromotionRanged
+          ? { min: this.bulkPromotionMin, max: this.bulkPromotionMax }
+          : { min: 0, max: 0 },
+        avgDurationMin: this.bulkAvgDurationMin,
+        newId: () => this.newId(),
+      });
+
+      const newItems: BulkPreviewItem[] = generated.map((row: RideReceiptRow) => ({
+        row,
+        exportFilename: this.defaultExportBasename(row),
+      }));
+
+      const combined = [...this.bulkPreviewRows, ...newItems];
+      combined.sort((a, b) => (a.row.receiptDate < b.row.receiptDate ? -1 : 1));
+      this.bulkPreviewRows = combined;
+
+      this.messages.add({
+        severity: 'success',
+        summary: 'Rows added',
+        detail: `Added ${newItems.length} new row(s) for missing dates. Existing rows were preserved.`,
+      });
+    }
+
+    if (collapseSettings) {
+      this.showSettings = false;
+    }
   }
 
   onBulkChargeFieldChange(row: RideReceiptRow): void {
@@ -208,18 +409,22 @@ export class ReceiptGeneratorComponent {
   }
 
   async confirmBulkGenerate(): Promise<void> {
+    if (!this.bulkPreviewRows.length) return;
+
     for (const item of this.bulkPreviewRows) {
       if (!this.validate(item.row)) return;
+    }
+    if (!this.validateUniqueLicensePlates(this.bulkPreviewRows.map((item) => item.row))) {
+      return;
     }
     const filenameMap = new Map(
       this.bulkPreviewRows.map((item) => [item.row.id, item.exportFilename])
     );
     this.rows = this.bulkPreviewRows.map((item) => item.row);
-    this.previewRow = this.rows[0];
+    if (this.rows.length) {
+      this.previewRow = this.rows[0];
+    }
     this.previewTick++;
-    this.bulkDialogVisible = false;
-    this.bulkStep = 'config';
-    this.bulkPreviewRows = [];
     this.cdr.detectChanges();
     await this.downloadRows(
       this.rows,
@@ -231,6 +436,23 @@ export class ReceiptGeneratorComponent {
     return this.exportService
       .filenameFor(row)
       .replace(/\.pdf$/i, '');
+  }
+
+  exportExcel(): void {
+    if (!this.bulkPreviewRows.length) return;
+    for (const item of this.bulkPreviewRows) {
+      if (!this.validate(item.row)) return;
+    }
+    if (!this.validateUniqueLicensePlates(this.bulkPreviewRows.map((item) => item.row))) {
+      return;
+    }
+    const rows = this.bulkPreviewRows.map((item) => item.row);
+    this.exportService.downloadExcel(rows, 'receipts_summary.xlsx');
+    this.messages.add({
+      severity: 'success',
+      summary: 'Excel Exported',
+      detail: `Exported Excel summary with ${rows.length} receipt(s).`,
+    });
   }
 
   private validateBulkRanges(): string | null {
@@ -269,6 +491,7 @@ export class ReceiptGeneratorComponent {
       row.pickupTime,
       row.dropoffTime
     );
+    row.rideTimeOfDay = this.calc.timeOfDayFromPickup(row.pickupTime);
   }
 
   onBulkTimeHourChange(
@@ -559,7 +782,7 @@ export class ReceiptGeneratorComponent {
       // Capture the on-screen .a4 so the PDF matches the live preview exactly.
       await this.exportService.downloadMany(
         targets,
-        async (row) => {
+        async (row: RideReceiptRow) => {
           this.previewRow = row;
           this.previewTick++;
           this.cdr.detectChanges();
@@ -598,6 +821,53 @@ export class ReceiptGeneratorComponent {
     return row.id;
   }
 
+  hasDuplicatePlate(row: RideReceiptRow): boolean {
+    const plate = (row.licensePlate || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!plate) return true;
+    return (
+      this.bulkPreviewRows.filter(
+        (item) =>
+          (item.row.licensePlate || '').trim().toUpperCase().replace(/\s+/g, '') === plate
+      ).length > 1
+    );
+  }
+
+  private validateUniqueLicensePlates(rows: RideReceiptRow[]): boolean {
+    const seen = new Map<string, number>();
+    const duplicates = new Set<string>();
+
+    for (let i = 0; i < rows.length; i++) {
+      const plate = (rows[i].licensePlate || '').trim();
+      if (!plate) {
+        this.messages.add({
+          severity: 'warn',
+          summary: 'Missing license plate',
+          detail: `License plate is required for row ${i + 1} (${this.formatBulkDate(rows[i].receiptDate)}).`,
+        });
+        return false;
+      }
+
+      const norm = plate.toUpperCase().replace(/\s+/g, '');
+      if (seen.has(norm)) {
+        duplicates.add(plate.toUpperCase());
+      } else {
+        seen.set(norm, i);
+      }
+    }
+
+    if (duplicates.size > 0) {
+      const dupList = Array.from(duplicates).join(', ');
+      this.messages.add({
+        severity: 'error',
+        summary: 'Duplicate license plate',
+        detail: `Export blocked: Every receipt row must have a different license plate number. Duplicate found: ${dupList}`,
+      });
+      return false;
+    }
+
+    return true;
+  }
+
   private validate(row: RideReceiptRow): boolean {
     if (!row.passengerName?.trim()) {
       this.messages.add({
@@ -612,6 +882,14 @@ export class ReceiptGeneratorComponent {
         severity: 'warn',
         summary: 'Missing date',
         detail: 'Receipt date is required.',
+      });
+      return false;
+    }
+    if (!row.licensePlate?.trim()) {
+      this.messages.add({
+        severity: 'warn',
+        summary: 'Missing license plate',
+        detail: 'License plate number is required for every row.',
       });
       return false;
     }
