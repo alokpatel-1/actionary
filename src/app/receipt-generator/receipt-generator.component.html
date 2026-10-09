@@ -9,6 +9,14 @@
       <p>Create Uber-format receipts with row-wise data. Preview and download one or many.</p>
     </div>
     <div class="rg-actions">
+      <p-button
+        type="button"
+        label="Bulk create"
+        icon="pi pi-calendar-plus"
+        (onClick)="openBulkDialog()"
+        [outlined]="true"
+        [disabled]="exporting"
+      />
       <p-button type="button" label="Add row" icon="pi pi-plus" (onClick)="addRow()" [outlined]="true" [disabled]="exporting" />
       <p-button
         type="button"
@@ -143,32 +151,11 @@
           <label class="rg-field" (click)="$event.stopPropagation()">
             <span>Pickup time</span>
             <div class="rg-time-parts">
-              <p-select
-                [options]="clockHourOptions"
-                [ngModel]="timeHour(row, 'pickupTime')"
-                (ngModelChange)="onTimeHourChange(row, 'pickupTime', $event)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                styleClass="rg-select rg-time-select"
-              />
-              <p-select
-                [options]="clockMinuteOptions"
-                [ngModel]="timeMinute(row, 'pickupTime')"
-                (ngModelChange)="onTimeMinuteChange(row, 'pickupTime', $event)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                styleClass="rg-select rg-time-select"
-              />
-              <p-select
-                [options]="clockMeridiemOptions"
-                [ngModel]="timeMeridiem(row, 'pickupTime')"
-                (ngModelChange)="onTimeMeridiemChange(row, 'pickupTime', $event)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                styleClass="rg-select rg-time-select"
+              <input
+                type="time"
+                class="rg-input"
+                [ngModel]="timeTo24(row.pickupTime)"
+                (ngModelChange)="onTime24Change(row, 'pickupTime', $event)"
               />
             </div>
           </label>
@@ -176,32 +163,11 @@
           <label class="rg-field" (click)="$event.stopPropagation()">
             <span>Dropoff time</span>
             <div class="rg-time-parts">
-              <p-select
-                [options]="clockHourOptions"
-                [ngModel]="timeHour(row, 'dropoffTime')"
-                (ngModelChange)="onTimeHourChange(row, 'dropoffTime', $event)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                styleClass="rg-select rg-time-select"
-              />
-              <p-select
-                [options]="clockMinuteOptions"
-                [ngModel]="timeMinute(row, 'dropoffTime')"
-                (ngModelChange)="onTimeMinuteChange(row, 'dropoffTime', $event)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                styleClass="rg-select rg-time-select"
-              />
-              <p-select
-                [options]="clockMeridiemOptions"
-                [ngModel]="timeMeridiem(row, 'dropoffTime')"
-                (ngModelChange)="onTimeMeridiemChange(row, 'dropoffTime', $event)"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                styleClass="rg-select rg-time-select"
+              <input
+                type="time"
+                class="rg-input"
+                [ngModel]="timeTo24(row.dropoffTime)"
+                (ngModelChange)="onTime24Change(row, 'dropoffTime', $event)"
               />
             </div>
           </label>
@@ -347,3 +313,5 @@
     </aside>
   </div>
 </div>
+
+

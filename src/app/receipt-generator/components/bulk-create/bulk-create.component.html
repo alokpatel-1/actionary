@@ -1,0 +1,509 @@
+<p-toast position="top-right" />
+<p-confirmDialog></p-confirmDialog>
+
+<!-- ── REGENERATE OPTIONS MODAL ── -->
+<p-dialog
+  [(visible)]="showRegenerateConfirm"
+  [modal]="true"
+  header="Apply Settings & Regenerate"
+  [style]="{ width: '520px' }"
+  styleClass="bc-dialog"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="bc-modal-body">
+    <p class="bc-modal-desc">
+      You currently have <strong>{{ bulkPreviewRows.length }}</strong> row(s) in the review table. How would you like to update the batch?
+    </p>
+
+    <div class="bc-modal-options">
+      <button class="bc-option-card bc-option-card--danger" (click)="executeGenerateBulkRows('replace', pendingCollapseSettings)">
+        <div class="bc-option-icon"><i class="pi pi-refresh"></i></div>
+        <div class="bc-option-text">
+          <div class="bc-option-title">Replace All Existing Rows</div>
+          <div class="bc-option-sub">Clears all current rows and generates new rows for all selected dates using the updated rules.</div>
+        </div>
+      </button>
+
+      <button class="bc-option-card bc-option-card--primary" (click)="executeGenerateBulkRows('appendMissing', pendingCollapseSettings)">
+        <div class="bc-option-icon"><i class="pi pi-plus-circle"></i></div>
+        <div class="bc-option-text">
+          <div class="bc-option-title">Only Add Missing Dates</div>
+          <div class="bc-option-sub">Keeps all existing edited rows untouched, and only creates rows for dates not yet in the table.</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="bc-btn bc-btn--ghost" (click)="showRegenerateConfirm = false">Cancel</button>
+  </ng-template>
+</p-dialog>
+
+<div class="bc-page">
+  <!-- Top navigation bar -->
+  <header class="bc-topbar">
+    <div class="bc-topbar-left">
+      <a routerLink="/receipt-generator" class="bc-back-btn">
+        <i class="pi pi-arrow-left"></i>
+        <span>Back</span>
+      </a>
+      <div class="bc-template-tag" *ngIf="previewRow">
+        <i class="pi pi-user"></i>
+        <span class="bc-template-label">Template:</span>
+        <input
+          type="text"
+          pInputText
+          [ngModel]="previewRow.passengerName"
+          (ngModelChange)="onPassengerNameChange($event)"
+          class="bc-topbar-name-input"
+          placeholder="Passenger name"
+          title="Edit passenger / template name"
+        />
+      </div>
+    </div>
+
+    <div class="bc-topbar-center">
+      <h1 class="bc-topbar-title">Bulk Receipt Generator</h1>
+    </div>
+
+    <div class="bc-topbar-actions">
+      <button
+        class="bc-btn"
+        [class.bc-btn--active]="showSettings"
+        (click)="toggleSettings()"
+        title="Toggle generation settings and dates"
+      >
+        <i class="pi pi-cog"></i>
+        <span>Settings &amp; Dates</span>
+        <span class="bc-count-pill" *ngIf="bulkSelectedCount() > 0">{{ bulkSelectedCount() }}</span>
+      </button>
+
+      <button
+        class="bc-btn bc-btn--primary"
+        (click)="confirmBulkGenerate()"
+        [disabled]="exporting || !bulkPreviewRows.length"
+      >
+        <i class="pi" [ngClass]="exporting ? 'pi-spin pi-spinner' : 'pi-download'"></i>
+        <span>{{ exporting ? 'Generating…' : 'Confirm & Export (' + bulkPreviewRows.length + ')' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="bc-content">
+    <!-- ── COLLAPSIBLE SETTINGS & RULES PANEL ── -->
+    <div *ngIf="showSettings" class="bc-settings-panel">
+      <div class="bc-settings-header">
+        <div class="bc-settings-title-wrap">
+          <h2 class="bc-settings-title"><i class="pi pi-sliders-h"></i> Batch Generation Rules</h2>
+          <p class="bc-settings-sub">Select receipt dates and fine-tune value ranges. Updating rules will recalculate preview rows.</p>
+        </div>
+        <div class="bc-settings-header-actions">
+          <button class="bc-chip-btn" (click)="fillWeekdaysInVisibleMonth()" title="Select all Monday to Friday dates in visible month">
+            <i class="pi pi-briefcase"></i> Fill weekdays
+          </button>
+          <button class="bc-chip-btn" (click)="fillAllDaysInVisibleMonth()" title="Select all days in visible month">
+            <i class="pi pi-calendar-plus"></i> Fill all days
+          </button>
+          <button
+            class="bc-chip-btn bc-chip-btn--danger"
+            (click)="clearSelectedDates()"
+            [disabled]="!bulkSelectedCount()"
+            title="Clear all selected dates"
+          >
+            <i class="pi pi-times-circle"></i> Clear dates
+          </button>
+        </div>
+      </div>
+
+      <div class="bc-settings-grid">
+        <!-- Container 1: Select Dates -->
+        <div class="bc-panel bc-panel--dates">
+          <div class="bc-panel-header">
+            <h3 class="bc-panel-title">1. Select Dates</h3>
+            <div class="bc-date-badge" *ngIf="bulkSelectedCount() > 0">
+              <i class="pi pi-check-circle"></i>
+              {{ bulkSelectedCount() }} date{{ bulkSelectedCount() !== 1 ? 's' : '' }}
+            </div>
+          </div>
+          <p-datepicker
+            [(ngModel)]="bulkSelectedDates"
+            selectionMode="multiple"
+            [disabledDays]="disabledDays"
+            dateFormat="M d, yy"
+            [inline]="true"
+            [showOtherMonths]="false"
+            (onMonthChange)="onBulkMonthChange($event)"
+            styleClass="bc-calendar"
+          />
+        </div>
+
+        <!-- Container 2: Default Template Values -->
+        <div class="bc-panel bc-panel--defaults" *ngIf="previewRow">
+          <div class="bc-panel-header">
+            <div>
+              <h3 class="bc-panel-title">2. Default Template Values</h3>
+              <p class="bc-panel-sub">Base values inherited by generated receipts</p>
+            </div>
+          </div>
+
+          <div class="bc-range-grid">
+            <label class="bc-field bc-field--full">
+              <span>Passenger Name</span>
+              <input
+                type="text"
+                pInputText
+                [ngModel]="previewRow.passengerName"
+                (ngModelChange)="onPassengerNameChange($event)"
+                class="bc-text-input"
+                placeholder="e.g. Amrish"
+              />
+            </label>
+
+            <label class="bc-field">
+              <span>Vehicle Type</span>
+              <select class="bc-select-input" [(ngModel)]="previewRow.vehicleType" (ngModelChange)="onTemplateFieldChange()">
+                <option *ngFor="let opt of vehicleOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </label>
+
+            <label class="bc-field">
+              <span>Payment Method</span>
+              <select class="bc-select-input" [(ngModel)]="previewRow.paymentMethod" (ngModelChange)="onTemplateFieldChange()">
+                <option *ngFor="let opt of paymentOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </label>
+
+            <label class="bc-field bc-field--full">
+              <span>Pickup Address</span>
+              <input
+                type="text"
+                pInputText
+                [ngModel]="previewRow.pickupAddress"
+                (ngModelChange)="onPickupAddressChange($event)"
+                class="bc-text-input"
+                placeholder="Enter pickup address"
+              />
+            </label>
+
+            <div class="bc-addr-swap-between">
+              <div class="bc-addr-swap-line"></div>
+              <button
+                type="button"
+                class="bc-addr-swap-btn"
+                (click)="swapSettingsAddresses()"
+                title="Swap pickup &amp; dropoff addresses across all rows"
+              >
+                <i class="pi pi-arrows-v"></i>
+                <span>Swap Addresses</span>
+              </button>
+              <div class="bc-addr-swap-line"></div>
+            </div>
+
+            <label class="bc-field bc-field--full">
+              <span>Dropoff Address</span>
+              <input
+                type="text"
+                pInputText
+                [ngModel]="previewRow.dropoffAddress"
+                (ngModelChange)="onDropoffAddressChange($event)"
+                class="bc-text-input"
+                placeholder="Enter dropoff address"
+              />
+            </label>
+
+            <label class="bc-field">
+              <span>Base Pickup Time</span>
+              <input
+                type="time"
+                class="bc-time-input"
+                [ngModel]="timeTo24(previewRow.pickupTime)"
+                (ngModelChange)="onTemplatePickupTimeChange($event)"
+              />
+            </label>
+
+            <label class="bc-field">
+              <span>Base Dropoff Time</span>
+              <input
+                type="time"
+                class="bc-time-input"
+                [ngModel]="timeTo24(previewRow.dropoffTime)"
+                (ngModelChange)="onTemplateDropoffTimeChange($event)"
+              />
+            </label>
+
+            <label class="bc-field">
+              <span>Driver Name</span>
+              <input
+                type="text"
+                pInputText
+                [(ngModel)]="previewRow.driverName"
+                (ngModelChange)="onTemplateFieldChange()"
+                class="bc-text-input"
+                placeholder="Driver name"
+              />
+            </label>
+
+            <label class="bc-field">
+              <span>License Plate</span>
+              <input
+                type="text"
+                pInputText
+                [(ngModel)]="previewRow.licensePlate"
+                (ngModelChange)="onTemplateFieldChange()"
+                class="bc-text-input"
+                placeholder="License plate"
+              />
+            </label>
+          </div>
+        </div>
+
+        <!-- Container 3: Value Ranges & Randomization -->
+        <div class="bc-panel bc-panel--ranges">
+          <div class="bc-panel-header">
+            <div>
+              <h3 class="bc-panel-title">3. Generation Ranges &amp; Rules</h3>
+              <p class="bc-panel-sub">Randomization ranges for batch generation</p>
+            </div>
+          </div>
+
+          <div class="bc-section">
+            <h4 class="bc-section-subtitle"><i class="pi pi-indian-rupee"></i> Trip Charge &amp; Distance Ranges</h4>
+            <div class="bc-range-grid">
+              <label class="bc-field">
+                <span>Trip charge min (₹)</span>
+                <p-inputNumber [(ngModel)]="bulkTripMin" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+              <label class="bc-field">
+                <span>Trip charge max (₹)</span>
+                <p-inputNumber [(ngModel)]="bulkTripMax" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+              <label class="bc-field">
+                <span>Distance min (km)</span>
+                <p-inputNumber [(ngModel)]="bulkDistanceMin" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+              <label class="bc-field">
+                <span>Distance max (km)</span>
+                <p-inputNumber [(ngModel)]="bulkDistanceMax" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+            </div>
+          </div>
+
+          <div class="bc-section">
+            <div class="bc-range-grid">
+              <label class="bc-field bc-field--full">
+                <span>Typical trip duration (minutes)</span>
+                <p-inputNumber [(ngModel)]="bulkAvgDurationMin" [min]="5" [step]="5" styleClass="bc-number" />
+              </label>
+            </div>
+          </div>
+
+          <div class="bc-section">
+            <h4 class="bc-section-subtitle"><i class="pi pi-random"></i> Optional Randomization</h4>
+            <div class="bc-toggles-row">
+              <label class="bc-toggle">
+                <input type="checkbox" [(ngModel)]="bulkInterstateRanged" />
+                <div class="bc-toggle-track"><div class="bc-toggle-thumb"></div></div>
+                <span>Interstate charges</span>
+              </label>
+
+              <label class="bc-toggle">
+                <input type="checkbox" [(ngModel)]="bulkPromotionRanged" />
+                <div class="bc-toggle-track"><div class="bc-toggle-thumb"></div></div>
+                <span>Promotion discount</span>
+              </label>
+            </div>
+
+            <div class="bc-range-grid" *ngIf="bulkInterstateRanged">
+              <label class="bc-field">
+                <span>Interstate min (₹)</span>
+                <p-inputNumber [(ngModel)]="bulkInterstateMin" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+              <label class="bc-field">
+                <span>Interstate max (₹)</span>
+                <p-inputNumber [(ngModel)]="bulkInterstateMax" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+            </div>
+
+            <div class="bc-range-grid" *ngIf="bulkPromotionRanged">
+              <label class="bc-field">
+                <span>Promotion min (₹)</span>
+                <p-inputNumber [(ngModel)]="bulkPromotionMin" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+              <label class="bc-field">
+                <span>Promotion max (₹)</span>
+                <p-inputNumber [(ngModel)]="bulkPromotionMax" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="bc-number" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Panel Action Footer -->
+      <div class="bc-settings-footer">
+        <button
+          class="bc-btn bc-btn--primary"
+          (click)="generateBulkPreviewRows(true)"
+          [disabled]="bulkSelectedCount() === 0"
+        >
+          <i class="pi pi-sync"></i>
+          Apply &amp; Regenerate {{ bulkSelectedCount() }} Row{{ bulkSelectedCount() !== 1 ? 's' : '' }}
+        </button>
+        <button class="bc-btn bc-btn--ghost" (click)="showSettings = false">
+          <i class="pi pi-chevron-up"></i> Hide Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MAIN REVIEW TABLE VIEW ── -->
+    <div class="bc-review-layout">
+      <div class="bc-review-bar">
+        <div class="bc-review-info">
+          <span class="bc-review-count">
+            <i class="pi pi-file"></i>
+            {{ bulkPreviewRows.length }} receipt{{ bulkPreviewRows.length !== 1 ? 's' : '' }} generated
+          </span>
+          <span class="bc-summary-chip">
+            Trip: ₹{{ bulkTripMin }}–₹{{ bulkTripMax }} | Dist: {{ bulkDistanceMin }}–{{ bulkDistanceMax }}km | ~{{ bulkAvgDurationMin }}m
+          </span>
+        </div>
+
+        <div class="bc-review-bar-actions">
+          <button
+            class="bc-btn-excel-ghost"
+            (click)="exportExcel()"
+            [disabled]="!bulkPreviewRows.length"
+            title="Export Excel spreadsheet (.xlsx) with date, amounts, and plate numbers"
+          >
+            <i class="pi pi-file-excel"></i>
+            <span>Export Excel</span>
+          </button>
+          <button
+            class="bc-btn-danger-ghost"
+            (click)="clearAllRows()"
+            [disabled]="!bulkPreviewRows.length"
+            title="Delete all generated rows from table"
+          >
+            <i class="pi pi-trash"></i>
+            <span>Delete all rows</span>
+          </button>
+          <span class="bc-review-hint">GST &amp; duration recalculate automatically as you edit.</span>
+          <button class="bc-btn-link" (click)="toggleSettings()">
+            <i class="pi" [ngClass]="showSettings ? 'pi-chevron-up' : 'pi-sliders-h'"></i>
+            {{ showSettings ? 'Hide Rules' : 'Edit Rules & Dates' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="bc-table-wrap">
+        <p-table
+          [value]="bulkPreviewRows"
+          [scrollable]="true"
+          styleClass="bc-table"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pFrozenColumn>Date</th>
+              <th>Pickup Time</th>
+              <th>Dropoff Time</th>
+              <th>Pickup Address</th>
+              <th class="bc-swap-col-th" title="Swap pickup &amp; dropoff address"></th>
+              <th>Dropoff Address</th>
+              <th>Trip (₹)</th>
+              <th>Interstate (₹)</th>
+              <th>Promo (₹)</th>
+              <th>Total (₹)</th>
+              <th>Distance</th>
+              <th>GST</th>
+              <th>Duration</th>
+              <th>Driver</th>
+              <th>Plate</th>
+              <th>PDF filename</th>
+              <th pFrozenColumn alignFrozen="right" class="bc-actions-th">Actions</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td pFrozenColumn class="bc-td-date">{{ formatBulkDate(item.row.receiptDate) }}</td>
+              <td class="bc-td-time">
+                <input
+                  type="time"
+                  class="bc-time-input"
+                  [ngModel]="timeTo24(item.row.pickupTime)"
+                  (ngModelChange)="onTime24Change(item.row, 'pickupTime', $event, true)"
+                />
+              </td>
+              <td class="bc-td-time">
+                <input
+                  type="time"
+                  class="bc-time-input"
+                  [ngModel]="timeTo24(item.row.dropoffTime)"
+                  (ngModelChange)="onTime24Change(item.row, 'dropoffTime', $event, true)"
+                />
+              </td>
+              <td><input pInputText [(ngModel)]="item.row.pickupAddress" class="bc-text-input bc-addr-input" placeholder="Pickup Address" /></td>
+              <td class="bc-swap-col-td">
+                <button
+                  type="button"
+                  class="bc-row-swap-inline-btn"
+                  (click)="swapRowAddresses(item.row)"
+                  title="Swap pickup &amp; dropoff address for this row"
+                >
+                  <i class="pi pi-arrows-h"></i>
+                </button>
+              </td>
+              <td><input pInputText [(ngModel)]="item.row.dropoffAddress" class="bc-text-input bc-addr-input" placeholder="Dropoff Address" /></td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.row.tripCharge" (ngModelChange)="onBulkChargeFieldChange(item.row)"
+                  mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="bc-num-input" />
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.row.interstateCharges" (ngModelChange)="onBulkChargeFieldChange(item.row)"
+                  mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="bc-num-input" />
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.row.promotion" (ngModelChange)="onBulkChargeFieldChange(item.row)"
+                  mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="bc-num-input" />
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.row.total" (ngModelChange)="onBulkTotalFieldChange(item.row)"
+                  mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="bc-num-input" />
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.row.distanceKm" (ngModelChange)="onBulkTotalFieldChange(item.row)"
+                  mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" inputStyleClass="bc-num-input" />
+              </td>
+              <td class="bc-td-ro bc-td-gst">{{ formatInr(item.row.gstAmount) }}</td>
+              <td class="bc-td-ro">{{ item.row.durationMin }} min</td>
+              <td><input pInputText [(ngModel)]="item.row.driverName" class="bc-text-input" /></td>
+              <td>
+                <input
+                  pInputText
+                  [(ngModel)]="item.row.licensePlate"
+                  class="bc-text-input bc-plate-input"
+                  [class.bc-input--error]="hasDuplicatePlate(item.row)"
+                  [title]="hasDuplicatePlate(item.row) ? 'License plate must be unique for every receipt' : 'License Plate'"
+                />
+              </td>
+              <td><input pInputText [(ngModel)]="item.exportFilename" class="bc-text-input bc-file-input" placeholder="receipt_name" /></td>
+              <td pFrozenColumn alignFrozen="right" class="bc-actions-td">
+                <div class="bc-row-actions">
+                  <button class="bc-icon-btn bc-icon-btn--dl" (click)="downloadBulkPreviewItem(item)" [disabled]="exporting" title="Download PDF">
+                    <i class="pi pi-download"></i>
+                  </button>
+                  <button class="bc-icon-btn bc-icon-btn--del" (click)="deleteBulkPreviewItem(item)" [disabled]="exporting" title="Remove row">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;">
+  <app-receipt-preview #preview [data]="previewRow" [attr.data-tick]="previewTick" />
+</div>
